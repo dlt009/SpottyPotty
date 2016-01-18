@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.teamoptimal.cse110project"
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -24,4 +24,10 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
+    compile 'com.amazonaws:aws-android-sdk-core:2.2.10'
+    compile 'com.amazonaws:aws-android-sdk-cognito:2.2.10'
+    compile 'com.amazonaws:aws-android-sdk-s3:2.2.10'
+    compile 'com.amazonaws:aws-android-sdk-ddb:2.2.10'
+    compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.2.10'
+    compile 'com.google.android.gms:play-services-identity:8.4.0'
 }
