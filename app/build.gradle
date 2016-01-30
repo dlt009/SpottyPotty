@@ -1,20 +1,34 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile rootProject.file('debug.keystore')
+            storePassword 'android'
+        }
+    }
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
-
     defaultConfig {
         applicationId "com.teamoptimal.cse110project"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
 }
@@ -29,5 +43,10 @@ dependencies {
     compile 'com.amazonaws:aws-android-sdk-s3:2.2.10'
     compile 'com.amazonaws:aws-android-sdk-ddb:2.2.10'
     compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.2.10'
-    compile 'com.google.android.gms:play-services-identity:8.4.0'
+    compile 'com.google.android.gms:play-services-identity:8.3.0'
+    compile 'com.google.android.gms:play-services-auth:8.3.0'
+    compile 'com.google.android.gms:play-services:8.3.0'
+    compile 'com.facebook.android:facebook-android-sdk:4.+'
 }
+
+apply plugin: 'com.google.gms.google-services'
