@@ -2,30 +2,42 @@ package com.teamoptimal.cse110project;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobileconnectors.cognito.CognitoSyncManager;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedQueryList;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.plus.*;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.teamoptimal.cse110project.data.User;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener {
-
 
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 905;
@@ -34,10 +46,16 @@ public class SignInActivity extends AppCompatActivity implements
     private TextView mStatusTextView;
     private ProgressDialog mProgressDialog;
 
+    // This will be the client manager used by other classes too
+    public static AmazonClientManager clientManager = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+
+        // Set Amazon Client Manager
+        clientManager = new AmazonClientManager(this);
 
         // Views
         mStatusTextView = (TextView) findViewById(R.id.status);
@@ -47,37 +65,23 @@ public class SignInActivity extends AppCompatActivity implements
         findViewById(R.id.sign_out_button).setOnClickListener(this);
         //findViewById(R.id.disconnect_button).setOnClickListener(this);
 
-        // [START configure_signin]
-        // Configure sign-in to request the user's ID, email address, and basic
-        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
+                .requestIdToken(getString(R.string.google_web_client_id))
                 .build();
-        // [END configure_signin]
 
-        // [START build_client]
-        // Build a GoogleApiClient with access to the Google Sign-In API and the
-        // options specified by gso.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        // [END build_client]
 
-        // [START customize_button]
-        // Customize sign-in button. The sign-in button can be displayed in
-        // multiple sizes and color schemes. It can also be contextually
-        // rendered based on the requested scopes. For example. a red button may
-        // be displayed when Google+ scopes are requested, but a white button
-        // may be displayed when only basic profile is requested. Try adding the
-        // Scopes.PLUS_LOGIN scope to the GoogleSignInOptions to see the
-        // difference.
         SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_STANDARD);
         signInButton.setScopes(gso.getScopeArray());
-        // [END customize_button]
 
         findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+
+
     }
 
     @Override
@@ -115,7 +119,6 @@ public class SignInActivity extends AppCompatActivity implements
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            Log.d(TAG, result.getSignInAccount().getDisplayName());
             handleSignInResult(result);
         }
     }
@@ -123,12 +126,28 @@ public class SignInActivity extends AppCompatActivity implements
 
     // [START handleSignInResult]
     private void handleSignInResult(GoogleSignInResult result) {
-        Log.d(TAG, "handleSignInResult:" + result.isSuccess());
+        Log.d(TAG, "handleSignInResult: " + result.isSuccess());
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
             updateUI(true);
+
+            // Access with token
+            String token = acct.getIdToken();
+            Map<String, String> logins = new HashMap<String, String>();
+            logins.put("accounts.google.com", token);
+            clientManager.validateCredentials(logins);
+
+            User newUser = new User();
+            newUser.setEmail(acct.getEmail());
+            newUser.setProvider("Google");
+            newUser.setProviderID(acct.getId());
+            newUser.setUsername(acct.getDisplayName());
+            new CreateUserTask(newUser).execute();
+
+            Log.d(TAG, result.getSignInAccount().getDisplayName());
+            Log.d(TAG, token);
         } else {
             // Signed out, show unauthenticated UI.
             updateUI(false);
@@ -222,6 +241,26 @@ public class SignInActivity extends AppCompatActivity implements
             case R.id.disconnect_button:
                 revokeAccess();
                 break;*/
+        }
+    }
+
+    // Put tasks on Activities since we can use it to control UI elements
+    private class CreateUserTask extends AsyncTask<Void, Void, Void> {
+        private User user;
+
+        public CreateUserTask(User user) {
+            this.user = user;
+        }
+
+        // To do in the background
+        protected Void doInBackground(Void... inputs) {
+            user.create(); // Use the method from the User class to create it
+            return null;
+        }
+
+        // To do after doInBackground is executed
+        // We can use UI elements here
+        protected void onPostExecute(Void result) {
         }
     }
 }

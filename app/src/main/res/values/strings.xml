@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">cse110project</string>
+    <string name="google_client_id">154450642951-iib2rod4c1frsh3vm1vucgdagkg5c1lf.apps.googleusercontent.com</string>
+    <string name="google_web_client_id">154450642951-ia20ed61v0mlfj4at4lne5ukj25qrjsm.apps.googleusercontent.com</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>

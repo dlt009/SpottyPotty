@@ -1,7 +1,24 @@
 package com.teamoptimal.cse110project.data;
 
+import android.os.AsyncTask;
+
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribute;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIndexHashKey;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIndexRangeKey;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBRangeKey;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedQueryList;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
+import com.teamoptimal.cse110project.SignInActivity;
+
+import java.util.SimpleTimeZone;
+import java.util.logging.StreamHandler;
 
 /**
  * Represents a User
@@ -9,32 +26,42 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
  */
 @DynamoDBTable(tableName = "Y4R_Users")
 public class User {
-    private int id;
+    private String email;
+    private String provider; // google, facebook, twitter
+    private String providerID;
     private String username;
-    private String gender;
+    private String gender; // The preferred gender for restrooms
 
-    @DynamoDBHashKey(attributeName = "ID")
-    public int getID() {
-        return id;
-    }
-    public void setID(int id) {
-        this.id = id;
+    @DynamoDBHashKey(attributeName = "Email")
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    @DynamoDBAttribute(attributeName = "Provider")
+    public String getProvider() { return provider; }
+    public void setProvider(String provider) { this.provider = provider; }
+
+    @DynamoDBAttribute(attributeName = "ProviderID")
+    public String getProviderID() { return providerID; }
+    public void setProviderID(String providerID) { this.providerID = providerID; }
+
+    @DynamoDBAttribute(attributeName = "Username")
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    @DynamoDBAttribute(attributeName = "Gender")
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    // Create the user
+    public void create() {
+        AmazonDynamoDBClient ddb = SignInActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+
+        User user = mapper.load(User.class, this.getEmail());
+        // Create if this user doesn't exist
+        if(user == null) {
+            mapper.save(this);
+        }
     }
 
-    @DynamoDBHashKey(attributeName = "Username")
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    @DynamoDBHashKey(attributeName = "Gender")
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
 }
