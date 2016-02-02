@@ -31,6 +31,7 @@ public class User {
     private String providerID;
     private String username;
     private String gender; // The preferred gender for restrooms
+    private int flags;
 
     @DynamoDBHashKey(attributeName = "Email")
     public String getEmail() { return email; }
@@ -52,16 +53,16 @@ public class User {
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
 
+    @DynamoDBAttribute(attributeName = "Flags")
+    public int getFlags() { return flags; }
+    public void setFlags(int flags) { this.flags = flags; }
+
     // Create the user
     public void create() {
         AmazonDynamoDBClient ddb = SignInActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
 
-        User user = mapper.load(User.class, this.getEmail());
-        // Create if this user doesn't exist
-        if(user == null) {
-            mapper.save(this);
-        }
+        // Create or update the user
+        mapper.save(this);
     }
-
 }
