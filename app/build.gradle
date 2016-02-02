@@ -1,6 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
+
+    repositories {
+        mavenCentral()
+    }
     signingConfigs {
         config {
             keyAlias 'androiddebugkey'

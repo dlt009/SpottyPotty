@@ -2,9 +2,13 @@ package com.teamoptimal.cse110project;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -19,6 +23,12 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.Profile;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -31,9 +41,13 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.teamoptimal.cse110project.data.User;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.facebook.FacebookSdk;
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
@@ -43,6 +57,8 @@ public class SignInActivity extends AppCompatActivity implements
     private static final int RC_SIGN_IN = 905;
 
     private GoogleApiClient mGoogleApiClient;
+    private CallbackManager callbackManager;
+
     private TextView mStatusTextView;
     private ProgressDialog mProgressDialog;
 
@@ -52,6 +68,12 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /////////////////////facebook////////////////////
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
+        //////////////////////facebook///////////////////
+
         setContentView(R.layout.activity_sign_in);
 
         // Set Amazon Client Manager
@@ -81,7 +103,23 @@ public class SignInActivity extends AppCompatActivity implements
 
         findViewById(R.id.sign_out_button).setVisibility(View.GONE);
 
+        ///////////////////////facebook////////////////////////////////////////////
+        LoginButton loginButton = (LoginButton) findViewById(R.id.facebook_login_button);
+        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Profile user = Profile.getCurrentProfile();
+            }
 
+            @Override
+            public void onCancel() {
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+            }
+        });
+        //////////////////////////////facebook//////////////////////////////////////
     }
 
     @Override
@@ -114,7 +152,12 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "onActivityResult()");
+
         super.onActivityResult(requestCode, resultCode, data);
+
+        //////////////////facebook//////////////////////////////////
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+        //////////////////facebook///////////////////////////////////
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
@@ -130,7 +173,7 @@ public class SignInActivity extends AppCompatActivity implements
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
-            mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
+            //mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
             updateUI(true);
 
             // Access with token
@@ -220,7 +263,7 @@ public class SignInActivity extends AppCompatActivity implements
             findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
             //findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
         } else {
-            mStatusTextView.setText(R.string.signed_out);
+            //mStatusTextView.setText(R.string.signed_out);
 
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
             findViewById(R.id.sign_out_button).setVisibility(View.GONE);
