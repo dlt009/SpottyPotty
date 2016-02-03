@@ -38,6 +38,8 @@ public class Restroom{
     public void setUser(User maker){
         user_email = maker.getEmail();
     }
+
+    @DynamoDBAttribute (attributeName = "User")
     public String getUser(){return user_email;}
 
     public void setId(int i){ id = i;}
