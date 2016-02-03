@@ -75,8 +75,8 @@ public class Restroom{
 
     @DynamoDBAttribute (attributeName = "Location")
     public double[] getLoc(){return loc;}
-    public double getLongit(){return loc[0];}
-    public double getLatit(){return loc[1];}
+    public double getLongit(){return loc[1];}
+    public double getLatit(){return loc[0];}
 
     @DynamoDBHashKey (attributeName = "ID")
     public int getId(){ return id;}
@@ -97,7 +97,7 @@ public class Restroom{
     public double getRating(){return rating;}
 
     public boolean isInitialized(){
-        if(loc[0] != && user_email != null && !name.equals("Uninitialized")){
+        if(loc[0] != 0.0d && loc[1] != 0.0d && user_email != null && !name.equals("Uninitialized")){
             setId(++currID);
             return true;
         }
