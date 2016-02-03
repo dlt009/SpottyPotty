@@ -1,0 +1,135 @@
+package com.teamoptimal.cse110project;
+
+import android.app.ListActivity;
+import android.content.Context;
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
+import android.widget.CheckedTextView;
+import android.widget.ListView;
+import android.widget.Toast;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.view.KeyEvent;
+import android.widget.RatingBar;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.Location;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.teamoptimal.cse110project.data.Restroom;
+
+public class CreateRestroom extends ListActivity{
+    Restroom restroom;
+    String[] tags = {
+            "Public",
+            "Private",
+            "Pay-to-use",
+            "Changing Stations",
+            "Restaurant",
+            "Store",
+            "Unisex",
+            "Female-only",
+            "Male-only",
+            "Clean",
+            "Somewhat-Clean",
+            "Somewhat-Dirty",
+            "Dirty"
+            };
+    RatingBar ratingBar;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_create_restroom);
+
+        restroom = new Restroom();
+
+        LocationListener locListen;
+        LocationManager locMan = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
+        ListView tagList = getListView();
+        tagList.setChoiceMode(tagList.CHOICE_MODE_MULTIPLE);
+        tagList.setTextFilterEnabled(true);
+        setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked,
+                tags));
+
+        EditText name = (EditText) findViewById(R.id.editText);
+        EditText floor = (EditText) findViewById(R.id.editText2);
+        EditText description = (EditText) findViewById(R.id.editText3);
+
+        this.addListenerOnRatingBar();
+
+        name.setOnEditorActionListener(new TextView.OnEditorActionListener(){
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent){
+                boolean handled = false;
+                if(i== EditorInfo.IME_ACTION_NEXT){
+                    String inputName = textView.getText().toString();
+                    restroom.setName(inputName);
+                }
+                return handled;
+            }
+        });
+
+        floor.setOnEditorActionListener(new TextView.OnEditorActionListener(){
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent){
+                boolean handled = false;
+                if(i== EditorInfo.IME_ACTION_NEXT){
+                    String inputFloor = textView.getText().toString();
+                    restroom.setFloor(inputFloor);
+                }
+                return handled;
+            }
+        });
+
+        description.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                boolean handled = false;
+                if (i == EditorInfo.IME_ACTION_NEXT) {
+                    String inputDesc = textView.getText().toString();
+                    restroom.setDesc(inputDesc);
+                }
+                return handled;
+            }
+        });
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (restroom.isInitialized()) {
+                    CharSequence c = restroom.getName() +
+                            " has been created This button will lead to the Main Menu";
+                    Toast.makeText(this,c , Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    public void onListItemClick(ListView parent, View v, int position, long id ){
+        CheckedTextView item = (CheckedTextView) v;
+        restroom.setTag(position, item.isChecked());
+    }
+
+    public void onLocationChanged(Location location) {
+        double[] locate = {location.getLatitude(), location.getLongitude()};
+        restroom.setLoc(locate[0], locate[1]);
+    }
+
+    public void addListenerOnRatingBar(){
+        ratingBar = (RatingBar) findViewById(R.id.ratingBar);
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+                restroom.setRating((double)rating);
+            }
+        });
+
+    }
+}
