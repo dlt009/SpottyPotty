@@ -7,7 +7,7 @@
 | Fabian  | Pre-planning  | Google sign-in | Sorting & List  | Filtering & List  | Finish up  | Tweaks, bug fixes  | Tweaks, bug fixes  |
 | Kevin  | Pre-planning  | Google sign-in  | Facebook  | Twitter  | Finish up  | Tweaks, bug fixes  | Tweaks, bug fixes  |
 | Scott  | Pre-planning  | Adding restroom  | Adding restroom | User accountability  | User accountability  | Finish up  | Tweaks, bug fixes  |
-| David  | Pre-planning  | Display map & location  | Display radius  | Display markers  | Finish up  | Tweaks, bug fixes  | Tweaks, bug fixes  |
+| David  | Pre-planning  | Display map & location  | Display updating radius  | Display markers  | Finish up  | Tweaks, bug fixes  | Tweaks, bug fixes  |
 | Sydney  | Pre-planning  | Rough Draft UI  | Rough Draft UI | Fine tune UI  | Fine tune UI  | Finish up  | Tweaks, bug fixes  |
 | Tony  | Pre-planning  | Sorting methods  | Comments  | Comments | Review  | Finish up  | Tweaks, bug fixes  |
 Updated: 01/27/2016
