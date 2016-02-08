@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.teamoptimal.cse110project.CreateRestroom"
+    tools:context="com.teamoptimal.cse110project.CreateRestroomActivity"
     tools:showIn="@layout/activity_create_restroom">
 
     <TextView
@@ -58,8 +58,7 @@
         android:layout_below="@+id/editText2"
         android:layout_above="@+id/editText3"
         android:layout_alignStart="@+id/editText3"
-        android:layount_alignEnd="@+id/editText3"
-        android:layout_alignEnd="@+id/textview2">
+        android:layout_alignEnd="@+id/editText3" >
 
         <ListView
             android:id="@+id/listView1"
