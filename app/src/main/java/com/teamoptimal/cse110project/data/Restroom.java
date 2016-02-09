@@ -35,8 +35,8 @@ public class Restroom{
         }
     }
 
-    public void setUser(User maker){
-        user_email = maker.getEmail();
+    public void setUser(String maker){
+        user_email = maker;
     }
 
     @DynamoDBAttribute (attributeName = "User")
@@ -75,6 +75,7 @@ public class Restroom{
 
     @DynamoDBAttribute (attributeName = "Location")
     public double[] getLoc(){return loc;}
+
     public double getLongit(){return loc[1];}
     public double getLatit(){return loc[0];}
 

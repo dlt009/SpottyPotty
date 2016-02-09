@@ -24,6 +24,7 @@ import android.location.Location;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.teamoptimal.cse110project.data.*;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
 
 public class CreateRestroomActivity extends ListActivity {
     Restroom restroom;
@@ -50,13 +51,15 @@ public class CreateRestroomActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_restroom);
 
+        AmazonClientManager client = new AmazonClientManager(this);
+
+        final DynamoDBMapper mapper = new DynamoDBMapper(client.ddb());
+
         restroom = new Restroom();
 
-        user.setEmail("FakeUser@bumhub.com");
+        restroom.setUser("NewUser@test.com");
 
-        restroom.setUser(user);
-
-        /*LocationListener locListen = new LocationListener();
+        /*LocationListener locListen = new MyLocationListener();
         LocationManager locMan = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
@@ -68,7 +71,7 @@ public class CreateRestroomActivity extends ListActivity {
         ListView tagList = getListView();
         tagList.setChoiceMode(tagList.CHOICE_MODE_MULTIPLE);
         tagList.setTextFilterEnabled(true);
-        setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked,
+        setListAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked,
                 tags));
 
         EditText name = (EditText) findViewById(R.id.editText);
@@ -84,6 +87,7 @@ public class CreateRestroomActivity extends ListActivity {
                 if(i== EditorInfo.IME_ACTION_NEXT){
                     String inputName = textView.getText().toString();
                     restroom.setName(inputName);
+                    handled=true;
                 }
                 return handled;
             }
@@ -96,6 +100,7 @@ public class CreateRestroomActivity extends ListActivity {
                 if(i== EditorInfo.IME_ACTION_NEXT){
                     String inputFloor = textView.getText().toString();
                     restroom.setFloor(inputFloor);
+                    handled=true;
                 }
                 return handled;
             }
@@ -108,6 +113,7 @@ public class CreateRestroomActivity extends ListActivity {
                 if (i == EditorInfo.IME_ACTION_NEXT) {
                     String inputDesc = textView.getText().toString();
                     restroom.setDesc(inputDesc);
+                    handled=true;
                 }
                 return handled;
             }
@@ -118,9 +124,7 @@ public class CreateRestroomActivity extends ListActivity {
             @Override
             public void onClick(View view) {
                 if (restroom.isInitialized()) {
-                    CharSequence c = restroom.getName() +
-                            " has been created This button will lead to the Main Menu";
-                    //Toast.makeText(this,c , Toast.LENGTH_SHORT).show();
+                    mapper.save(restroom);
                 }
             }
         });
@@ -144,6 +148,5 @@ public class CreateRestroomActivity extends ListActivity {
                 restroom.setRating((double) rating);
             }
         });
-
     }
 }
