@@ -71,7 +71,7 @@ public class CreateRestroomActivity extends ListActivity {
         ListView tagList = getListView();
         tagList.setChoiceMode(tagList.CHOICE_MODE_MULTIPLE);
         tagList.setTextFilterEnabled(true);
-        setListAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_checked,
+        setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked,
                 tags));
 
         EditText name = (EditText) findViewById(R.id.editText);

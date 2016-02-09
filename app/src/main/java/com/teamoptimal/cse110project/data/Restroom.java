@@ -16,7 +16,6 @@ public class Restroom{
     private String desc;
     private double rating;
 
-
     public Restroom (){
         id = 0;
         user_email = null;
@@ -29,34 +28,57 @@ public class Restroom{
         rating = 0.00;
     }
 
+    @DynamoDBAttribute (attributeName = "User")
+    public String getUser(){return user_email;}
+    public void setUser(String maker){
+        user_email = maker;
+    }
+
+    @DynamoDBAttribute (attributeName = "Location")
+    public double[] getLoc(){return loc;}
+    public void setLoc(double lo, double la){
+        loc[0] = lo;
+        loc[1] = la;
+    }
+
+    @DynamoDBHashKey (attributeName = "ID")
+    public int getId(){ return id;}
+    public void setId(int i){ id = i;}
+
+    @DynamoDBAttribute (attributeName = "Name")
+    public String getName(){return name;}
+    public void setName(String nom){name = nom;}
+
+    @DynamoDBAttribute (attributeName = "Tags")
+    public String getTags(){return tags.toString();}
+    public void setTags(String toSet){tags = toSet.toCharArray();}
+
+    @DynamoDBAttribute (attributeName = "Floor")
+    public String getFloor(){return floor;}
+    public void setFloor(String level){floor = level;}
+
+    @DynamoDBAttribute(attributeName = "Description")
+    public String getDesc(){return desc; }
+    public void setDesc(String descript){ desc = descript;}
+
+    @DynamoDBAttribute(attributeName = "Rating")
+    public double getRating(){return rating;}
+    public void setRating(double val){rating = val;}
+
     private void initializeTags(){
         for(char c: tags){
             c='0';
         }
     }
 
-    public void setUser(String maker){
-        user_email = maker;
-    }
-
-    @DynamoDBAttribute (attributeName = "User")
-    public String getUser(){return user_email;}
-
-    public void setId(int i){ id = i;}
-
-    public void setLoc(double lo, double la){
-        loc[0] = lo;
-        loc[1] = la;
-    }
-
-    public void setFloor(String level){floor = level;}
-
-    public void setName(String nom){name = nom;}
-
     public void setTag(int index, boolean choice){
         if(choice) tags[index] = '1';
         else tags[index] = '0';
     }
+
+    public double getLongit(){return loc[1];}
+
+    public double getLatit(){return loc[0];}
 
     public void updateRating(int[] ratings){
         int i = 0;
@@ -68,34 +90,6 @@ public class Restroom{
         double val = sum/i;
         setRating(val);
     }
-
-    public void setDesc(String descript){ desc = descript;}
-
-    public void setRating(double val){rating = val;}
-
-    @DynamoDBAttribute (attributeName = "Location")
-    public double[] getLoc(){return loc;}
-
-    public double getLongit(){return loc[1];}
-    public double getLatit(){return loc[0];}
-
-    @DynamoDBHashKey (attributeName = "ID")
-    public int getId(){ return id;}
-
-    @DynamoDBAttribute (attributeName = "Name")
-    public String getName(){return name;}
-
-    @DynamoDBAttribute (attributeName = "Tags")
-    public String getTags(){return tags.toString();}
-
-    @DynamoDBAttribute (attributeName = "Floor")
-    public String getFloor(){return floor;}
-
-    @DynamoDBAttribute(attributeName = "Description")
-    public String getDesc(){return desc; }
-
-    @DynamoDBAttribute(attributeName = "Rating")
-    public double getRating(){return rating;}
 
     public boolean isInitialized(){
         if(loc[0] != 0.0d && loc[1] != 0.0d && user_email != null && !name.equals("Uninitialized")){

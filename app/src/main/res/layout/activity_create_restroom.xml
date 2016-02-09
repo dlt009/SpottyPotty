@@ -51,21 +51,12 @@
         android:layout_alignStart="@+id/editText3"
         android:layout_alignEnd="@+id/editText3" />
 
-    <ScrollView
-        android:id="@+id/scrollView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editText2"
-        android:layout_above="@+id/editText3"
-        android:layout_alignStart="@+id/editText3"
-        android:layout_alignEnd="@+id/editText3" >
 
-        <ListView
-            android:id="@+id/listView1"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            />
-    </ScrollView>
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
 
     <EditText
         android:layout_width="wrap_content"
