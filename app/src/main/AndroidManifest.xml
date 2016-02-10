@@ -50,11 +50,16 @@
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+            android:value="AIzaSyCI8YYgH-s-epFwg-VUUdL0v3MPy4VP1hQ" />
 
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps"></activity>
+            android:label="Map" />
+
+        <activity
+            android:name=".MainActivity"
+            android:label="Main"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
