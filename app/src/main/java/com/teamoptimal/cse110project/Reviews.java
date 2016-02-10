@@ -1,44 +1,48 @@
 package com.teamoptimal.cse110project;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.RatingBar;
+import android.widget.RatingBar.*;
 import android.widget.RatingBar.OnRatingBarChangeListener;
 import android.widget.TextView;
+import android.widget.EditText;
 import android.widget.Toast;
-import com.teamoptimal.cse110project.data.Review;
-import com.teamoptimal.cse110project.data.Restroom;
+import com.teamoptimal.cse110project.data.*;
 import android.app.ListActivity;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import android.widget.ListView;
 import java.util.*;
+import android.widget.ArrayAdapter;
+import android.view.KeyEvent;
 
 
 public class Reviews extends ListActivity implements OnRatingBarChangeListener{
 
-    User users = new
+    User users;
     RatingBar getRatingBar;
     TextView countText;
     Review newReview;
     int currentID;
-    Restroom currentRestroom;
-    DynamoDBMapper mapper;
+    Restroom currentRestroom
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reviews);
-        R
+
+        AmazonClientManager client = new AmazonClientManager(this);
+        final DynamoDBMapper mapper = new DynamoDBMapper(client.ddb());
+
         EditText comments = (EditText) findViewById(.id.editComments);
 
         newReview = new Review();
         currentRestroom = new Restroom();
         newReview.setID(currentRestroom.getID());
-        newReview.setUser(currentRestroom.getUser)
+        newReview.setUserEmail(currentRestroom.getUser());
         this.addListenerToRatingBar();
 
         comments.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -72,7 +76,7 @@ public class Reviews extends ListActivity implements OnRatingBarChangeListener{
 
     public ArrayList<Review> generateData(){
         List<Review> items = new List<Review>();
-        ArrayList<Item> itemComments = new ArrayList<Item>();
+        ArrayList<String> itemComments = new ArrayList<String>();
         Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
         eav.put(":val1", new AttributeValue().withS(currentRestroom.getID()));
         //DynamoDBMapper mapper;
@@ -82,7 +86,7 @@ public class Reviews extends ListActivity implements OnRatingBarChangeListener{
         items = mapper.query(Review.class, queryExpression);
         for(Review review : items)
         {
-            itemComments.add(new Item(review.getUserEmail, review.getMessage()));
+            itemComments.add(new String(review.getUserEmail(), review.getMessage()));
         }
 
         return itemComments;
