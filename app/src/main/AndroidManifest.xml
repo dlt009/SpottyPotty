@@ -31,14 +31,21 @@
                 "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:label="@string/app_name" />
-        <activity android:name=".CreateRestroom" android:theme="@style/AppTheme.NoActionBar"
-            android:label="@string/title_activity_create_restroom"/>
         <!--
         <activity android:name="com.twitter.sdk.android.core.identity.OAuthActivity" />
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="c1a58b34c5be669baf4c69bc91bb6c8a76a5ca65" />
          -->
+        <activity
+            android:name=".CreateRestroomActivity"
+            android:label="cse110project"
+            android:windowSoftInputMode="adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
