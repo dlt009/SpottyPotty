@@ -132,6 +132,7 @@ public class SignInActivity extends AppCompatActivity implements
                                         user.setProviderID(faceUser.getId());
                                         user.setUsername(faceUser.getName());
                                         new CreateUserTask(user).execute();
+                                        goToMain();
 
                                     } catch (JSONException e) {
                                         e.printStackTrace();
@@ -166,6 +167,7 @@ public class SignInActivity extends AppCompatActivity implements
                     @Override
                     public void success(Result<String> result) {
                         Log.d("Email", result.data);
+                        goToMain();
                     }
 
                     @Override
@@ -245,6 +247,7 @@ public class SignInActivity extends AppCompatActivity implements
             user.setProviderID(acct.getId());
             user.setUsername(acct.getDisplayName());
             new CreateUserTask(user).execute();
+            goToMain();
         } else {
             // Signed out, show unauthenticated UI.
             updateUI(false);
@@ -314,5 +317,10 @@ public class SignInActivity extends AppCompatActivity implements
         // We can use UI elements here
         protected void onPostExecute(Void result) {
         }
+    }
+
+    private void goToMain() {
+        Intent intent = new Intent(this, SearchActivity.class);
+        startActivity(intent);
     }
 }

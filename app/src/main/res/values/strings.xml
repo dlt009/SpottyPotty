@@ -3,6 +3,8 @@
     <string name="google_client_id">154450642951-iib2rod4c1frsh3vm1vucgdagkg5c1lf.apps.googleusercontent.com</string>
     <string name="google_web_client_id">154450642951-ia20ed61v0mlfj4at4lne5ukj25qrjsm.apps.googleusercontent.com</string>
 
+    <string name="title_activity_create_restroom">Create a Restroom</string>
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>
@@ -24,4 +26,7 @@
     <string name="signed_out">You are signed out</string>
     <string name="loading">Please Wait</string>
     <string name="signed_in_fmt">You are now signed-in!</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_temp_main">TempMainActivity</string>
+    <string name="title_activity_main">MainActivity</string>
 </resources>
