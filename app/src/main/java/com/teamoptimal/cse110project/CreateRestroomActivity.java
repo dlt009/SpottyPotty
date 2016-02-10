@@ -195,6 +195,7 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
                 EditText name = (EditText)findViewById(R.id.editText);
                 EditText floor = (EditText) findViewById(R.id.editText2);
                 EditText description = (EditText) findViewById(R.id.editText3);
+
                 restroom.setName(name.getText().toString());
                 restroom.setFloor(floor.getText().toString());
                 restroom.setDesc(description.getText().toString());

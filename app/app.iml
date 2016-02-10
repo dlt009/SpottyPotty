@@ -128,8 +128,8 @@
     <orderEntry type="library" exported="" name="crashlytics-2.5.5" level="project" />
     <orderEntry type="library" exported="" name="bolts-applinks-1.3.0" level="project" />
     <orderEntry type="library" exported="" name="digits-1.9.3" level="project" />
-    <orderEntry type="library" exported="" name="picasso-2.5.2" level="project" />
     <orderEntry type="library" exported="" name="retrofit-1.8.0" level="project" />
+    <orderEntry type="library" exported="" name="picasso-2.5.2" level="project" />
     <orderEntry type="library" exported="" name="aws-android-sdk-s3-2.2.10" level="project" />
     <orderEntry type="library" exported="" name="twitter-core-1.6.4" level="project" />
     <orderEntry type="library" exported="" name="play-services-base-8.3.0" level="project" />
