@@ -315,7 +315,7 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     private void goToMain() {
-        Intent intent = new Intent(this, MainActivity.class); // Temporary UI main activity
+        Intent intent = new Intent(this, SearchActivity.class);
         startActivity(intent);
     }
 }

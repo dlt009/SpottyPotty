@@ -42,11 +42,12 @@
             android:label="cse110project"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.EDIT" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        -->
+
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -61,12 +62,20 @@
 
         <activity
             android:name=".MapsActivity"
-            android:label="Map" />
+            android:label="Maps">
+
+        </activity>
 
         <activity
-            android:name=".MainActivity"
-            android:label="Main"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:name=".SearchActivity"
+            android:label="cs110project">
+            <intent-filter>
+                <action android:name="android.intent.action.EDIT" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>
