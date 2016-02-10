@@ -13,14 +13,17 @@ public class Review {
     private int ID;
     private String userEmail;
     private String message;
+    private int restroomID;
     private int rating;
     private int thumbsUp;
     private int thumbsDown;
     private int flags;
+    private int size;
 
     @DynamoDBHashKey(attributeName = "ID")
     public int getID() { return ID; }
     public void setID(int ID) { this.ID = ID; }
+    public int getNextID() { return (ID++); }
 
     @DynamoDBAttribute(attributeName = "UserEmail")
     public String getUserEmail() { return userEmail; }
@@ -45,4 +48,8 @@ public class Review {
     @DynamoDBAttribute(attributeName = "Flags")
     public int getFlags() { return flags; }
     public void setFlags(int flags) { this.flags = flags; }
+
+    @DynamoDBAttribute(attributeName = "Restroom")
+    public int getRestroomId() { return restroomId; }
+    public void setRestroomId(String restroomId) { this.restroomId = restroomId;
 }
