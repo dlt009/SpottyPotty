@@ -23,7 +23,8 @@
         android:text="Creating new restroom at current location"
         android:id="@+id/textView"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:textColor="#000000" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -32,7 +33,8 @@
         android:text="Fill in all fields in order to complete the process"
         android:id="@+id/textview2"
         android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:textColor="#9b000000" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -42,7 +44,8 @@
         android:imeOptions="actionNext"
         android:layout_below="@+id/textview2"
         android:layout_alignStart="@+id/editText2"
-        android:layout_alignEnd="@+id/editText2" />
+        android:layout_alignEnd="@+id/editText2"
+        android:maxLines="1" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -53,7 +56,8 @@
         android:imeOptions="actionNext"
         android:layout_below="@+id/editText"
         android:layout_alignStart="@+id/editText3"
-        android:layout_alignEnd="@+id/editText3" />
+        android:layout_alignEnd="@+id/editText3"
+        android:maxLines="1" />
 
     <ListView
         android:id="@android:id/list"
@@ -74,7 +78,8 @@
         android:imeOptions="actionNext"
         android:layout_above="@+id/ratingBar"
         android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/textview2" />
+        android:layout_alignEnd="@+id/textview2"
+        android:maxLines="3" />
 
     <RatingBar
         android:layout_width="wrap_content"
@@ -87,10 +92,12 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create Restroom"
+        android:text="Save Restroom"
         android:id="@+id/button"
         android:layout_alignParentBottom="true"
-        android:layout_alignEnd="@+id/textView" />
+        android:layout_alignEnd="@+id/textView"
+        android:textColor="#ffe016"
+        android:backgroundTint="#be0037ff" />
 
     <!--<android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
