@@ -27,13 +27,12 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.teamoptimal.cse110project.data.*;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
-
 import android.widget.Button;
 
-public class CreateRestroomActivity extends ListActivity {
-    Restroom restroom;
-    User user;
-    String[] tags = {
+public class CreateRestroomActivity extends ListActivity implements LocationListener {
+    private Restroom restroom;
+    private User user = SignInActivity.user;
+    public final static String[] tags = {
             "Public",
             "Private",
             "Pay-to-use",
@@ -48,7 +47,7 @@ public class CreateRestroomActivity extends ListActivity {
             "Somewhat-Dirty",
             "Dirty"
     };
-    RatingBar ratingBar;
+    private RatingBar ratingBar;
     protected LocationManager locationManager;
 
     @Override
@@ -62,11 +61,11 @@ public class CreateRestroomActivity extends ListActivity {
 
         restroom = new Restroom();
 
-        restroom.setUser("NewUser@test.com");
+        restroom.setUser("FakeUser@test.com"/*user.getEmail()*/);
         
 
 
-        /*locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria cri = new Criteria();
         String provider = locationManager.getBestProvider(cri, false);
 
@@ -94,7 +93,7 @@ public class CreateRestroomActivity extends ListActivity {
         else
         {
             Toast.makeText(getApplicationContext(),"Provider is null",Toast.LENGTH_LONG).show();
-        }*/
+        }
 
         LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -120,6 +119,7 @@ public class CreateRestroomActivity extends ListActivity {
             public void onStatusChanged(String provider, int status, Bundle extras) {
                 Log.d("Latitude", "status");
             }
+
 
             @Override
             public void onProviderEnabled(String provider) {
@@ -191,6 +191,14 @@ public class CreateRestroomActivity extends ListActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                EditText name = (EditText)findViewById(R.id.editText);
+                EditText floor = (EditText) findViewById(R.id.editText2);
+                EditText description = (EditText) findViewById(R.id.editText3);
+                restroom.setName(name.getText().toString());
+                restroom.setFloor(floor.getText().toString());
+                restroom.setDesc(description.getText().toString());
+
                 if (restroom.isInitialized()) {
                     mapper.save(restroom);
                     Toast.makeText(getBaseContext(),
@@ -198,7 +206,12 @@ public class CreateRestroomActivity extends ListActivity {
                                     restroom.getUser()
                             ,Toast.LENGTH_LONG).show();
                 }
-                else{Toast.makeText(getBaseContext(),"Unsuccessful",Toast.LENGTH_SHORT).show();}
+                else{
+                    Toast.makeText(getBaseContext(),"Unsuccessful",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getBaseContext(),"Location was: "+restroom.getLoc()+", "
+                            +restroom.getLatit()+"\n User was: "+restroom.getUser()+
+                            "\n Name was: "+restroom.getName(),Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
@@ -217,6 +230,26 @@ public class CreateRestroomActivity extends ListActivity {
                 restroom.setRating((double) rating);
             }
         });
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
