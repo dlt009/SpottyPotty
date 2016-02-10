@@ -1,21 +1,17 @@
 package com.teamoptimal.cse110project;
 
 import android.os.Bundle;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.RatingBar;
 import android.widget.RatingBar.*;
 import android.widget.RatingBar.OnRatingBarChangeListener;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.teamoptimal.cse110project.data.*;
 import android.app.ListActivity;
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.*;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import android.widget.ListView;
 import java.util.*;
@@ -23,7 +19,7 @@ import android.widget.ArrayAdapter;
 import android.view.KeyEvent;
 
 
-public class ReviewsActivity extends ListActivity{
+public class Reviews extends ListActivity implements OnRatingBarChangeListener {
 
     User users;
     RatingBar getRatingBar;
@@ -31,15 +27,16 @@ public class ReviewsActivity extends ListActivity{
     Review newReview;
     int currentID;
     Restroom currentRestroom;
-    AmazonClientManager client = new AmazonClientManager(this);
-    DynamoDBMapper mapper = new DynamoDBMapper(client.ddb());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reviews);
 
-        EditText comments = (EditText) findViewById(R.id.comments);
+        AmazonClientManager client = new AmazonClientManager(this);
+        DynamoDBMapper mapper = new DynamoDBMapper(client.ddb());
+
+        EditText comments = (EditText) findViewById("id.editComments");
 
         newReview = new Review();
         currentRestroom = new Restroom();
@@ -58,18 +55,9 @@ public class ReviewsActivity extends ListActivity{
                 return handled;
             }
         });
-
-        Button button = (Button) findViewById(R.id.buttonComment);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mapper.save(newReview);
-
-            }
-        });
-
         ListView reviewList = (ListView)findViewById(R.id.listView2);
         reviewList.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, generateData()));
+        mapper.save(newReview);
     }
 
     public void addListenerToRatingBar(){
@@ -83,17 +71,18 @@ public class ReviewsActivity extends ListActivity{
     }
 
     public ArrayList<CombinedReview> generateData(){
-        List<Review> items = new ArrayList<Review>();
+        ArrayList<CombinedReview> items = new ArrayList<CombinedReview>();
         ArrayList<CombinedReview> itemComments = new ArrayList<CombinedReview>();
-        Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-        eav.put(":val1", new AttributeValue().withS(currentRestroom.getID()));
-        DynamoDBQueryExpression<Review> queryExpression = new DynamoDBQueryExpression<Review>()
-                //.withString(currentRestroom.getID())
+        Map<AttributeValue> eav = new HashMap<AttributeValue>();
+        eav.put(":val1", new AttributeValue().withN(currentRestroom.getID()));
+        //DynamoDBMapper mapper;
+        DynamoDBQueryExpression<Review> queryExpression = new DynamoDBQueryExpresion<Review>()
+                .withKeyConditionExpression("restroomID = :val1")
                 .withExpressionAttributeValues(eav);
         items = mapper.query(Review.class, queryExpression);
-        for(int i = 0; i < items.size();i++)
+        for(Review review : items)
         {
-            itemComments.add(new CombinedReview(items.get(i).getUserEmail(), items.get(i).getMessage()));
+            itemComments.add(new CombinedReview(review.getUserEmail(), review.getMessage()));
         }
 
         return itemComments;
