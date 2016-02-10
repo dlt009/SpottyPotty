@@ -74,11 +74,11 @@ public class Reviews extends ListActivity implements OnRatingBarChangeListener{
         });
     }
 
-    public ArrayList<Review> generateData(){
+    public ArrayList<String> generateData(){
         List<Review> items = new List<Review>();
         ArrayList<String> itemComments = new ArrayList<String>();
-        Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-        eav.put(":val1", new AttributeValue().withS(currentRestroom.getID()));
+        Map<AttributeValue> eav = new HashMap<AttributeValue>();
+        eav.put(":val1", new AttributeValue().withN(currentRestroom.getID()));
         //DynamoDBMapper mapper;
         DynamoDBQueryExpression<Review> queryExpression = new DynamoDBQueryExpresion<Review>()
                 .withKeyConditionExpression("restroomID = :val1")
