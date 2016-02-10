@@ -57,8 +57,6 @@ public class Reviews extends ListActivity implements OnRatingBarChangeListener{
             }
         });
 
-
-
         ListView reviewList = (ListView)findViewById(R.id.listView2);
         reviewList.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, generateData()));
         mapper.save(newReview);
@@ -74,9 +72,9 @@ public class Reviews extends ListActivity implements OnRatingBarChangeListener{
         });
     }
 
-    public ArrayList<String> generateData(){
-        List<Review> items = new List<Review>();
-        ArrayList<String> itemComments = new ArrayList<String>();
+    public ArrayList<CombinedReview> generateData(){
+        ArrayList<CombinedReview> items = new ArrayList<CombinedReview>();
+        ArrayList<CombinedReview> itemComments = new ArrayList<CombinedReview>();
         Map<AttributeValue> eav = new HashMap<AttributeValue>();
         eav.put(":val1", new AttributeValue().withN(currentRestroom.getID()));
         //DynamoDBMapper mapper;
@@ -86,7 +84,7 @@ public class Reviews extends ListActivity implements OnRatingBarChangeListener{
         items = mapper.query(Review.class, queryExpression);
         for(Review review : items)
         {
-            itemComments.add(new String(review.getUserEmail(), review.getMessage()));
+            itemComments.add(new CombinedReview(review.getUserEmail(), review.getMessage()));
         }
 
         return itemComments;
