@@ -25,6 +25,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.teamoptimal.cse110project.data.*;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
+import android.widget.Button;
 
 public class CreateRestroomActivity extends ListActivity {
     Restroom restroom;
@@ -67,6 +68,7 @@ public class CreateRestroomActivity extends ListActivity {
             return;
         }
         locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListen);*/
+
 
         ListView tagList = getListView();
         tagList.setChoiceMode(tagList.CHOICE_MODE_MULTIPLE);
@@ -119,13 +121,18 @@ public class CreateRestroomActivity extends ListActivity {
             }
         });
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        Button button = (Button) findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (restroom.isInitialized()) {
                     mapper.save(restroom);
+                    Toast.makeText(getBaseContext(),
+                            restroom.getName()+" has been created with id: " +restroom.getId() +
+                                    ", under the user id: "+restroom.getUser()
+                            ,Toast.LENGTH_SHORT).show();
                 }
+                else{Toast.makeText(getBaseContext(),"Unsuccessful",Toast.LENGTH_SHORT).show();}
             }
         });
     }

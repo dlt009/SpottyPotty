@@ -9,8 +9,12 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.teamoptimal.cse110project.CreateRestroomActivity"
-    tools:showIn="@layout/activity_create_restroom">
+    tools:context="com.teamoptimal.cse110project.CreateRestroomActivity">
+
+    <!--<android.support.v7.app.WindowDecorActionBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/decorBar"/>-->
 
     <TextView
         android:layout_width="wrap_content"
@@ -51,12 +55,14 @@
         android:layout_alignStart="@+id/editText3"
         android:layout_alignEnd="@+id/editText3" />
 
-
     <ListView
-        android:id="@+id/listView1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-
+        android:id="@android:id/list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText2"
+        android:layout_above="@+id/editText3"
+        android:layout_alignStart="@+id/editText3"
+        android:layout_alignEnd="@+id/editText3"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -66,25 +72,32 @@
         android:id="@+id/editText3"
         android:hint="Description and rating"
         android:imeOptions="actionNext"
-        android:layout_alignStart="@+id/ratingBar"
         android:layout_above="@+id/ratingBar"
-        android:layout_alignEnd="@+id/ratingBar" />
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/textview2" />
 
     <RatingBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/ratingBar"
-        android:imeOptions="actionDone"
         android:layout_marginBottom="53dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentStart="true" />
 
-    <android.support.design.widget.FloatingActionButton
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Restroom"
+        android:id="@+id/button"
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@+id/textView" />
+
+    <!--<android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/fab"
-        android:layout_below="@+id/editText3"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />-->
 
 </RelativeLayout>
 
