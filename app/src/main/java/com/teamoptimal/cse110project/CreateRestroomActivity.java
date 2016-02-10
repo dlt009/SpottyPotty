@@ -27,6 +27,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.teamoptimal.cse110project.data.*;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
+
 import android.widget.Button;
 
 public class CreateRestroomActivity extends ListActivity {
@@ -64,8 +65,8 @@ public class CreateRestroomActivity extends ListActivity {
         restroom.setUser("NewUser@test.com");
         
 
-        /*
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        /*locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria cri = new Criteria();
         String provider = locationManager.getBestProvider(cri, false);
 
@@ -93,8 +94,45 @@ public class CreateRestroomActivity extends ListActivity {
         else
         {
             Toast.makeText(getApplicationContext(),"Provider is null",Toast.LENGTH_LONG).show();
+        }*/
+
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
         }
-    */
+        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+        final LocationListener locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                double[] locate = {location.getLongitude(), location.getLatitude()};
+                restroom.setLoc(locate[0], locate[1]);
+                System.out.println("THIS IS A TEST: " + locate[0] + " and " + locate[1]);
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+                Log.d("Latitude", "status");
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+                Log.d("Latitude", "enable");
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+                Log.d("Latitude", "disable");
+            }
+        };
+        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+
 
 
 
@@ -182,23 +220,5 @@ public class CreateRestroomActivity extends ListActivity {
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void onLocationChanged(Location location) {
-        double[] locate = {location.getLatitude(), location.getLongitude()};
-        restroom.setLoc(locate[0], locate[1]);
-    }
 
-
-    public void onProviderDisabled(String provider) {
-        Log.d("Latitude", "disable");
-    }
-
-
-    public void onProviderEnabled(String provider) {
-        Log.d("Latitude", "enable");
-    }
-
-
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.d("Latitude", "status");
-    }
 }

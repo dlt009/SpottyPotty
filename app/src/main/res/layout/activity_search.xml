@@ -8,7 +8,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.sydney.myapplication.MainActivity"
-    android:background="#ffffff"
+    android:background="@drawable/map_bathroom"
     android:backgroundTintMode="multiply">
 
     <Button
@@ -37,9 +37,9 @@
         android:layout_height="wrap_content"
         android:text="Find Nearby Restrooms"
         android:id="@+id/findrr_text"
-        android:textSize="25dp"
+        android:textSize="30dp"
         android:layout_above="@+id/findrr_button"
         android:layout_centerHorizontal="true"
-        android:textColor="@android:color/holo_blue_dark" />
+        android:textColor="#ffffff" />
 
 </RelativeLayout>
