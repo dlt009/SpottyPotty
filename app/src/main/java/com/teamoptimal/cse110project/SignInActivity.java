@@ -109,6 +109,8 @@ public class SignInActivity extends AppCompatActivity implements
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Profile user = Profile.getCurrentProfile();
+                //If sign in is a success, go to main
+                goToMain();
             }
 
             @Override
@@ -191,6 +193,10 @@ public class SignInActivity extends AppCompatActivity implements
 
             Log.d(TAG, result.getSignInAccount().getDisplayName());
             Log.d(TAG, token);
+
+            //If sign in is a success, go to main
+            goToMain();
+
         } else {
             // Signed out, show unauthenticated UI.
             updateUI(false);
@@ -273,6 +279,7 @@ public class SignInActivity extends AppCompatActivity implements
 
     @Override
     public void onClick(View v) {
+
         switch (v.getId()) {
             case R.id.sign_in_button:
                 signIn();
@@ -305,5 +312,10 @@ public class SignInActivity extends AppCompatActivity implements
         // We can use UI elements here
         protected void onPostExecute(Void result) {
         }
+    }
+
+    private void goToMain() {
+        Intent intent = new Intent(this, SearchActivity.class);
+        startActivity(intent);
     }
 }

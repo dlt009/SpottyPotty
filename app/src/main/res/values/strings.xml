@@ -23,4 +23,7 @@
     <string name="signed_out">You are signed out</string>
     <string name="loading">Please Wait</string>
     <string name="signed_in_fmt">You are now signed-in!</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_temp_main">TempMainActivity</string>
+    <string name="title_activity_main">MainActivity</string>
 </resources>
