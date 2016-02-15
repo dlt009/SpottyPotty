@@ -19,6 +19,9 @@
     </string>
     <string name="facebook_app_id">558272761002148</string>
 
+    <string name = "consumer_key">2NxMmrpsQSXZQ2S0ZRns9vRUB</string>
+    <string name = "consumer_key_secret">mS9rsgF2IxzWIMP2aDBlDBsF3HcU18eNq05AFTbhsVip5OulOM</string>
+
     <string name="sign_out">Sign Out</string>
     <string name="signed_out">You are signed out</string>
     <string name="loading">Please Wait</string>

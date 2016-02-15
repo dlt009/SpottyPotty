@@ -107,8 +107,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Marker markerCVC = mMap.addMarker(new MarkerOptions().position(ucsd).title("Costa Verde Center"));
         Marker markerUCSD = mMap.addMarker(new MarkerOptions().position(ucsd).title("Test Marker in UCSD"));
 
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(ucsd));
-        //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ucsd, 18));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(ucsd));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ucsd, 18));
 
 
         mMap.setOnMyLocationChangeListener(myLocationChangeListener()); //Add marker for cur loc
@@ -119,8 +119,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .strokeColor(Color.RED));
         */
 
-        showNearbyMarker(markerUCSD, circle); //will remove when testing done
-        showNearbyMarker(markerCVC, circle);
+        //showNearbyMarker(markerUCSD, circle); //will remove when testing done
+        //showNearbyMarker(markerCVC, circle);
 
         // WHEN IMPLEMENTATION IS COMPLETE WILL FIX
         /*for (int i = 0; i < numOfMarkers; i++) {
@@ -159,7 +159,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 Marker mMarker = mMap.addMarker(new MarkerOptions().position(loc).title("Me"));
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(18));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 18));
                 //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16.0f));
 
                 circle = mMap.addCircle(new CircleOptions()
@@ -168,8 +168,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .strokeColor(Color.RED)
                         .visible(true)); //will change to false later
 
-                showNearbyMarker(mMarker, circle);
-
+                //showNearbyMarker(mMarker, circle);
             }
         };
     }

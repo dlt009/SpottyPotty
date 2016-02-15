@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -37,6 +36,9 @@
             android:name="io.fabric.ApiKey"
             android:value="c1a58b34c5be669baf4c69bc91bb6c8a76a5ca65" />
          -->
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="c1a58b34c5be669baf4c69bc91bb6c8a76a5ca65" />
         <activity
             android:name=".CreateRestroomActivity"
             android:label="cse110project"

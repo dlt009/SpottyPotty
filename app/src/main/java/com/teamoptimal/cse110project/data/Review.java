@@ -10,20 +10,19 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
  */
 @DynamoDBTable(tableName = "Y4R_Reviews")
 public class Review {
-    private int ID;
+    private String ID;
     private String userEmail;
     private String message;
-    private int restroomID;
-    private int rating;
+    private String restroomID;
+    private double rating;
     private int thumbsUp;
     private int thumbsDown;
     private int flags;
     private int size;
 
     @DynamoDBHashKey(attributeName = "ID")
-    public int getID() { return ID; }
-    public void setID(int ID) { this.ID = ID; }
-    public int getNextID() { return (ID++); }
+    public String getID() { return ID; }
+    public void setID(String ID) { this.ID = ID; }
 
     @DynamoDBAttribute(attributeName = "UserEmail")
     public String getUserEmail() { return userEmail; }
@@ -34,8 +33,8 @@ public class Review {
     public void setMessage(String message) { this.message = message; }
 
     @DynamoDBAttribute(attributeName = "Rating")
-    public int getRating() { return rating; }
-    public void setRating(int rating) { this.rating = rating; }
+    public double getRating() { return rating; }
+    public void setRating(double rating) { this.rating = rating; }
 
     @DynamoDBAttribute(attributeName = "ThumbsUp")
     public int getThumbsUp() { return thumbsUp; }
@@ -50,6 +49,6 @@ public class Review {
     public void setFlags(int flags) { this.flags = flags; }
 
     @DynamoDBAttribute(attributeName = "Restroom")
-    public int getRestroomId() { return restroomId; }
-    public void setRestroomId(String restroomId) { this.restroomId = restroomId;
+    public String getRestroomId() { return restroomID; }
+    public void setRestroomId(String restroomId) { this.restroomID = restroomId; }
 }

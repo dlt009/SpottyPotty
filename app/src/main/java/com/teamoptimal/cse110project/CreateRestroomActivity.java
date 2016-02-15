@@ -3,8 +3,10 @@ package com.teamoptimal.cse110project;
 import android.Manifest;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -29,10 +31,10 @@ import com.teamoptimal.cse110project.data.*;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
 import android.widget.Button;
 
-public class CreateRestroomActivity extends ListActivity {
-    Restroom restroom;
-    User user;
-    String[] tags = {
+public class CreateRestroomActivity extends ListActivity implements LocationListener {
+    private Restroom restroom;
+    private User user = SignInActivity.user;
+    public final static String[] tags = {
             "Public",
             "Private",
             "Pay-to-use",
@@ -47,24 +49,22 @@ public class CreateRestroomActivity extends ListActivity {
             "Somewhat-Dirty",
             "Dirty"
     };
-    RatingBar ratingBar;
+    private RatingBar ratingBar;
     protected LocationManager locationManager;
+    public static AmazonClientManager clientManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_restroom);
 
-        AmazonClientManager client = new AmazonClientManager(this);
-
-        final DynamoDBMapper mapper = new DynamoDBMapper(client.ddb());
 
         restroom = new Restroom();
 
-        restroom.setUser("NewUser@test.com");
+        restroom.setUser("FakeUser@test.com"/*user.getEmail()*/);
         
+        clientManager = new AmazonClientManager(this);
 
-        /*
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria cri = new Criteria();
         String provider = locationManager.getBestProvider(cri, false);
@@ -94,7 +94,46 @@ public class CreateRestroomActivity extends ListActivity {
         {
             Toast.makeText(getApplicationContext(),"Provider is null",Toast.LENGTH_LONG).show();
         }
-    */
+
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+        final LocationListener locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                double[] locate = {location.getLongitude(), location.getLatitude()};
+                restroom.setLoc(locate[0], locate[1]);
+                Toast.makeText(getBaseContext(),"Current Location is: " + locate[0] + " and "
+                        + locate[1], Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+                Log.d("Latitude", "status");
+            }
+
+
+            @Override
+            public void onProviderEnabled(String provider) {
+                Log.d("Latitude", "enable");
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+                Log.d("Latitude", "disable");
+            }
+        };
+        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+
 
 
 
@@ -153,21 +192,39 @@ public class CreateRestroomActivity extends ListActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                EditText name = (EditText)findViewById(R.id.editText);
+                EditText floor = (EditText) findViewById(R.id.editText2);
+                EditText description = (EditText) findViewById(R.id.editText3);
+
+                restroom.setName(name.getText().toString());
+                restroom.setFloor(floor.getText().toString());
+                restroom.setDesc(description.getText().toString());
+
                 if (restroom.isInitialized()) {
-                    mapper.save(restroom);
+                    new CreateRestroomTask(restroom).execute();
                     Toast.makeText(getBaseContext(),
-                            restroom.getName()+" has been created under the user: "+
-                                    restroom.getUser()
+                            restroom.getName()+" has been created" /*" under the user: "+
+                                    restroom.getUser()*/
+                            ,Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(view.getContext(), SearchActivity.class);
+                    startActivity(intent);
+                }
+                else{
+                    Toast.makeText(getBaseContext(),"Unsuccessful",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getBaseContext(),"Location was: "+restroom.getLoc()+", "
+                            +restroom.getLatit()+/*"\n User was: "+restroom.getUser()+*/
+                            "\n Name was: "+restroom.getName()+"\n You must have a valid " +
+                            "location and name."
                             ,Toast.LENGTH_LONG).show();
                 }
-                else{Toast.makeText(getBaseContext(),"Unsuccessful",Toast.LENGTH_SHORT).show();}
             }
         });
     }
 
     public void onListItemClick(ListView parent, View v, int position, long id ){
         CheckedTextView item = (CheckedTextView) v;
-        restroom.setTag(position, item.isChecked());
+        //restroom.setTag(position, item.isChecked());
     }
 
 
@@ -176,29 +233,48 @@ public class CreateRestroomActivity extends ListActivity {
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
             @Override
             public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-                restroom.setRating((double) rating);
+                restroom.setRating( Float.toString(rating));
             }
         });
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    @Override
     public void onLocationChanged(Location location) {
-        double[] locate = {location.getLatitude(), location.getLongitude()};
-        restroom.setLoc(locate[0], locate[1]);
+
     }
 
-
-    public void onProviderDisabled(String provider) {
-        Log.d("Latitude", "disable");
-    }
-
-
-    public void onProviderEnabled(String provider) {
-        Log.d("Latitude", "enable");
-    }
-
-
+    @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.d("Latitude", "status");
+
     }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    private class CreateRestroomTask extends AsyncTask<Void, Void, Void> {
+        private Restroom rest;
+
+        public CreateRestroomTask(Restroom rest) {
+            this.rest = rest;
+        }
+
+        // To do in the background
+        protected Void doInBackground(Void... inputs) {
+            rest.create(); // Use the method from the User class to create it
+            return null;
+        }
+
+        // To do after doInBackground is executed
+        // We can use UI elements here
+        protected void onPostExecute(Void result) {
+        }
+    }
+
 }
