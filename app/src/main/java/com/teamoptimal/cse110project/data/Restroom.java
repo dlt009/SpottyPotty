@@ -5,17 +5,23 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAutoGene
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIgnore;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribute;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedQueryList;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.teamoptimal.cse110project.CreateRestroomActivity;
 import com.teamoptimal.cse110project.MapsActivity;
 
 import android.os.AsyncTask;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.locks.Condition;
 
 @DynamoDBTable(tableName = "Y4R_Restrooms")
 public class Restroom{
@@ -101,19 +107,38 @@ public class Restroom{
         mapper.save(this);
     }
 
-    public Restroom load() {
-        AmazonDynamoDBClient ddb = CreateRestroomActivity.clientManager.ddb();
-        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
-
-        return mapper.load(Restroom.class, getID());
-    }
 
     /**
      * Scans the db and returns the list of restrooms
+
+    public PaginatedQueryList<Restroom> getRestList() {
+
+        AmazonDynamoDBClient ddb = CreateRestroomActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+
+        Restroom restroom = new Restroom();
+
+        String queryString = "Great";
+
+        Condition rangeKeyCondition = new Condition()
+                .withComparisonOperator(ComparisonOperator.EQ.toString())
+                .withAttributeValueList(new AttributeValue().withS(queryString.toString()));
+
+        DynamoDBQueryExpression queryExpression = new DynamoDBQueryExpression()
+                .withHashKeyValues(restroom)
+                .withRangeKeyCondition("Rating", (com.amazonaws.services.dynamodbv2.model.Condition) rangeKeyCondition)
+                .withConsistentRead(false);
+
+        PaginatedQueryList result = mapper.query(Restroom.class, queryExpression);
+        return result;
+    }*/
+
+    /*
+     * Scans the table and returns the list of users.
      */
     public static ArrayList<Restroom> getRestList() {
 
-        AmazonDynamoDBClient ddb = CreateRestroomActivity.clientManager.ddb();
+        AmazonDynamoDBClient ddb = MapsActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
 
         DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
@@ -128,20 +153,12 @@ public class Restroom{
             return resultList;
 
         } catch (AmazonServiceException ex) {
-            CreateRestroomActivity.clientManager
+            MapsActivity.clientManager
                     .wipeCredentialsOnAuthError(ex);
         }
 
         return null;
     }
-
-    /*private void initializeTags(){
-        char[] chars = tags.toCharArray();
-        for(char c: chars){
-            c='0';
-        }
-        tags = chars.toString();
-    }*/
 
     @DynamoDBIgnore
     public void setTag(int index, boolean choice){
