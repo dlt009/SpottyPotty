@@ -1,11 +1,13 @@
 package com.teamoptimal.cse110project;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.webkit.CookieSyncManager;
 
 import com.crashlytics.android.Crashlytics;
 import com.facebook.AccessToken;
@@ -15,6 +17,7 @@ import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.Profile;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
@@ -22,13 +25,17 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.plus.Plus;
 import com.teamoptimal.cse110project.data.User;
 
+import java.net.CookieManager;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +47,7 @@ import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.identity.TwitterAuthClient;
@@ -50,7 +58,7 @@ import org.json.JSONObject;
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener {
+        View.OnClickListener, GoogleApiClient.ConnectionCallbacks {
 
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 905;
@@ -70,6 +78,10 @@ public class SignInActivity extends AppCompatActivity implements
     // The user that will be persistent throughout the app
     public static User user  = null;
 
+    private static boolean signedInGoogle = false;
+    private static boolean signedInFace = false;
+    private static boolean signInTwit = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +98,9 @@ public class SignInActivity extends AppCompatActivity implements
         //////////////////////twitter////////////////////
 
         setContentView(R.layout.activity_sign_in);
+
+        boolean test = getIntent().getBooleanExtra("test_boolean",false);
+        Log.d("Testing intent passing", test+"");
 
         // Set Amazon Client Manager
         clientManager = new AmazonClientManager(this);
@@ -104,7 +119,9 @@ public class SignInActivity extends AppCompatActivity implements
                 .build();
 
         SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
+
         signInButton.setSize(SignInButton.SIZE_STANDARD);
+        //signInButton.setScopes(gso.getScopeArray());
         signInButton.setScopes(gso.getScopeArray());
 
         ///////////////////////facebook////////////////////////////////////////////
@@ -113,6 +130,7 @@ public class SignInActivity extends AppCompatActivity implements
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                signedInFace = true;
                 faceUser = Profile.getCurrentProfile();
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
@@ -161,6 +179,7 @@ public class SignInActivity extends AppCompatActivity implements
         twitterLoginButton.setCallback(new Callback<TwitterSession>() {
             @Override
             public void success(Result<TwitterSession> result) {
+                signInTwit = true;
                 twitUser = result.data;
                 TwitterAuthClient authClient = new TwitterAuthClient();
                 authClient.requestEmail(twitUser, new Callback<String>() {
@@ -185,9 +204,18 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnected(Bundle t) {
+
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
-
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
             Log.d(TAG, "Got cached sign-in");
@@ -230,6 +258,7 @@ public class SignInActivity extends AppCompatActivity implements
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult: " + result.isSuccess());
         if (result.isSuccess()) {
+            signedInGoogle = true;
             // Signed in successfully, show authenticated UI.
             acct = result.getSignInAccount();
             //mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
@@ -263,14 +292,32 @@ public class SignInActivity extends AppCompatActivity implements
 
     private void signOut() {
 
-        ResultCallback<Status> signOutCallBack = new ResultCallback<Status>() {
-            @Override
-            public void onResult(Status status) {
-                updateUI(false);
+        if (signedInGoogle) {
+            ResultCallback<Status> signOutCallBack = new ResultCallback<Status>() {
+                @Override
+                public void onResult(Status status) {
+                    updateUI(false);
+                }
+            };
+            Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(signOutCallBack);
+            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(signOutCallBack);
+            signedInGoogle = false;
+        }
+        else if (signedInFace) {
+            LoginManager.getInstance().logOut();
+            signedInFace = false;
+        }
+        else if (signInTwit) {
+            TwitterSession twitterSession = TwitterCore.getInstance().getSessionManager().getActiveSession();
+            if (twitterSession != null) {
+                CookieSyncManager.createInstance(this);
+                android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
+                cookieManager.removeSessionCookie();
+                Twitter.getSessionManager().clearActiveSession();
+                Twitter.logOut();
+                signInTwit = false;
             }
-        };
-        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(signOutCallBack);
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(signOutCallBack);
+        }
     }
 
     @Override
@@ -284,8 +331,6 @@ public class SignInActivity extends AppCompatActivity implements
         if (signedIn) {
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
         } else {
-            //mStatusTextView.setText(R.string.signed_out);
-
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
         }
     }

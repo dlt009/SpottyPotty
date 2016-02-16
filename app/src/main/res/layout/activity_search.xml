@@ -42,4 +42,13 @@
         android:layout_centerHorizontal="true"
         android:textColor="#ffffff" />
 
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign In"
+        android:id="@+id/sign_in_toggle"
+        android:layout_above="@+id/findrr_text"
+        android:layout_alignStart="@+id/findrr_text" />
+
 </RelativeLayout>
