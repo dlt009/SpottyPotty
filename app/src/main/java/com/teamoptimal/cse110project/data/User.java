@@ -65,4 +65,6 @@ public class User {
         // Create or update the user
         mapper.save(this);
     }
+
+
 }

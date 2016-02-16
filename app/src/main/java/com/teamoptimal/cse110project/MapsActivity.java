@@ -20,19 +20,30 @@ import com.google.android.gms.maps.GoogleMap.OnMyLocationChangeListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.teamoptimal.cse110project.data.Restroom;
+
+import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private Circle circle;
+    private Marker curLoc;
+    private ArrayList<Restroom> restList;
+
     private final double milesToMeters = 1609.34;
     private double mile = 0.25; //can replace with mile from user input
     private double meters = mile*milesToMeters;
+
+    private String filters;
+    private int ratings = 0; // Actual rating of restroom
+    private int minRatings = 0; // Desired rating
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +105,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationManager.requestLocationUpdates(bestProvider, 20000, 0, (LocationListener) this);*/
 
 
+        /*
         // **NOTE: This block of code needs to be modified to take in ALL stored markers
         // Still waiting on restroom adding to be completed**
 
@@ -109,7 +121,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ucsd));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ucsd, 18));
-
+        */
 
         mMap.setOnMyLocationChangeListener(myLocationChangeListener()); //Add marker for cur loc
 
@@ -157,18 +169,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onMyLocationChange(Location location) {
                 LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 
-                Marker mMarker = mMap.addMarker(new MarkerOptions().position(loc).title("Me"));
+                if (curLoc != null) {
+                    curLoc.remove();
+                }
+                curLoc = mMap.addMarker(new MarkerOptions()
+                        .position(loc)
+                        .title("You Are Here")
+                        //.icon(BitmapDescriptorFactory.fromResource(R.drawable.currentlocationicon)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                ));
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 18));
-                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16.0f));
 
+                if (circle != null) {
+                    circle.remove();
+                }
                 circle = mMap.addCircle(new CircleOptions()
                         .center(loc)
                         .radius(meters) //half a mile in meters
-                        .strokeColor(Color.RED)
-                        .visible(true)); //will change to false later
-
-                //showNearbyMarker(mMarker, circle);
+                        .visible(false));
             }
         };
     }
@@ -181,6 +200,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
             return false;
         }
+    }
+
+    private void getAllRestrooms() {
+        //Restroom restroom;
+        //restList = restroom.getRestList();
+    }
+
+    private void filterRestrooms(Marker marker) {
+        if (ratings >= minRatings) {
+            showNearbyMarker(marker, circle);
+        }
+
     }
 
     @Override

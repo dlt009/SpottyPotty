@@ -21,7 +21,7 @@
         <option name="ALLOW_USER_CONFIGURATION" value="false" />
         <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
         <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
-        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res" />
+        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res;file://$MODULE_DIR$/src/debug/res" />
         <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
       </configuration>
     </facet>
@@ -83,7 +83,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.crashlytics.sdk.android/crashlytics-core/2.3.8/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.crashlytics.sdk.android/crashlytics/2.5.5/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.digits.sdk.android/digits/1.9.3/jars" />
-      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.9.0/jars" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.10.0/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.google.android.gms/play-services-ads/8.3.0/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.google.android.gms/play-services-analytics/8.3.0/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.google.android.gms/play-services-appindexing/8.3.0/jars" />
@@ -115,14 +115,10 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/com.twitter.sdk.android/twitter/1.12.1/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/exploded-aar/io.fabric.sdk.android/fabric/1.3.10/jars" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental" />
-      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jniLibs" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/manifests" />
-      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/multi-dex" />
-      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/pre-dexed" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/res" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/rs" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/symbols" />
-      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/transforms" />
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
       <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
@@ -135,8 +131,8 @@
     <orderEntry type="library" exported="" name="crashlytics-2.5.5" level="project" />
     <orderEntry type="library" exported="" name="bolts-applinks-1.3.0" level="project" />
     <orderEntry type="library" exported="" name="digits-1.9.3" level="project" />
-    <orderEntry type="library" exported="" name="retrofit-1.8.0" level="project" />
     <orderEntry type="library" exported="" name="picasso-2.5.2" level="project" />
+    <orderEntry type="library" exported="" name="retrofit-1.8.0" level="project" />
     <orderEntry type="library" exported="" name="aws-android-sdk-s3-2.2.10" level="project" />
     <orderEntry type="library" exported="" name="twitter-core-1.6.4" level="project" />
     <orderEntry type="library" exported="" name="play-services-base-8.3.0" level="project" />
@@ -159,7 +155,6 @@
     <orderEntry type="library" exported="" name="play-services-analytics-8.3.0" level="project" />
     <orderEntry type="library" exported="" name="cardview-v7-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="gson-2.3" level="project" />
-    <orderEntry type="library" exported="" name="facebook-android-sdk-4.9.0" level="project" />
     <orderEntry type="library" exported="" name="multidex-1.0.1" level="project" />
     <orderEntry type="library" exported="" name="bolts-tasks-1.3.0" level="project" />
     <orderEntry type="library" exported="" name="fabric-1.3.10" level="project" />
@@ -180,6 +175,7 @@
     <orderEntry type="library" exported="" name="recyclerview-v7-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="beta-1.1.4" level="project" />
     <orderEntry type="library" exported="" name="play-services-panorama-8.3.0" level="project" />
+    <orderEntry type="library" exported="" name="facebook-android-sdk-4.10.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-wallet-8.3.0" level="project" />
     <orderEntry type="library" exported="" name="twitter-1.12.1" level="project" />
     <orderEntry type="library" exported="" name="play-services-basement-8.3.0" level="project" />
