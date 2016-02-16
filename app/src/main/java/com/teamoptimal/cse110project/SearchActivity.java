@@ -15,6 +15,9 @@ public class SearchActivity extends AppCompatActivity {
     ImageButton imgButton;
     //FloatingActionButton addButton;
     Button addButton;
+    Button signIn;
+
+    boolean test = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +43,14 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
+        signIn = (Button) findViewById(R.id.sign_in_toggle);
 
-
+        signIn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), SignInActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
 
