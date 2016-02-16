@@ -24,7 +24,6 @@ import android.view.KeyEvent;
 
 
 public class ReviewsActivity extends ListActivity{
-
     User users;
     RatingBar getRatingBar;
     TextView countText;
