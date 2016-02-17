@@ -37,13 +37,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker curLoc;
     private ArrayList<Restroom> restList;
 
+
     private final double milesToMeters = 1609.34;
     private double mile = 0.25; //can replace with mile from user input
     private double meters = mile*milesToMeters;
 
     private String filters;
-    private int ratings = 0; // Actual rating of restroom
-    private int minRatings = 0; // Desired rating
+    private int ratingsActual = 0; // Actual rating of restroom
+    private int ratingsDesired= 0; // Desired rating
+
+    public static AmazonClientManager clientManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +59,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         setContentView(R.layout.activity_maps);
 
+        clientManager = new AmazonClientManager(this);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
 
         //replaceMapFrag(); //replace google map fragment
     }
@@ -106,12 +113,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         /*
-        // **NOTE: This block of code needs to be modified to take in ALL stored markers
-        // Still waiting on restroom adding to be completed**
-
-        //int numOfMarkers = 2; //NEED TO BE CHANGED ONCE IMPLEMENTATION OF ADDING RESTROOMS TO DB
-                              // IS COMPLETE
-
         // Add a marker in Ucsd and move the camera
         LatLng ucsd = new LatLng(32.88666, -117.24134);
         LatLng test = new LatLng(32.715738, -117.161084);
@@ -123,7 +124,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ucsd, 18));
         */
 
+
+
+
         mMap.setOnMyLocationChangeListener(myLocationChangeListener()); //Add marker for cur loc
+
+        initRestrooms(); //Init list of restrooms from db
 
         /*circle = mMap.addCircle(new CircleOptions()
                 .center(ucsd)
@@ -134,10 +140,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //showNearbyMarker(markerUCSD, circle); //will remove when testing done
         //showNearbyMarker(markerCVC, circle);
 
-        // WHEN IMPLEMENTATION IS COMPLETE WILL FIX
-        /*for (int i = 0; i < numOfMarkers; i++) {
-            showNearbyMarks(marker, circle);
-        }*/
     }
 
     // If marker is within given radius make visible
@@ -202,15 +204,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void getAllRestrooms() {
-        //Restroom restroom;
-        //restList = restroom.getRestList();
+    private void initRestrooms() {
+        Restroom restroom = new Restroom();
+        restList = restroom.getRestList();
+
+        if (restList != null) {
+            for (int i = 0; i < restList.size(); i++) {
+                LatLng loc = new LatLng(Double.parseDouble(restList.get(i).getLatit()),
+                        Double.parseDouble(restList.get(i).getLongit()));
+                String title = restList.get(i).getName();
+                float color = BitmapDescriptorFactory.HUE_ROSE; //CHANGE TO GETCOLOR LATER
+
+                if (filterRestrooms(restList.get(i))) {
+                    Marker marker = mMap.addMarker(new MarkerOptions()
+                            .position(loc)
+                            .title(title)
+                            .icon(BitmapDescriptorFactory.defaultMarker(color)
+                            ));
+                    showNearbyMarker(marker, circle);
+                }
+            }
+        }
+
     }
 
-    private void filterRestrooms(Marker marker) {
-        if (ratings >= minRatings) {
-            showNearbyMarker(marker, circle);
-        }
+    private boolean filterRestrooms(Restroom rest) { //testing something
+        return ratingsActual >= ratingsDesired;
 
     }
 
