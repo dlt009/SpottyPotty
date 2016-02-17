@@ -34,20 +34,43 @@ import android.widget.Button;
 public class CreateRestroomActivity extends ListActivity implements LocationListener {
     private Restroom restroom;
     private User user = SignInActivity.user;
-    public final static String[] tags = {
+    private String[] Gender = {
+            "Unisex",
+            "Male-only",
+            "Female-only"
+    };
+    private String[] Access = {
             "Public",
             "Private",
-            "Pay-to-use",
+            "Pay-to-use"
+    };
+    private String[] Amenities = {
+            "Handi-accessible",
             "Changing Stations",
+            "Air Dryers",
+    };
+    private String[] Environment = {
             "Restaurant",
             "Store",
+            "Hotel",
+            "Portable",
+            "Residence"
+    };
+    public final static String[] tags = {
             "Unisex",
             "Female-only",
             "Male-only",
-            "Clean",
-            "Somewhat-Clean",
-            "Somewhat-Dirty",
-            "Dirty"
+            "Public",
+            "Private",
+            "Pay-to-use",
+            "Handi-accessible",
+            "Changing Stations",
+            "Air Dryers",
+            "Restaurant",
+            "Store",
+            "Hotel",
+            "Portable",
+            "Residence"
     };
     private RatingBar ratingBar;
     protected LocationManager locationManager;
@@ -61,7 +84,7 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
 
         restroom = new Restroom();
 
-        restroom.setUser("FakeUser@test.com"/*user.getEmail()*/);
+        restroom.setUser("FakeUser@test.com"/*SignInActivity.user.getEmail()*/);
         
         clientManager = new AmazonClientManager(this);
 
@@ -145,11 +168,11 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
 
         EditText name = (EditText) findViewById(R.id.editText);
         EditText floor = (EditText) findViewById(R.id.editText2);
-        EditText description = (EditText) findViewById(R.id.editText3);
+
 
         this.addListenerOnRatingBar();
 
-        name.setOnEditorActionListener(new TextView.OnEditorActionListener(){
+        /*name.setOnEditorActionListener(new TextView.OnEditorActionListener(){
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent){
                 boolean handled = false;
@@ -173,20 +196,8 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
                 }
                 return handled;
             }
-        });
+        });*/
 
-        description.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                boolean handled = false;
-                if (i == EditorInfo.IME_ACTION_NEXT) {
-                    String inputDesc = textView.getText().toString();
-                    restroom.setDesc(inputDesc);
-                    handled=true;
-                }
-                return handled;
-            }
-        });
 
         Button button = (Button) findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
@@ -195,11 +206,9 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
 
                 EditText name = (EditText)findViewById(R.id.editText);
                 EditText floor = (EditText) findViewById(R.id.editText2);
-                EditText description = (EditText) findViewById(R.id.editText3);
 
                 restroom.setName(name.getText().toString());
                 restroom.setFloor(floor.getText().toString());
-                restroom.setDesc(description.getText().toString());
 
                 if (restroom.isInitialized()) {
                     new CreateRestroomTask(restroom).execute();
@@ -212,10 +221,7 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
                 }
                 else{
                     Toast.makeText(getBaseContext(),"Unsuccessful",Toast.LENGTH_SHORT).show();
-                    Toast.makeText(getBaseContext(),"Location was: "+restroom.getLoc()+", "
-                            +restroom.getLatit()+/*"\n User was: "+restroom.getUser()+*/
-                            "\n Name was: "+restroom.getName()+"\n You must have a valid " +
-                            "location and name."
+                    Toast.makeText(getBaseContext(), "You must have a valid location and name"
                             ,Toast.LENGTH_LONG).show();
                 }
             }
@@ -224,7 +230,7 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
 
     public void onListItemClick(ListView parent, View v, int position, long id ){
         CheckedTextView item = (CheckedTextView) v;
-        //restroom.setTag(position, item.isChecked());
+        restroom.setTag(position, item.isChecked());
     }
 
 
