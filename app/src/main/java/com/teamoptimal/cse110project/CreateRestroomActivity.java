@@ -134,7 +134,7 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
         final LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
                 double[] locate = {location.getLongitude(), location.getLatitude()};
-                restroom.setLoc(locate[0], locate[1]);
+                restroom.setLocation(locate[0], locate[1]);
                 Toast.makeText(getBaseContext(),"Current Location is: " + locate[0] + " and "
                         + locate[1], Toast.LENGTH_SHORT).show();
             }
@@ -204,16 +204,16 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
             @Override
             public void onClick(View view) {
 
-                EditText name = (EditText)findViewById(R.id.editText);
+                EditText description = (EditText)findViewById(R.id.editText);
                 EditText floor = (EditText) findViewById(R.id.editText2);
 
-                restroom.setName(name.getText().toString());
+                restroom.setDescription(description.getText().toString());
                 restroom.setFloor(floor.getText().toString());
 
                 if (restroom.isInitialized()) {
                     new CreateRestroomTask(restroom).execute();
                     Toast.makeText(getBaseContext(),
-                            restroom.getName()+" has been created" /*" under the user: "+
+                            restroom.getDescription()+" has been created" /*" under the user: "+
                                     restroom.getUser()*/
                             ,Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(view.getContext(), SearchActivity.class);
@@ -239,7 +239,7 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
             @Override
             public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-                restroom.setRating( Float.toString(rating));
+                restroom.setRating((double)rating);
             }
         });
     }
@@ -265,15 +265,15 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////
     private class CreateRestroomTask extends AsyncTask<Void, Void, Void> {
-        private Restroom rest;
+        private Restroom restroom;
 
         public CreateRestroomTask(Restroom rest) {
-            this.rest = rest;
+            this.restroom = rest;
         }
 
         // To do in the background
         protected Void doInBackground(Void... inputs) {
-            rest.create(); // Use the method from the User class to create it
+            restroom.create(); // Use the method from the User class to create it
             return null;
         }
 
