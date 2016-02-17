@@ -1,6 +1,5 @@
 package com.teamoptimal.cse110project;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,17 +24,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.plus.Plus;
 import com.teamoptimal.cse110project.data.User;
 
-import java.net.CookieManager;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,129 +58,131 @@ public class SignInActivity extends AppCompatActivity implements
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 905;
 
-    private GoogleApiClient mGoogleApiClient;
-    private GoogleSignInAccount acct;
-    private CallbackManager callbackManager;
+    /* Amazon */
+    public static AmazonClientManager clientManager;
 
-    private TwitterLoginButton twitterLoginButton;
-
-    private Profile faceUser = null;
-    private TwitterSession twitUser = null;
-
-    // This will be the client manager used by other classes too
-    public static AmazonClientManager clientManager = null;
-
-    // The user that will be persistent throughout the app
-    public static User user  = null;
+    /* Google */
+    private GoogleApiClient mGoogleApiClient; // API client
+    private GoogleSignInAccount googleUser;
+    private SignInButton googleSignInButton; // Button
 
     private static boolean signedInGoogle = false;
-    private static boolean signedInFace = false;
-    private static boolean signInTwit = false;
+
+    /* Facebook */
+    private LoginButton facebookSignInButton;
+    private Profile facebookUser = null;
+    private CallbackManager callbackManager;
+
+    private static boolean signedInFacebook = false;
+
+    /* Twitter */
+    private TwitterLoginButton twitterLoginButton;
+    private TwitterSession twitterUser = null;
+
+    private static boolean signedInTwitter = false;
+
+    /* Our user */
+    public static User user  = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        /////////////////////facebook////////////////////
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        callbackManager = CallbackManager.Factory.create();
-        //////////////////////facebook///////////////////
-
-        /////////////////////twitter/////////////////////
-        TwitterAuthConfig authConfig =  new TwitterAuthConfig(getResources().getString(R.string.consumer_key),
-                                                              getResources().getString(R.string.consumer_key_secret));
-        Fabric.with(this, new Twitter(authConfig), new Crashlytics());
-        //////////////////////twitter////////////////////
-
-        setContentView(R.layout.activity_sign_in);
-
-        boolean test = getIntent().getBooleanExtra("test_boolean",false);
-        Log.d("Testing intent passing", test+"");
-
-        // Set Amazon Client Manager
+        /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
 
-        // Button listeners
-        findViewById(R.id.sign_in_button).setOnClickListener(this);
+        /* Initialize Facebook */
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestIdToken(getString(R.string.google_web_client_id))
-                .build();
+        /* Initialize Twitter */
+        TwitterAuthConfig authConfig =
+                new TwitterAuthConfig(getResources().getString(R.string.consumer_key),
+                        getResources().getString(R.string.consumer_key_secret));
+        Fabric.with(this, new Twitter(authConfig), new Crashlytics());
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+        /* Set content view */
+        setContentView(R.layout.activity_sign_in);
 
-        SignInButton signInButton = (SignInButton) findViewById(R.id.sign_in_button);
+        /* Initialize buttons  */
+        googleSignInButton = (SignInButton) findViewById(R.id.google_login_button);
+        facebookSignInButton = (LoginButton) findViewById(R.id.facebook_login_button);
+        twitterLoginButton = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
 
-        signInButton.setSize(SignInButton.SIZE_STANDARD);
-        //signInButton.setScopes(gso.getScopeArray());
-        signInButton.setScopes(gso.getScopeArray());
-
-        ///////////////////////facebook////////////////////////////////////////////
-        LoginButton loginButton = (LoginButton) findViewById(R.id.facebook_login_button);
-        loginButton.setReadPermissions(Arrays.asList("email"));
-        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+        /* Set Facebook */
+        facebookSignInButton.setReadPermissions(Arrays.asList("email"));
+        facebookSignInButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                signedInFace = true;
-                faceUser = Profile.getCurrentProfile();
+                signedInFacebook = true;
+                facebookUser = Profile.getCurrentProfile();
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
-                            new GraphRequest.GraphJSONObjectCallback() {
-                                @Override
-                                public void onCompleted(
-                                        JSONObject object,
-                                        GraphResponse response) {
-                                    try {
-                                        Map<String, String> logins = new HashMap<String, String>();
-                                        logins.put("graph.facebook.com", AccessToken.getCurrentAccessToken().getToken());
-                                        clientManager.validateCredentials(logins);
+                        new GraphRequest.GraphJSONObjectCallback() {
+                            @Override
+                            public void onCompleted(
+                                    JSONObject object,
+                                    GraphResponse response) {
+                                try {
+                                    // Validate credentials with Amazon
+                                    Map<String, String> logins = new HashMap<String, String>();
+                                    logins.put("graph.facebook.com",
+                                            AccessToken.getCurrentAccessToken().getToken());
+                                    clientManager.validateCredentials(logins);
 
-                                        user = new User();
-                                        user.setEmail(object.getString("email"));
-                                        user.setProvider("Facebook");
-                                        user.setProviderID(faceUser.getId());
-                                        user.setUsername(faceUser.getName());
-                                        new CreateUserTask(user).execute();
-                                        goToMain();
+                                    // Create/update new user
+                                    user = new User();
+                                    user.setEmail(object.getString("email"));
+                                    user.setProvider("Facebook");
+                                    user.setProviderID(facebookUser.getId());
+                                    user.setUsername(facebookUser.getName());
+                                    new CreateUserTask(user).execute();
 
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
                                 }
-                            });
+                            }
+                        });
 
                 Bundle parameters = new Bundle();
                 parameters.putString("fields", "email");
                 request.setParameters(parameters);
                 request.executeAsync();
             }
-
             @Override
             public void onCancel() {
             }
-
             @Override
             public void onError(FacebookException error) {
             }
         });
-        //////////////////////////////facebook//////////////////////////////////////
 
-        /////////////////////////////twitter////////////////////////////////
-        twitterLoginButton = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
+        /* Set Twitter */
         twitterLoginButton.setCallback(new Callback<TwitterSession>() {
             @Override
             public void success(Result<TwitterSession> result) {
-                signInTwit = true;
-                twitUser = result.data;
+                signedInTwitter = true;
+                twitterUser = result.data;
                 TwitterAuthClient authClient = new TwitterAuthClient();
-                authClient.requestEmail(twitUser, new Callback<String>() {
+                authClient.requestEmail(twitterUser, new Callback<String>() {
                     @Override
                     public void success(Result<String> result) {
-                        Log.d("Email", result.data);
+                        // Validate credentials with Amazon
+                        Map<String, String> logins = new HashMap<String, String>();
+                        String value = twitterUser.getAuthToken().token + ";" +
+                                twitterUser.getAuthToken().secret;
+                        logins.put("api.twitter.com", value);
+                        clientManager.validateCredentials(logins);
+
+                        // Create/update user
+                        user = new User();
+                        user.setEmail(twitterUser.getUserName());
+                        user.setProvider("Twitter");
+                        user.setProviderID(googleUser.getId());
+                        user.setUsername(twitterUser.getUserName());
+                        new CreateUserTask(user).execute();
+
                         goToMain();
                     }
 
@@ -200,7 +197,21 @@ public class SignInActivity extends AppCompatActivity implements
                 Log.d("TwitterKit", "Login with Twitter failure", exception);
             }
         });
-        ////////////////////////////twitter////////////////////////////////////
+
+        /* Initialize and set up Google */
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestIdToken(getString(R.string.google_web_client_id))
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+        googleSignInButton.setSize(SignInButton.SIZE_STANDARD);
+        googleSignInButton.setScopes(gso.getScopeArray());
+        findViewById(R.id.google_login_button).setOnClickListener(this);
     }
 
     @Override
@@ -216,6 +227,8 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     public void onStart() {
         super.onStart();
+
+        /* Cached sign-in with Google */
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
             Log.d(TAG, "Got cached sign-in");
@@ -231,58 +244,54 @@ public class SignInActivity extends AppCompatActivity implements
         }
     }
 
-    // [START onActivityResult]
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "onActivityResult()");
 
         super.onActivityResult(requestCode, resultCode, data);
 
-        ////////////////////twittter///////////////////////
-        twitterLoginButton.onActivityResult(requestCode,resultCode,data);
-        ////////////////////twitter////////////////////////
+        /* Twitter */
+        twitterLoginButton.onActivityResult(requestCode, resultCode, data);
 
-        //////////////////facebook//////////////////////////////////
+        /* Facebook */
         callbackManager.onActivityResult(requestCode, resultCode, data);
-        //////////////////facebook///////////////////////////////////
 
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        /* Google */
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
         }
     }
-    // [END onActivityResult]
 
-    // [START handleSignInResult]
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult: " + result.isSuccess());
+
         if (result.isSuccess()) {
+            googleUser = result.getSignInAccount();
             signedInGoogle = true;
-            // Signed in successfully, show authenticated UI.
-            acct = result.getSignInAccount();
-            //mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
+
             updateUI(true);
 
             // Access with token
-            String token = acct.getIdToken();
+            String token = googleUser.getIdToken();
+
+            // Validate credentials with Amazon
             Map<String, String> logins = new HashMap<String, String>();
             logins.put("accounts.google.com", token);
             clientManager.validateCredentials(logins);
 
+            // Create/update user
             user = new User();
-            user.setEmail(acct.getEmail());
+            user.setEmail(googleUser.getEmail());
             user.setProvider("Google");
-            user.setProviderID(acct.getId());
-            user.setUsername(acct.getDisplayName());
+            user.setProviderID(googleUser.getId());
+            user.setUsername(googleUser.getDisplayName());
             new CreateUserTask(user).execute();
-            goToMain();
         } else {
             // Signed out, show unauthenticated UI.
             updateUI(false);
         }
     }
-    // [END handleSignInResult]
 
     private void signIn() {
         Log.d(TAG, "signIn()");
@@ -291,7 +300,6 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     private void signOut() {
-
         if (signedInGoogle) {
             ResultCallback<Status> signOutCallBack = new ResultCallback<Status>() {
                 @Override
@@ -303,11 +311,11 @@ public class SignInActivity extends AppCompatActivity implements
             Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(signOutCallBack);
             signedInGoogle = false;
         }
-        else if (signedInFace) {
+        else if (signedInFacebook) {
             LoginManager.getInstance().logOut();
-            signedInFace = false;
+            signedInFacebook = false;
         }
-        else if (signInTwit) {
+        else if (signedInTwitter) {
             TwitterSession twitterSession = TwitterCore.getInstance().getSessionManager().getActiveSession();
             if (twitterSession != null) {
                 CookieSyncManager.createInstance(this);
@@ -315,7 +323,7 @@ public class SignInActivity extends AppCompatActivity implements
                 cookieManager.removeSessionCookie();
                 Twitter.getSessionManager().clearActiveSession();
                 Twitter.logOut();
-                signInTwit = false;
+                signedInTwitter = false;
             }
         }
     }
@@ -329,16 +337,16 @@ public class SignInActivity extends AppCompatActivity implements
 
     private void updateUI(boolean signedIn) {
         if (signedIn) {
-            findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
+            findViewById(R.id.google_login_button).setVisibility(View.VISIBLE);
         } else {
-            findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
+            findViewById(R.id.google_login_button).setVisibility(View.VISIBLE);
         }
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.sign_in_button:
+            case R.id.google_login_button:
                 signIn();
                 break;
         }
@@ -361,6 +369,7 @@ public class SignInActivity extends AppCompatActivity implements
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            goToMain();
         }
     }
 

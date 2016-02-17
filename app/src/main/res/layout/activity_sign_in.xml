@@ -7,7 +7,7 @@
     android:background="#9fcaf4">
 
     <com.google.android.gms.common.SignInButton
-        android:id="@+id/sign_in_button"
+        android:id="@+id/google_login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/twitter_login_button"
@@ -19,10 +19,10 @@
         android:id="@+id/facebook_login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/sign_in_button"
-        android:layout_alignStart="@+id/sign_in_button"
+        android:layout_below="@+id/google_login_button"
+        android:layout_alignStart="@+id/google_login_button"
         android:layout_marginTop="43dp"
-        android:layout_alignEnd="@+id/sign_in_button" />
+        android:layout_alignEnd="@+id/google_login_button" />
 
     <com.twitter.sdk.android.core.identity.TwitterLoginButton
         android:id="@+id/twitter_login_button"
