@@ -34,7 +34,7 @@ public class Review {
 
     @DynamoDBAttribute(attributeName = "Rating")
     public double getRating() { return rating; }
-    public void setRating(double rating) { this.rating = rating; }
+    public void setRating(String val) { rating = Double.parseDouble(val); }
 
     @DynamoDBAttribute(attributeName = "ThumbsUp")
     public int getThumbsUp() { return thumbsUp; }

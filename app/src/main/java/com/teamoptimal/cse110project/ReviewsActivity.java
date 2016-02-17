@@ -1,26 +1,30 @@
 package com.teamoptimal.cse110project;
 
+import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.RatingBar;
-import android.widget.RatingBar.*;
-import android.widget.RatingBar.OnRatingBarChangeListener;
-import android.widget.TextView;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.ListView;
+import android.widget.RatingBar;
+import android.widget.TextView;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
-import com.teamoptimal.cse110project.data.*;
-import android.app.ListActivity;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.*;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import android.widget.ListView;
-import java.util.*;
-import android.widget.ArrayAdapter;
-import android.view.KeyEvent;
+import com.teamoptimal.cse110project.data.CombinedReview;
+import com.teamoptimal.cse110project.data.Restroom;
+import com.teamoptimal.cse110project.data.Review;
+import com.teamoptimal.cse110project.data.User;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class ReviewsActivity extends ListActivity{
@@ -41,9 +45,10 @@ public class ReviewsActivity extends ListActivity{
         EditText comments = (EditText) findViewById(R.id.comments);
 
         newReview = new Review();
-        currentRestroom = new Restroom();
-        newReview.setID(currentRestroom.getID());
-        newReview.setUserEmail(currentRestroom.getUser());
+        //currentRestroom = new Restroom();
+        //newReview.setID(currentRestroom.getID());
+        //newReview.setUserEmail(currentRestroom.getUser());
+        newReview.setUserEmail("FakeUser@test.com");
         this.addListenerToRatingBar();
 
         comments.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -53,6 +58,7 @@ public class ReviewsActivity extends ListActivity{
                 if (i == EditorInfo.IME_ACTION_DONE) {
                     String inputMessage = textView.getText().toString();
                     newReview.setMessage(inputMessage);
+                    handled = true;
                 }
                 return handled;
             }
@@ -63,7 +69,10 @@ public class ReviewsActivity extends ListActivity{
             @Override
             public void onClick(View view) {
                 mapper.save(newReview);
-
+                EditText comments = (EditText)findViewById(R.id.comments);
+                newReview.setMessage(comments.getText().toString());
+                Intent intent = new Intent(view.getContext(), ReviewsActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -76,7 +85,7 @@ public class ReviewsActivity extends ListActivity{
         getRatingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
             @Override
             public void onRatingChanged(RatingBar rateBar, float rating, boolean fromUser) {
-                newReview.setRating((double) rating);
+                newReview.setRating(Float.toString(rating));
             }
         });
     }
@@ -92,7 +101,7 @@ public class ReviewsActivity extends ListActivity{
         items = mapper.query(Review.class, queryExpression);
         for(int i = 0; i < items.size();i++)
         {
-            itemComments.add(new CombinedReview(items.get(i).getUserEmail(), items.get(i).getMessage()));
+            itemComments.add(new CombinedReview(items.get(i).getUserEmail(), items.get(i).getRating(), items.get(i).getMessage()));
         }
 
         return itemComments;
@@ -100,3 +109,4 @@ public class ReviewsActivity extends ListActivity{
     }
 
 }
+
