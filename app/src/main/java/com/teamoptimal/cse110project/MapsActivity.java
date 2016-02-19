@@ -129,7 +129,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap.setOnMyLocationChangeListener(myLocationChangeListener()); //Add marker for cur loc
 
-        initRestrooms(); //Init list of restrooms from db
+        //initRestrooms(); //Init list of restrooms from db
 
         /*circle = mMap.addCircle(new CircleOptions()
                 .center(ucsd)
@@ -204,7 +204,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void initRestrooms() {
+    /*private void initRestrooms() {
         Restroom restroom = new Restroom();
         restList = restroom.getRestList();
 
@@ -226,7 +226,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
 
-    }
+    }*/
 
     private boolean filterRestrooms(Restroom rest) { //testing something
         return ratingsActual >= ratingsDesired;

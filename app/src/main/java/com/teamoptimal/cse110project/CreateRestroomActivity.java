@@ -216,7 +216,7 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
                             restroom.getDescription()+" has been created" /*" under the user: "+
                                     restroom.getUser()*/
                             ,Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(view.getContext(), SearchActivity.class);
+                    Intent intent = new Intent(view.getContext(), MainActivity.class);
                     startActivity(intent);
                 }
                 else{
