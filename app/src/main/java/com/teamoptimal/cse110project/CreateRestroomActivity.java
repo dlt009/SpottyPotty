@@ -31,7 +31,7 @@ import com.teamoptimal.cse110project.data.*;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
 import android.widget.Button;
 
-public class CreateRestroomActivity extends ListActivity implements LocationListener {
+public class CreateRestroomActivity extends ListActivity {
     private Restroom restroom;
     private User user = SignInActivity.user;
     private String[] Gender = {
@@ -73,13 +73,15 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
             "Residence"
     };
     private RatingBar ratingBar;
-    protected LocationManager locationManager;
     public static AmazonClientManager clientManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_restroom);
+
+        Bundle extra = getIntent().getExtras();
+        double[] location = extra.getDoubleArray("Location");
 
 
         restroom = new Restroom();
@@ -88,77 +90,8 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
         
         clientManager = new AmazonClientManager(this);
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Criteria cri = new Criteria();
-        String provider = locationManager.getBestProvider(cri, false);
 
-        if (provider != null & !provider.equals("")) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            Location location = locationManager.getLastKnownLocation(provider);
-            locationManager.requestLocationUpdates(provider,2000,1, (LocationListener) this);
-            if(location!=null)
-            {
-                onLocationChanged(location);
-            }
-            else{
-                Toast.makeText(getApplicationContext(),"Location not found",Toast.LENGTH_LONG ).show();
-            }
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(),"Provider is null",Toast.LENGTH_LONG).show();
-        }
-
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-        final LocationListener locationListener = new LocationListener() {
-            public void onLocationChanged(Location location) {
-                double[] locate = {location.getLongitude(), location.getLatitude()};
-                restroom.setLocation(locate[0], locate[1]);
-                Toast.makeText(getBaseContext(),"Current Location is: " + locate[0] + " and "
-                        + locate[1], Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                Log.d("Latitude", "status");
-            }
-
-
-            @Override
-            public void onProviderEnabled(String provider) {
-                Log.d("Latitude", "enable");
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-                Log.d("Latitude", "disable");
-            }
-        };
-        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
-
-
-
+        restroom.setLocation(location[0], location[1]);
 
         ListView tagList = getListView();
         tagList.setChoiceMode(tagList.CHOICE_MODE_MULTIPLE);
@@ -213,16 +146,14 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
                 if (restroom.isInitialized()) {
                     new CreateRestroomTask(restroom).execute();
                     Toast.makeText(getBaseContext(),
-                            restroom.getDescription()+" has been created" /*" under the user: "+
-                                    restroom.getUser()*/
-                            ,Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(view.getContext(), MainActivity.class);
-                    startActivity(intent);
+                            restroom.getDescription() + " has been created", Toast.LENGTH_LONG).show();
+
+                    finish();
                 }
                 else{
-                    Toast.makeText(getBaseContext(),"Unsuccessful",Toast.LENGTH_SHORT).show();
-                    Toast.makeText(getBaseContext(), "You must have a valid location and name"
-                            ,Toast.LENGTH_LONG).show();
+                    Toast.makeText(getBaseContext(), "Unsuccessful", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getBaseContext(), "You must have a valid location and name",
+                            Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -232,7 +163,6 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
         CheckedTextView item = (CheckedTextView) v;
         restroom.setTag(position, item.isChecked());
     }
-
 
     public void addListenerOnRatingBar(){
         ratingBar = (RatingBar) findViewById(R.id.ratingBar);
@@ -244,26 +174,6 @@ public class CreateRestroomActivity extends ListActivity implements LocationList
         });
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-    ///////////////////////////////////////////////////////////////////////////////////////////////
     private class CreateRestroomTask extends AsyncTask<Void, Void, Void> {
         private Restroom restroom;
 
