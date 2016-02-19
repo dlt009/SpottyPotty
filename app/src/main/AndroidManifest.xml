@@ -18,36 +18,31 @@
         <activity
             android:name=".SignInActivity"
             android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
-        <activity android:name="com.facebook.FacebookActivity"
-            android:configChanges=
-                "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            android:label="@string/app_name" />
+
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <!--
         <activity android:name="com.twitter.sdk.android.core.identity.OAuthActivity" />
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="c1a58b34c5be669baf4c69bc91bb6c8a76a5ca65" />
-         -->
+        -->
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="c1a58b34c5be669baf4c69bc91bb6c8a76a5ca65" />
+
         <activity
             android:name=".CreateRestroomActivity"
             android:label="cse110project"
             android:windowSoftInputMode="adjustPan">
-            <intent-filter>
-                <action android:name="android.intent.action.EDIT" />
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
 
         <!--
@@ -64,20 +59,22 @@
 
         <activity
             android:name=".MapsActivity"
-            android:label="Maps">
-
-        </activity>
-
+            android:label="Maps"></activity>
         <activity
             android:name=".SearchActivity"
             android:label="cs110project">
+        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBar">
+
             <intent-filter>
-                <action android:name="android.intent.action.EDIT" />
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>
