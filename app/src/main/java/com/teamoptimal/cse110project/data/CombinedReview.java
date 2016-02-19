@@ -7,10 +7,12 @@ public class CombinedReview {
 
     private String users;
     private String comments;
+    private Double rating;
 
-    public CombinedReview(String users, String comments){
+    public CombinedReview(String users, Double rating, String comments){
         super();
         this.users = users;
+        this.rating = rating;
         this.comments = comments;
     }
 

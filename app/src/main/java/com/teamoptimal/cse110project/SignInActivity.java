@@ -1,14 +1,18 @@
 package com.teamoptimal.cse110project;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.webkit.CookieSyncManager;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.digits.sdk.android.Digits;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -42,6 +46,7 @@ import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterAuthToken;
 import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
@@ -53,10 +58,11 @@ import org.json.JSONObject;
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener, GoogleApiClient.ConnectionCallbacks {
+        View.OnClickListener {
 
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 905;
+    private static final String PREFERENCES = "AppPrefs";
 
     /* Amazon */
     public static AmazonClientManager clientManager;
@@ -66,28 +72,40 @@ public class SignInActivity extends AppCompatActivity implements
     private GoogleSignInAccount googleUser;
     private SignInButton googleSignInButton; // Button
 
-    private static boolean signedInGoogle = false;
+    private boolean signedInGoogle;
 
     /* Facebook */
     private LoginButton facebookSignInButton;
     private Profile facebookUser = null;
     private CallbackManager callbackManager;
 
-    private static boolean signedInFacebook = false;
+    private boolean signedInFacebook;
 
     /* Twitter */
     private TwitterLoginButton twitterLoginButton;
-    private TwitterSession twitterUser = null;
+    private TwitterSession twitterUser;
 
-    private static boolean signedInTwitter = false;
+    private boolean signedInTwitter;
 
     /* Our user */
     public static User user  = null;
 
+    /* sharedPreferences to store log in status */
+    private static SharedPreferences sharedPreferences;
+    private static SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /* initialize sharedpreferences and editor */
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        editor = sharedPreferences.edit();
+
+        /* set current login status */
+        signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        signedInFacebook = sharedPreferences.getBoolean("face", false);
+        signedInTwitter = sharedPreferences.getBoolean("twit", false);
 
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
@@ -105,10 +123,14 @@ public class SignInActivity extends AppCompatActivity implements
         /* Set content view */
         setContentView(R.layout.activity_sign_in);
 
+        Log.d("Twitter Session",""+(twitterUser != null));
+
         /* Initialize buttons  */
         googleSignInButton = (SignInButton) findViewById(R.id.google_login_button);
         facebookSignInButton = (LoginButton) findViewById(R.id.facebook_login_button);
         twitterLoginButton = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
+        Button signOut = (Button) findViewById(R.id.button2);
+        signOut.setOnClickListener(this);
 
         /* Set Facebook */
         facebookSignInButton.setReadPermissions(Arrays.asList("email"));
@@ -116,7 +138,6 @@ public class SignInActivity extends AppCompatActivity implements
             @Override
             public void onSuccess(LoginResult loginResult) {
                 signedInFacebook = true;
-                facebookUser = Profile.getCurrentProfile();
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
                         new GraphRequest.GraphJSONObjectCallback() {
@@ -130,6 +151,8 @@ public class SignInActivity extends AppCompatActivity implements
                                     logins.put("graph.facebook.com",
                                             AccessToken.getCurrentAccessToken().getToken());
                                     clientManager.validateCredentials(logins);
+
+                                    facebookUser = Profile.getCurrentProfile();
 
                                     // Create/update new user
                                     user = new User();
@@ -150,9 +173,11 @@ public class SignInActivity extends AppCompatActivity implements
                 request.setParameters(parameters);
                 request.executeAsync();
             }
+
             @Override
             public void onCancel() {
             }
+
             @Override
             public void onError(FacebookException error) {
             }
@@ -164,34 +189,23 @@ public class SignInActivity extends AppCompatActivity implements
             public void success(Result<TwitterSession> result) {
                 signedInTwitter = true;
                 twitterUser = result.data;
-                TwitterAuthClient authClient = new TwitterAuthClient();
-                authClient.requestEmail(twitterUser, new Callback<String>() {
-                    @Override
-                    public void success(Result<String> result) {
-                        // Validate credentials with Amazon
-                        Map<String, String> logins = new HashMap<String, String>();
-                        String value = twitterUser.getAuthToken().token + ";" +
-                                twitterUser.getAuthToken().secret;
-                        logins.put("api.twitter.com", value);
-                        clientManager.validateCredentials(logins);
 
-                        // Create/update user
-                        user = new User();
-                        user.setEmail(twitterUser.getUserName());
-                        user.setProvider("Twitter");
-                        user.setProviderID(googleUser.getId());
-                        user.setUsername(twitterUser.getUserName());
-                        new CreateUserTask(user).execute();
+                TwitterAuthToken twitToken = twitterUser.getAuthToken();
 
-                        goToMain();
-                    }
+                Map<String, String> logins = new HashMap<String, String>();
+                String value = twitToken.token + ";" + twitToken.secret;
+                logins.put("api.twitter.com", value);
+                clientManager.validateCredentials(logins);
 
-                    @Override
-                    public void failure(TwitterException exception) {
-                        exception.printStackTrace();
-                    }
-                });
-            }
+                // Create/update user
+                user = new User();
+                user.setEmail(twitterUser.getUserName());
+                user.setProvider("Twitter");
+                user.setProviderID(twitterUser.getUserId()+"");
+                user.setUsername(twitterUser.getUserName());
+                new CreateUserTask(user).execute();
+        }
+
             @Override
             public void failure(TwitterException exception) {
                 Log.d("TwitterKit", "Login with Twitter failure", exception);
@@ -212,16 +226,6 @@ public class SignInActivity extends AppCompatActivity implements
         googleSignInButton.setSize(SignInButton.SIZE_STANDARD);
         googleSignInButton.setScopes(gso.getScopeArray());
         findViewById(R.id.google_login_button).setOnClickListener(this);
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnected(Bundle t) {
-
     }
 
     @Override
@@ -310,21 +314,20 @@ public class SignInActivity extends AppCompatActivity implements
             Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(signOutCallBack);
             Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(signOutCallBack);
             signedInGoogle = false;
+            editor.putBoolean("goog", signedInGoogle);
+            editor.commit();
         }
-        else if (signedInFacebook) {
+        if (signedInFacebook) {
             LoginManager.getInstance().logOut();
             signedInFacebook = false;
+            editor.putBoolean("face", signedInFacebook);
+            editor.commit();
         }
-        else if (signedInTwitter) {
-            TwitterSession twitterSession = TwitterCore.getInstance().getSessionManager().getActiveSession();
-            if (twitterSession != null) {
-                CookieSyncManager.createInstance(this);
-                android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
-                cookieManager.removeSessionCookie();
-                Twitter.getSessionManager().clearActiveSession();
-                Twitter.logOut();
-                signedInTwitter = false;
-            }
+        if (signedInTwitter) {
+            Twitter.getSessionManager().clearActiveSession();
+            signedInTwitter = false;
+            editor.putBoolean("twit", signedInTwitter);
+            editor.commit();
         }
     }
 
@@ -348,6 +351,9 @@ public class SignInActivity extends AppCompatActivity implements
         switch (v.getId()) {
             case R.id.google_login_button:
                 signIn();
+                break;
+            case R.id.button2:
+                signOut();
                 break;
         }
     }
@@ -375,6 +381,10 @@ public class SignInActivity extends AppCompatActivity implements
 
     private void goToMain() {
         Intent intent = new Intent(this, SearchActivity.class);
+        editor.putBoolean("goog", signedInGoogle);
+        editor.putBoolean("face", signedInFacebook);
+        editor.putBoolean("twit", signedInTwitter);
+        editor.commit();
         startActivity(intent);
     }
 }

@@ -10,14 +10,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 
+import com.facebook.login.LoginManager;
+
 public class SearchActivity extends AppCompatActivity {
 
     ImageButton imgButton;
     //FloatingActionButton addButton;
     Button addButton;
     Button signIn;
-
-    boolean test = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
