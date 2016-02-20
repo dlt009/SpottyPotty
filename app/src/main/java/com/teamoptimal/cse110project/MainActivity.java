@@ -83,6 +83,10 @@ public class MainActivity extends AppCompatActivity
     /* Vars */
     private boolean initialized = false;
 
+    private static final String PREFERENCES = "AppPrefs";
+    private static SharedPreferences sharedPreferences;
+    private static SharedPreferences.Editor editor;
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +128,13 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        editor = sharedPreferences.edit();
+        
+        boolean signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        boolean signedInFacebook = sharedPreferences.getBoolean("face", false);
+        boolean signedInTwitter = sharedPreferences.getBoolean("twit", false);
     }
 
     private void goToCreateRestroom() {
