@@ -2,6 +2,7 @@ package com.teamoptimal.cse110project;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -23,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression;
@@ -56,6 +58,12 @@ public class MainActivity extends AppCompatActivity
     private double longitude;
     private double latitude;
     private int radius;
+
+    private static final String PREFERENCES = "AppPrefs";
+    private static SharedPreferences sharedPreferences;
+    private static SharedPreferences.Editor editor;
+
+    private Button signIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,6 +171,15 @@ public class MainActivity extends AppCompatActivity
         clientManager.validateCredentials();
 
         new GetRestroomsTask(longitude, latitude, radius).execute();
+
+        /* initialize sharedpreferences and editor */
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        editor = sharedPreferences.edit();
+
+        /* set current login status */
+        boolean signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        boolean signedInFacebook = sharedPreferences.getBoolean("face", false);
+        boolean signedInTwitter = sharedPreferences.getBoolean("twit", false);
     }
 
     @Override

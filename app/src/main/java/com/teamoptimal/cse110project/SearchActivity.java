@@ -42,15 +42,6 @@ public class SearchActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-        signIn = (Button) findViewById(R.id.sign_in_toggle);
-
-        signIn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(), SignInActivity.class);
-                startActivity(intent);
-            }
-        });
     }
 
 

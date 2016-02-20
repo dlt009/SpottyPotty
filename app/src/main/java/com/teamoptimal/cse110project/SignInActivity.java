@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.CookieSyncManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
