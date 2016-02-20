@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -14,7 +15,9 @@ import android.support.annotation.AttrRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -24,6 +27,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -35,15 +39,28 @@ import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.ReturnConsumedCapacity;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.teamoptimal.cse110project.data.Restroom;
 import com.teamoptimal.cse110project.data.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, LocationListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        LocationListener, OnMapReadyCallback {
     private static String TAG = "MainActivity";
     /* Amazon */
     public static AmazonClientManager clientManager;
@@ -53,19 +70,31 @@ public class MainActivity extends AppCompatActivity
 
     private List<Restroom> restrooms;
 
+    /* Map */
+    private GoogleMap map;
+    private final double milesToMeters = 1609.34;
+    private double mile = 0.25; //can replace with mile from user input
+    private double meters = mile * milesToMeters;
+
     /* Location */
-    protected LocationManager locationManager;
-    private double longitude;
-    private double latitude;
-    private int radius;
+    private LocationManager locationManager;
+    /* Vars */
+    private boolean initialized = false;
 
     private static final String PREFERENCES = "AppPrefs";
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
     
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Show error if Google Play Services are not available
+        if (!isGooglePlayServicesAvailable()) {
+            finish();
+        }
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -74,8 +103,9 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                goToCreateRestroom();
+                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                //        .setAction("Action", null).show();
             }
         });
 
@@ -88,43 +118,25 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        /* Set up location manager */
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        String provider = locationManager.getBestProvider(criteria, false);
+        /* Initialize Amazon Client Manager */
+        clientManager = new AmazonClientManager(this);
+        clientManager.validateCredentials();
 
-        if (provider != null & !provider.equals("")) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-                    PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                            != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            Location location = locationManager.getLastKnownLocation(provider);
-            locationManager.requestLocationUpdates(provider, 2000, 1, (LocationListener) this);
-            if(location != null) {
-                onLocationChanged(location);
-            }
-            else {
-                Toast.makeText(getApplicationContext(),"Location not found",Toast.LENGTH_LONG ).show();
-            }
-        }
-        else {
-            Toast.makeText(getApplicationContext(),"Provider is null",Toast.LENGTH_LONG).show();
-        }
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED) {
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        editor = sharedPreferences.edit();
+        
+        boolean signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        boolean signedInFacebook = sharedPreferences.getBoolean("face", false);
+        boolean signedInTwitter = sharedPreferences.getBoolean("twit", false);
+    }
+
+    private void goToCreateRestroom() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -134,50 +146,14 @@ public class MainActivity extends AppCompatActivity
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-        final LocationListener locationListener = new LocationListener() {
-            public void onLocationChanged(Location location) {
-                double[] locate = {location.getLongitude(), location.getLatitude()};
-                longitude = locate[0];
-                latitude = locate[1];
-                radius = 20;
-                Toast.makeText(getBaseContext(),"Current Location is: " + locate[0] + " and "
-                        + locate[1], Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                Log.d("Latitude", "status");
-            }
-
-
-            @Override
-            public void onProviderEnabled(String provider) {
-                Log.d("Latitude", "enable");
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-                Log.d("Latitude", "disable");
-            }
-        };
-        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
-
-        /* Initialize Amazon Client Manager */
-        clientManager = new AmazonClientManager(this);
-        clientManager.validateCredentials();
-
-        new GetRestroomsTask(longitude, latitude, radius).execute();
-
-        /* initialize sharedpreferences and editor */
-        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
-        editor = sharedPreferences.edit();
-
-        /* set current login status */
-        boolean signedInGoogle = sharedPreferences.getBoolean("goog", false);
-        boolean signedInFacebook = sharedPreferences.getBoolean("face", false);
-        boolean signedInTwitter = sharedPreferences.getBoolean("twit", false);
+        Intent intent = new Intent(this, CreateRestroomActivity.class);
+        Criteria criteria = new Criteria();
+        String bestProvider = locationManager.getBestProvider(criteria, true);
+        Location location = locationManager.getLastKnownLocation(bestProvider);
+        double[] loc = { location.getLatitude(), location.getLongitude() };
+        intent.putExtra("Location", loc);
+        startActivity(intent);
     }
 
     @Override
@@ -237,10 +213,6 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-
-    }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -257,26 +229,109 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private class GetRestroomsTask extends AsyncTask<Void, Void, Void> {
-        double longitude;
-        double latitude;
-        int radius;
-
-        public GetRestroomsTask(double longitude, double latitude, int radius) {
-            this.longitude = longitude;
-            this.latitude = latitude;
-            this.radius = radius;
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        Log.d(TAG, "onMapReady");
+        // Check for permission
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
         }
 
-        protected void onPostExecute(Void... inputs) {
-            // TODO: check this.exception
-            // TODO: do something with the feed
+        map = googleMap;
+        map.getUiSettings().setZoomGesturesEnabled((true));
+        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        map.setBuildingsEnabled(true);
+        map.setMyLocationEnabled(true);
+        map.setOnMyLocationChangeListener(myLocationChangeListener()); //Add marker for cur loc
+
+        /* Start location tracking */
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        String bestProvider = locationManager.getBestProvider(criteria, true);
+
+        Location location = locationManager.getLastKnownLocation(bestProvider);
+        Log.d(TAG, location.getLatitude() + ", " + location.getLongitude());
+        if (location != null) {
+            onLocationChanged(location);
+        }
+        locationManager.requestLocationUpdates(bestProvider, 20000, 0, this);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.d(TAG, "onLocationChanged");
+        showNearbyMarkers(location, meters);
+    }
+
+    private GoogleMap.OnMyLocationChangeListener myLocationChangeListener() {
+        return new GoogleMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+                Log.d(TAG, "OnMyLocationChange");
+                LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+
+                if(!initialized) {
+                    map.moveCamera(CameraUpdateFactory.newLatLng(loc));
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 18));
+                    initialized = true;
+                }
+            }
+        };
+    }
+
+    private boolean isExecuting = false;
+    private void showNearbyMarkers(Location location, double radius) {
+        if(!isExecuting) {
+            isExecuting = true;
+            new GetRestroomsTask(location.getLatitude(), location.getLongitude(), radius).execute();
+        }
+    }
+
+    private boolean isGooglePlayServicesAvailable() {
+        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (ConnectionResult.SUCCESS == status) {
+            return true;
+        } else {
+            GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
+            return false;
+        }
+    }
+
+    private class GetRestroomsTask extends AsyncTask<Void, Void, Void> {
+        double latitude;
+        double longitude;
+        double radius;
+
+        public GetRestroomsTask(double latitude, double longitude, double radius) {
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.radius = radius;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
+            Log.d(TAG, "doInBackground");
             restrooms = Restroom.getRestrooms(longitude, latitude, radius);
             return null;
+        }
+
+        protected void onPostExecute(Void result) {
+            Log.d(TAG, "Found " + restrooms.size() + " restrooms");
+            for(Restroom restroom : restrooms) {
+                LatLng latLng = new LatLng(restroom.getLatitude(), restroom.getLongitude());
+                map.addMarker(new MarkerOptions().position(latLng).title(restroom.getDescription()));
+            }
+            isExecuting = false;
         }
     }
 }
