@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.os.AsyncTask;
@@ -27,6 +28,7 @@ import android.location.Location;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.teamoptimal.cse110project.data.*;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
 import android.widget.Button;
@@ -72,13 +74,26 @@ public class CreateRestroomActivity extends ListActivity {
             "Portable",
             "Residence"
     };
+    private static final float[] colors = {BitmapDescriptorFactory.HUE_YELLOW, BitmapDescriptorFactory.HUE_ROSE, BitmapDescriptorFactory.HUE_CYAN,
+            BitmapDescriptorFactory.HUE_GREEN, BitmapDescriptorFactory.HUE_MAGENTA, BitmapDescriptorFactory.HUE_ORANGE,
+            BitmapDescriptorFactory.HUE_RED, BitmapDescriptorFactory.HUE_BLUE, BitmapDescriptorFactory.HUE_VIOLET,
+            BitmapDescriptorFactory.HUE_AZURE};
+    private int cCount = 0;
     private RatingBar ratingBar;
+    private static final String PREFERENCES = "AppPrefs";
+    private static SharedPreferences sharedPreferences;
+    private static SharedPreferences.Editor editor;
     public static AmazonClientManager clientManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_restroom);
+
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        editor = sharedPreferences.edit();
+
+        cCount = sharedPreferences.getInt("color", 0);
 
         Bundle extra = getIntent().getExtras();
         double[] location = extra.getDoubleArray("Location");
@@ -90,6 +105,10 @@ public class CreateRestroomActivity extends ListActivity {
         
         clientManager = new AmazonClientManager(this);
 
+        if (cCount >= 10) cCount = 0;
+        restroom.setColor(colors[cCount]);
+        cCount++;
+        editor.putInt("color", cCount).commit();
 
         restroom.setLocation(location[0], location[1]);
 

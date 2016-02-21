@@ -46,6 +46,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -351,8 +352,15 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(Void result) {
             Log.d(TAG, "Found " + restrooms.size() + " restrooms");
             for(Restroom restroom : restrooms) {
+
                 LatLng latLng = new LatLng(restroom.getLatitude(), restroom.getLongitude());
-                map.addMarker(new MarkerOptions().position(latLng).title(restroom.getDescription()));
+                float markerColor = restroom.getColor();
+
+                map.addMarker(new MarkerOptions()
+                                .position(latLng)
+                                .title(restroom.getDescription())
+                                .icon(BitmapDescriptorFactory.defaultMarker(markerColor)
+                ));
             }
             isExecuting = false;
         }

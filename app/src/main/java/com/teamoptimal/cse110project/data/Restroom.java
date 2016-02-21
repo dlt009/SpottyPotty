@@ -15,6 +15,7 @@ import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.teamoptimal.cse110project.CreateRestroomActivity;
 import com.teamoptimal.cse110project.MainActivity;
 
@@ -34,6 +35,7 @@ public class Restroom {
     private String floor;
     private double rating;
     private int ratingsCount;
+    private float color;
 
 
     public Restroom () {
@@ -83,6 +85,10 @@ public class Restroom {
     @DynamoDBAttribute(attributeName = "NumberOfRatings")
     public int getRatingsCount() { return ratingsCount; }
     public void setRatingsCount(int ratingsCount) { this.ratingsCount = ratingsCount; }
+
+    @DynamoDBAttribute(attributeName = "Color")
+    public float getColor() {return color;}
+    public void setColor(float color) {this.color = color;Log.d(TAG, "color of marker");}
 
     @DynamoDBIgnore
     public void setTag(int index, boolean choice) {
