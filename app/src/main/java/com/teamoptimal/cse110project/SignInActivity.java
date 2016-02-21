@@ -351,7 +351,7 @@ public class SignInActivity extends AppCompatActivity implements
     private void updateUI(boolean signedIn) {
         if (signedIn) {
             signOutButton.setVisibility(View.VISIBLE);
-            signInText.setText("Are you Sure you want to log out?");
+            signInText.setText("Are you sure you want to log out?");
             googleSignInButton.setVisibility(View.GONE);
             facebookSignInButton.setVisibility(View.GONE);
             twitterLoginButton.setVisibility(View.GONE);
