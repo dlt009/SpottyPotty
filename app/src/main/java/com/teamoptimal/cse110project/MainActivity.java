@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity
     /* Map */
     private GoogleMap map;
     private final double milesToMeters = 1609.34;
-    private double mile = 0.25; //can replace with mile from user input
+    private double mile = 0.25; //can replace with mile from user input location
     private double meters = mile * milesToMeters;
 
     /* Location */
