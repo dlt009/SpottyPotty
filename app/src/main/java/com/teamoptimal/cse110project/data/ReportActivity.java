@@ -34,9 +34,17 @@ public class ReportActivity extends AppCompatActivity {
         String currRestroom = extras.getString("Restroom");
         String currReview = extras.getString("Review");
 
+        TextView text = (TextView) findViewById(R.id.Title);
+
         String reportObj;
-        if(currRestroom != null) reportObj = currRestroom;
-        else if(currReview != null) reportObj = currReview;
+        if(currRestroom != null){
+            reportObj = currRestroom;
+            text.setText("Restroom");
+        }
+        else if(currReview != null){
+            reportObj = currReview;
+            text.setText("Review");
+        }
         else return;
         */
         user.setEmail("FakeUser@test.com");
@@ -56,9 +64,11 @@ public class ReportActivity extends AppCompatActivity {
                 Review review = new Review();
                 if(restroom != null){
                     user.reportRestroom(restroom, description.getText().toString());
+                    finish();
                 }
                 else if(review != null){
                     user.reportReview(review, description.getText().toString());
+                    finish();
                 }
                 else{
                     Toast.makeText(getBaseContext(), "Cannot find the item to be reported",
