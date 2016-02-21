@@ -85,7 +85,12 @@ public class MainActivity extends AppCompatActivity
     private static final String PREFERENCES = "AppPrefs";
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
-    
+
+    boolean signedInGoogle;
+    boolean signedInFacebook;
+    boolean signedInTwitter;
+
+    NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,8 +121,13 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        editor = sharedPreferences.edit();
+
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        toggleNavSignIn();
 
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
@@ -127,13 +137,24 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
 
-        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
-        editor = sharedPreferences.edit();
-        
-        boolean signedInGoogle = sharedPreferences.getBoolean("goog", false);
-        boolean signedInFacebook = sharedPreferences.getBoolean("face", false);
-        boolean signedInTwitter = sharedPreferences.getBoolean("twit", false);
+    @Override
+    public void onStart(){
+        super.onStart();
+        toggleNavSignIn();
+    }
+
+    private void toggleNavSignIn () {
+        signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        signedInFacebook = sharedPreferences.getBoolean("face", false);
+        signedInTwitter = sharedPreferences.getBoolean("twit", false);
+
+        MenuItem signInToggle = navigationView.getMenu().findItem(R.id.nav_sign_in_toggle);
+        if(signedInTwitter || signedInGoogle || signedInFacebook)
+            signInToggle.setTitle("Sign Out");
+        else
+            signInToggle.setTitle("Sign In");
     }
 
     private void goToCreateRestroom() {
@@ -195,8 +216,9 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
+        if (id == R.id.nav_sign_in_toggle) {
+            Intent intent = new Intent(this, SignInActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
@@ -261,7 +283,7 @@ public class MainActivity extends AppCompatActivity
         String bestProvider = locationManager.getBestProvider(criteria, true);
 
         Location location = locationManager.getLastKnownLocation(bestProvider);
-        Log.d(TAG, location.getLatitude() + ", " + location.getLongitude());
+        //Log.d(TAG, location.getLatitude() + ", " + location.getLongitude());
         if (location != null) {
             onLocationChanged(location);
         }
