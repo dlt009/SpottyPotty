@@ -65,6 +65,12 @@
             android:name=".SearchActivity"
             android:label="cs110project"></activity>
         <activity
+            android:name=".ReviewsActivity"
+            android:label="cse110project"
+            android:windowSoftInputMode="adjustPan">
+        </activity>
+
+        <activity
             android:name=".MainActivity"
             android:label="cs110project"
             android:theme="@style/AppTheme.NoActionBar">

@@ -10,6 +10,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,9 +32,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RatingBar;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression;
@@ -55,8 +62,11 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.teamoptimal.cse110project.data.DrawerItem;
 import com.teamoptimal.cse110project.data.Restroom;
 import com.teamoptimal.cse110project.data.User;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,11 +84,14 @@ public class MainActivity extends AppCompatActivity
     private User user;
 
     private List<Restroom> restrooms;
+    private ArrayList<DrawerItem> items;
+    private ListView listView;
+    private MyListAdapter adapter;
 
     /* Map */
     private GoogleMap map;
     private final double milesToMeters = 1609.34;
-    private double mile = 0.25; //can replace with mile from user input location
+    private double mile = 0.25; //can replace with mile from user input
     private double meters = mile * milesToMeters;
 
     /* Location */
@@ -90,15 +103,14 @@ public class MainActivity extends AppCompatActivity
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
 
-    boolean signedInGoogle;
-    boolean signedInFacebook;
-    boolean signedInTwitter;
+    private boolean signedInGoogle;
+    private boolean signedInFacebook;
+    private boolean signedInTwitter;
 
-    View header;
-    ListView bath_reviews;
+    private View header;
 
-    Button signInButton;
-    FloatingActionButton fab;
+    private Button signInButton;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,10 +130,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 goToCreateRestroom();
-                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                //        .setAction("Action", null).show();
             }
         });
+
+        /* initialize shared preferences object to get info from other activities */
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        editor = sharedPreferences.edit();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -129,10 +143,11 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        /* initialize shared preferences object to get info from other activities */
-        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
-        editor = sharedPreferences.edit();
+        //bathroom list view
+        listView = (ListView) findViewById(R.id.restrooms_list);
 
+        items = new ArrayList<>();
+        adapter = new MyListAdapter(this, R.layout.mylist_layout, items);
 
         //initialize nav, nav header, and sign in button
         //navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -151,9 +166,6 @@ public class MainActivity extends AppCompatActivity
         });
         toggleNavSignInText();
 
-        /* bathroom list view */
-        bath_reviews = (ListView) findViewById(R.id.reviews_list);
-
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
         clientManager.validateCredentials();
@@ -162,22 +174,37 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-    }
+
+        signedInGoogle=sharedPreferences.getBoolean("goog",false);
+        signedInFacebook=sharedPreferences.getBoolean("face",false);
+        signedInTwitter=sharedPreferences.getBoolean("twit",false);
+
+
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(MainActivity.this, "Send user to Maps Activity",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
+}
 
     @Override
-    public void onStart(){
+    public void onStart() {
         super.onStart();
 
-        // update button text to reflect if signing in or out
+        //updates button text to reflect if signing in or out
         toggleNavSignInText();
-        String name = sharedPreferences.getString("user_name","Please login to see profile");
+        String name = sharedPreferences.getString("user_name", "Please login to see profile");
         String email = sharedPreferences.getString("user_email", "");
 
         TextView name_text = (TextView) findViewById(R.id.header_name);
         TextView email_text = (TextView) findViewById(R.id.header_email);
 
-        // if signed in, show profile info on header, make create restroom button visible
-        if(signedInFacebook || signedInGoogle || signedInTwitter) {
+        //if signed in, show profile info on headder, make create restroom button visible
+        if (signedInFacebook || signedInGoogle || signedInTwitter) {
             name_text.setText(name);
             email_text.setText(email);
             fab.setVisibility(View.VISIBLE);
@@ -313,6 +340,7 @@ public class MainActivity extends AppCompatActivity
             onLocationChanged(location);
         }
         locationManager.requestLocationUpdates(bestProvider, 20000, 0, this);
+
     }
 
     @Override
@@ -335,6 +363,17 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
+    }
+
+    public void generateListContent() {
+        for (Restroom restroom : restrooms) {
+            String title = restroom.getDescription();
+            int feet = 0;
+            String dist = feet + " ft ";
+            double rate = restroom.getRating();
+            items.add(new DrawerItem(title, dist, rate));
+        }
+        adapter.notifyDataSetChanged();
     }
 
     private boolean isExecuting = false;
@@ -387,6 +426,66 @@ public class MainActivity extends AppCompatActivity
                 ));
             }
             isExecuting = false;
+
+            generateListContent();
         }
     }
+
+    private class MyListAdapter extends ArrayAdapter<DrawerItem> {
+        private int layout;
+        private List<DrawerItem> objects;
+
+        public MyListAdapter(Context context, int resource, List<DrawerItem> objects) {
+            super(context, resource, objects);
+            this.objects = objects;
+            layout = resource;
+        }
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder mainViewHolder;
+            if (convertView == null) {
+                LayoutInflater inflater = LayoutInflater.from(getContext());
+                convertView = inflater.inflate(layout, parent, false);
+
+                ViewHolder viewHolder = new ViewHolder();
+                viewHolder.imageColor = (ImageView)convertView.findViewById(R.id.view_color);
+                viewHolder.title = (TextView)convertView.findViewById(R.id.view_title);
+                viewHolder.dist = (TextView)convertView.findViewById(R.id.view_dist);
+                viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.view_rating);
+                viewHolder.details = (Button)convertView.findViewById(R.id.details_button);
+                viewHolder.details.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getContext(),
+                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                convertView.setTag(viewHolder);
+
+            }
+
+            mainViewHolder = (ViewHolder) convertView.getTag();
+
+            DrawerItem dItem =  this.objects.get(position);
+
+            mainViewHolder.title.setText(dItem.getItemTitle());
+            mainViewHolder.dist.setText(dItem.getItemDist());
+            mainViewHolder.ratings.setRating((float)dItem.getItemRate());
+
+
+
+            return convertView;
+        }
+    }
+
+    public class ViewHolder {
+        ImageView imageColor;
+        TextView title;
+        TextView dist;
+        RatingBar ratings;
+        Button details;
+    }
+
 }
+

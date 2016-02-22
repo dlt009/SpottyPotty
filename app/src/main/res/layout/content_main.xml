@@ -5,7 +5,7 @@
     android:id="@+id/map"
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context="com.teamoptimal.cse110project.MainActivity"
     tools:showIn="@layout/app_bar_main" />
 <!--
