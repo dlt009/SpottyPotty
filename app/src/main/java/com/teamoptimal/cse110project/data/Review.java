@@ -3,7 +3,9 @@ package com.teamoptimal.cse110project.data;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribute;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIgnore;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 
 /**
  * Represents a Review made by a User on a Restroom
@@ -60,4 +62,11 @@ public class Review {
 
     @DynamoDBIgnore
     public void addReport(){reports++;}
+
+    public void create() {
+        AmazonDynamoDBClient ddb = ReportActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+
+        mapper.save(this);
+    }
 }
