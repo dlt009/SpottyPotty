@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity
     private List<Restroom> restrooms;
     private ArrayList<DrawerItem> items;
     private ListView listView;
+    private MyListAdapter adapter;
 
     /* Map */
     private GoogleMap map;
@@ -142,19 +143,11 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        /* bathroom list view
+        //bathroom list view
         listView = (ListView) findViewById(R.id.restrooms_list);
 
-        ArrayList<DrawerItem> items = new ArrayList<>();
-
-        listView.setAdapter(new MyListAdapter(this, R.layout.mylist_layout, items));
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(MainActivity.this, "Send user to Maps Activity",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });*/
+        items = new ArrayList<>();
+        adapter = new MyListAdapter(this, R.layout.mylist_layout, items);
 
         //initialize nav, nav header, and sign in button
         //navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -182,18 +175,12 @@ public class MainActivity extends AppCompatActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-
-
         signedInGoogle=sharedPreferences.getBoolean("goog",false);
         signedInFacebook=sharedPreferences.getBoolean("face",false);
         signedInTwitter=sharedPreferences.getBoolean("twit",false);
 
-               /* bathroom list view */
-        listView = (ListView) findViewById(R.id.restrooms_list);
 
-        ArrayList<DrawerItem> items = new ArrayList<>();
-
-        listView.setAdapter(new MyListAdapter(this, R.layout.mylist_layout, items));
+        listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -201,17 +188,8 @@ public class MainActivity extends AppCompatActivity
                         Toast.LENGTH_SHORT).show();
             }
         });
-    }
 
-    private void generateListContent() {
-        for (Restroom restroom : restrooms) {
-            String title = restroom.getDescription();
-            int feet = 0;
-            String dist = feet + " ft ";
-            double rate = restroom.getRating();
-            items.add(new DrawerItem(title, dist, rate));
-        }
-    }
+}
 
     @Override
     public void onStart() {
@@ -236,7 +214,7 @@ public class MainActivity extends AppCompatActivity
             email_text.setText("");
             fab.setVisibility(View.GONE);
         }
-    } 
+    }
 
     private void toggleNavSignInText () {
 
@@ -369,6 +347,7 @@ public class MainActivity extends AppCompatActivity
             onLocationChanged(location);
         }
         locationManager.requestLocationUpdates(bestProvider, 20000, 0, this);
+
     }
 
     @Override
@@ -391,6 +370,17 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
+    }
+
+    public void generateListContent() {
+        for (Restroom restroom : restrooms) {
+            String title = restroom.getDescription();
+            int feet = 0;
+            String dist = feet + " ft ";
+            double rate = restroom.getRating();
+            items.add(new DrawerItem(title, dist, rate));
+        }
+        adapter.notifyDataSetChanged();
     }
 
     private boolean isExecuting = false;
@@ -443,6 +433,8 @@ public class MainActivity extends AppCompatActivity
                 ));
             }
             isExecuting = false;
+
+            generateListContent();
         }
     }
 
@@ -450,14 +442,14 @@ public class MainActivity extends AppCompatActivity
         private int layout;
         private List<DrawerItem> objects;
 
-        private MyListAdapter(Context context, int resource, List<DrawerItem> objects) {
+        public MyListAdapter(Context context, int resource, List<DrawerItem> objects) {
             super(context, resource, objects);
             this.objects = objects;
             layout = resource;
         }
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder mainViewHolder = null;
+            ViewHolder mainViewHolder;
             if (convertView == null) {
                 LayoutInflater inflater = LayoutInflater.from(getContext());
                 convertView = inflater.inflate(layout, parent, false);
@@ -479,16 +471,16 @@ public class MainActivity extends AppCompatActivity
                 convertView.setTag(viewHolder);
 
             }
-            else {
-                mainViewHolder = (ViewHolder) convertView.getTag();
-                DrawerItem dItem =  this.objects.get(position);
+
+            mainViewHolder = (ViewHolder) convertView.getTag();
+
+            DrawerItem dItem =  this.objects.get(position);
+
+            mainViewHolder.title.setText(dItem.getItemTitle());
+            mainViewHolder.dist.setText(dItem.getItemDist());
+            mainViewHolder.ratings.setRating((float)dItem.getItemRate());
 
 
-                mainViewHolder.title.setText(dItem.getItemTitle());
-                mainViewHolder.dist.setText(dItem.getItemDist());
-                mainViewHolder.ratings.setRating((float)dItem.getItemRate());
-
-            }
 
             return convertView;
         }
