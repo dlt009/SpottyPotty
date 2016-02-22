@@ -1,8 +1,5 @@
 package com.teamoptimal.cse110project.data;
 
-import android.media.Rating;
-import android.widget.RatingBar;
-
 /**
  * Created by dltan on 2/21/2016.
  */
@@ -10,15 +7,13 @@ public class DrawerItem {
     String itemTitle;
     String itemDist;
     double itemRate;
-    int imgResID;
 
     public DrawerItem(String itemTitle, String itemDist,
-                      double itemRate, int imgResID) {
+                      double itemRate) {
         super();
         this.itemTitle = itemTitle;
         this.itemDist = itemDist;
         this.itemRate = itemRate;
-        this.imgResID = imgResID;
     }
 
     public String getItemTitle() {
@@ -42,10 +37,4 @@ public class DrawerItem {
         this.itemRate = itemRate;
     }
 
-    public int getImgResID() {
-        return imgResID;
-    }
-    public void setImgResID(int imgResID) {
-        this.imgResID = imgResID;
-    }
 }

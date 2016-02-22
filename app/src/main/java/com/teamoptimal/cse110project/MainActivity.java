@@ -66,6 +66,8 @@ import com.teamoptimal.cse110project.data.DrawerItem;
 import com.teamoptimal.cse110project.data.Restroom;
 import com.teamoptimal.cse110project.data.User;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,9 +84,8 @@ public class MainActivity extends AppCompatActivity
     private User user;
 
     private List<Restroom> restrooms;
-    private ArrayList<DrawerItem> items; //= new ArrayList<DrawerItem>();
+    private ArrayList<DrawerItem> items;
     private ListView listView;
-
 
     /* Map */
     private GoogleMap map;
@@ -101,15 +102,14 @@ public class MainActivity extends AppCompatActivity
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
 
-    boolean signedInGoogle;
-    boolean signedInFacebook;
-    boolean signedInTwitter;
+    private boolean signedInGoogle;
+    private boolean signedInFacebook;
+    private boolean signedInTwitter;
 
-    View header;
-    ListView bath_reviews;
+    private View header;
 
-    Button signInButton;
-    FloatingActionButton fab;
+    private Button signInButton;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,10 +129,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 goToCreateRestroom();
-                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                //        .setAction("Action", null).show();
             }
         });
+
+        /* initialize shared preferences object to get info from other activities */
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        editor = sharedPreferences.edit();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -140,26 +142,19 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        /* initialize shared preferences object to get info from other activities */
-        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
-        editor = sharedPreferences.edit();
+        /* bathroom list view
+        listView = (ListView) findViewById(R.id.restrooms_list);
 
-
-
-        listView = (ListView) findViewById(R.id.); // ADD LISTVIEW ID HERE ////
-
-        ArrayList<DrawerItem> items = new ArrayList<DrawerItem>();
-        generateListContent();
+        ArrayList<DrawerItem> items = new ArrayList<>();
 
         listView.setAdapter(new MyListAdapter(this, R.layout.mylist_layout, items));
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Toast.makeText(MainActivity.this, "Send user to Maps Activity",
-                        Toast.LENGTH_SHORT ).show();
+                        Toast.LENGTH_SHORT).show();
             }
-        }) ;
-
+        });*/
 
         //initialize nav, nav header, and sign in button
         //navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -178,9 +173,6 @@ public class MainActivity extends AppCompatActivity
         });
         toggleNavSignInText();
 
-        /* bathroom list view */
-        bath_reviews = (ListView) findViewById(R.id.reviews_list);
-
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
         clientManager.validateCredentials();
@@ -189,14 +181,26 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-    }
 
-        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
-        editor = sharedPreferences.edit();
-        
-        boolean signedInGoogle = sharedPreferences.getBoolean("goog", false);
-        boolean signedInFacebook = sharedPreferences.getBoolean("face", false);
-        boolean signedInTwitter = sharedPreferences.getBoolean("twit", false);
+
+
+        signedInGoogle=sharedPreferences.getBoolean("goog",false);
+        signedInFacebook=sharedPreferences.getBoolean("face",false);
+        signedInTwitter=sharedPreferences.getBoolean("twit",false);
+
+               /* bathroom list view */
+        listView = (ListView) findViewById(R.id.restrooms_list);
+
+        ArrayList<DrawerItem> items = new ArrayList<>();
+
+        listView.setAdapter(new MyListAdapter(this, R.layout.mylist_layout, items));
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(MainActivity.this, "Send user to Maps Activity",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void generateListContent() {
@@ -205,10 +209,34 @@ public class MainActivity extends AppCompatActivity
             int feet = 0;
             String dist = feet + " ft ";
             double rate = restroom.getRating();
-            items.add(new DrawerItem(title, dist, rate, 0));
+            items.add(new DrawerItem(title, dist, rate));
         }
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        //updates button text to reflect if signing in or out
+        toggleNavSignInText();
+        String name = sharedPreferences.getString("user_name", "Please login to see profile");
+        String email = sharedPreferences.getString("user_email", "");
+
+        TextView name_text = (TextView) findViewById(R.id.header_name);
+        TextView email_text = (TextView) findViewById(R.id.header_email);
+
+        //if signed in, show profile info on headder, make create restroom button visible
+        if (signedInFacebook || signedInGoogle || signedInTwitter) {
+            name_text.setText(name);
+            email_text.setText(email);
+            fab.setVisibility(View.VISIBLE);
+        }
+        else {
+            name_text.setText("Please login to see profile");
+            email_text.setText("");
+            fab.setVisibility(View.GONE);
+        }
+    } 
 
     private void toggleNavSignInText () {
 
@@ -431,8 +459,8 @@ public class MainActivity extends AppCompatActivity
         public View getView(int position, View convertView, ViewGroup parent) {
             ViewHolder mainViewHolder = null;
             if (convertView == null) {
-                LayoutInflater inflator = LayoutInflater.from(getContext());
-                convertView = inflator.inflate(layout, parent, false);
+                LayoutInflater inflater = LayoutInflater.from(getContext());
+                convertView = inflater.inflate(layout, parent, false);
 
                 ViewHolder viewHolder = new ViewHolder();
                 viewHolder.imageColor = (ImageView)convertView.findViewById(R.id.view_color);
@@ -444,7 +472,7 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onClick(View v) {
                         Toast.makeText(getContext(),
-                                "Send user to details/reviews activity", Toast.LENGTH_SHORT).show();
+                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -475,3 +503,4 @@ public class MainActivity extends AppCompatActivity
     }
 
 }
+
