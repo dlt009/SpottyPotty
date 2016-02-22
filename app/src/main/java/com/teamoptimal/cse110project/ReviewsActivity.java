@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
@@ -28,27 +29,29 @@ import java.util.Map;
 
 
 public class ReviewsActivity extends ListActivity{
-    User users;
-    RatingBar getRatingBar;
-    TextView countText;
-    Review newReview;
-    int currentID;
-    Restroom currentRestroom;
-    AmazonClientManager client = new AmazonClientManager(this);
-    DynamoDBMapper mapper = new DynamoDBMapper(client.ddb());
+    private RatingBar getRatingBar;
+    private TextView countText;
+    public static Review review;
+    private int currentID;
+    private Restroom restroom = CreateRestroomActivity.restroom;
+    private AmazonClientManager client = new AmazonClientManager(this);
+    private DynamoDBMapper mapper = new DynamoDBMapper(client.ddb());
+    public static AmazonClientManager clientManager = null;
+    private User user = SignInActivity.user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reviews);
 
+        clientManager = new AmazonClientManager(this);
+
         EditText comments = (EditText) findViewById(R.id.comments);
 
-        newReview = new Review();
-        //currentRestroom = new Restroom();
-        //newReview.setID(currentRestroom.getID());
-        //newReview.setUserEmail(currentRestroom.getUser());
-        newReview.setUserEmail("FakeUser@test.com");
+        review = new Review();
+        //restroom = new Restroom();
+        review.setID(CreateRestroomActivity.restroom.getID());
+        review.setUserEmail("FakeUser@test.com"/*SignInActivity.user.getEmail()*/);
         this.addListenerToRatingBar();
 
         comments.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -57,7 +60,7 @@ public class ReviewsActivity extends ListActivity{
                 boolean handled = false;
                 if (i == EditorInfo.IME_ACTION_DONE) {
                     String inputMessage = textView.getText().toString();
-                    newReview.setMessage(inputMessage);
+                    review.setMessage(inputMessage);
                     handled = true;
                 }
                 return handled;
@@ -68,11 +71,11 @@ public class ReviewsActivity extends ListActivity{
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mapper.save(newReview);
+                review.create();
                 EditText comments = (EditText)findViewById(R.id.comments);
-                newReview.setMessage(comments.getText().toString());
-                Intent intent = new Intent(view.getContext(), ReviewsActivity.class);
-                startActivity(intent);
+                review.setMessage(comments.getText().toString());
+                finish();
+
             }
         });
 
@@ -85,7 +88,7 @@ public class ReviewsActivity extends ListActivity{
         getRatingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
             @Override
             public void onRatingChanged(RatingBar rateBar, float rating, boolean fromUser) {
-                newReview.setRating(Float.toString(rating));
+                review.setRating(Float.toString(rating));
             }
         });
     }
@@ -94,7 +97,7 @@ public class ReviewsActivity extends ListActivity{
         List<Review> items = new ArrayList<Review>();
         ArrayList<CombinedReview> itemComments = new ArrayList<CombinedReview>();
         Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-        eav.put(":val1", new AttributeValue().withS(currentRestroom.getID()));
+        eav.put(":val1", new AttributeValue().withS(restroom.getID()));
         DynamoDBQueryExpression<Review> queryExpression = new DynamoDBQueryExpression<Review>()
                 //.withString(currentRestroom.getID())
                 .withExpressionAttributeValues(eav);

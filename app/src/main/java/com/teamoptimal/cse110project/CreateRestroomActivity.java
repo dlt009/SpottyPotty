@@ -34,7 +34,7 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
 import android.widget.Button;
 
 public class CreateRestroomActivity extends ListActivity {
-    private Restroom restroom;
+    public static Restroom restroom;
     private User user = SignInActivity.user;
     private String[] Gender = {
             "Unisex",
