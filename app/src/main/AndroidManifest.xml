@@ -59,12 +59,6 @@
             android:value="AIzaSyCI8YYgH-s-epFwg-VUUdL0v3MPy4VP1hQ" />
 
         <activity
-            android:name=".MapsActivity"
-            android:label="Maps" />
-        <activity
-            android:name=".SearchActivity"
-            android:label="cs110project"></activity>
-        <activity
             android:name=".ReviewsActivity"
             android:label="cse110project"
             android:windowSoftInputMode="adjustPan">

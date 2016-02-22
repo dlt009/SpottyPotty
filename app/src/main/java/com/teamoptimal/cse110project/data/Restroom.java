@@ -150,32 +150,32 @@ public class Restroom {
     }
 
     public void create() {
-        AmazonDynamoDBClient ddb = CreateRestroomActivity.clientManager.ddb();
+        AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
 
         mapper.save(this);
     }
 
-
-
     @DynamoDBIgnore
-    public static List<Restroom> getRestrooms(double latitude, double longitude, double radius) {
+    public static ArrayList<Restroom> getRestrooms(double latitude, double longitude, double diameter) {
         Log.d(TAG, "getRestrooms");
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
 
+        Log.d(TAG, latitude + ", " + longitude);
+
         Condition minLatitude = new Condition()
                 .withComparisonOperator(ComparisonOperator.GE)
-                .withAttributeValueList(new AttributeValue().withN("" + (latitude - (radius / 2))));
+                .withAttributeValueList(new AttributeValue().withN("" + (latitude - (diameter / 2))));
         Condition maxLatitude = new Condition()
                 .withComparisonOperator(ComparisonOperator.LE)
-                .withAttributeValueList(new AttributeValue().withN("" + (latitude + (radius / 2))));
+                .withAttributeValueList(new AttributeValue().withN("" + (latitude + (diameter / 2))));
         Condition minLongitude = new Condition()
                 .withComparisonOperator(ComparisonOperator.GE)
-                .withAttributeValueList(new AttributeValue().withN("" + (longitude - (radius / 2))));
+                .withAttributeValueList(new AttributeValue().withN("" + (longitude - (diameter / 2))));
         Condition maxLongitude = new Condition()
                 .withComparisonOperator(ComparisonOperator.LE)
-                .withAttributeValueList(new AttributeValue().withN("" + (longitude + (radius / 2))));
+                .withAttributeValueList(new AttributeValue().withN("" + (longitude + (diameter / 2))));
 
         Map<String, Condition> conditions = new HashMap<String, Condition>();
         conditions.put("Latitude", minLatitude);
@@ -188,7 +188,13 @@ public class Restroom {
 
         List<Restroom> scanResult = mapper.scan(Restroom.class, scanExpression);
         Log.d(TAG, "scanResult, " + scanResult.size());
-        return scanResult;
+
+        ArrayList<Restroom> returnVal = new ArrayList<>();
+        for(Restroom restroom : scanResult) {
+            returnVal.add(restroom);
+        }
+
+        return returnVal;
     }
 
     public static List<Restroom> filterRestrooms(List<Restroom> scan, int filter){

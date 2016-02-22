@@ -28,12 +28,11 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ReviewsActivity extends ListActivity{
+public class ReviewsActivity extends ListActivity {
     private RatingBar getRatingBar;
     private TextView countText;
     public static Review review;
-    private int currentID;
-    private Restroom restroom = CreateRestroomActivity.restroom;
+    private String currentID;
     private AmazonClientManager client = new AmazonClientManager(this);
     private DynamoDBMapper mapper = new DynamoDBMapper(client.ddb());
     public static AmazonClientManager clientManager = null;
@@ -48,10 +47,11 @@ public class ReviewsActivity extends ListActivity{
 
         EditText comments = (EditText) findViewById(R.id.comments);
 
+        currentID = MainActivity.clickedRestroomID;
+
         review = new Review();
-        //restroom = new Restroom();
-        review.setID(CreateRestroomActivity.restroom.getID());
-        review.setUserEmail("FakeUser@test.com"/*SignInActivity.user.getEmail()*/);
+        review.setRestroomID(currentID);
+        review.setUserEmail(MainActivity.user.getEmail());
         this.addListenerToRatingBar();
 
         comments.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -97,7 +97,7 @@ public class ReviewsActivity extends ListActivity{
         List<Review> items = new ArrayList<Review>();
         ArrayList<CombinedReview> itemComments = new ArrayList<CombinedReview>();
         Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-        eav.put(":val1", new AttributeValue().withS(restroom.getID()));
+        eav.put(":val1", new AttributeValue().withS(currentID));
         DynamoDBQueryExpression<Review> queryExpression = new DynamoDBQueryExpression<Review>()
                 //.withString(currentRestroom.getID())
                 .withExpressionAttributeValues(eav);
