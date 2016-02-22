@@ -7,15 +7,15 @@
     android:weightSum="1">
 
     <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:id="@+id/view_color"
         android:background="@android:drawable/presence_online"
 
         android:backgroundTint="@android:color/holo_red_dark" />
 
     <TextView
-        android:layout_margin="10dp"
+        android:layout_margin="8dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -24,10 +24,10 @@
         android:id="@+id/view_title"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+
         android:layout_alignParentTop="true"
-        android:layout_marginTop="10dp"
         android:layout_toEndOf="@+id/view_color"
-        android:layout_alignBottom="@+id/view_color" />
+        />
 
     <TextView
         android:layout_width="wrap_content"
@@ -38,20 +38,22 @@
         android:id="@+id/view_dist"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_alignTop="@+id/view_title"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="18dp" />
+        android:layout_above="@+id/details_button"
+        android:layout_alignEnd="@+id/details_button"
+        android:layout_marginEnd="10dp" />
 
     <RatingBar
-        android:layout_margin="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/view_rating"
+        android:clickable="false"
+        android:focusableInTouchMode="false"
+        android:focusable="false"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        style="?android:attr/ratingBarStyleSmall"
         android:layout_below="@+id/view_title"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp" />
+        android:layout_alignStart="@+id/view_title" />
 
     <Button
         android:layout_gravity = "center"
@@ -59,11 +61,14 @@
         android:layout_height="wrap_content"
         android:text="Details"
         android:id="@+id/details_button"
-        android:background="@android:color/holo_orange_dark"
-        android:textColor="@android:color/white"
+        android:background="@android:color/holo_orange_light"
+        android:textColor="@android:color/black"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_alignTop="@+id/view_rating"
-        android:layout_alignParentEnd="true" />
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_below="@+id/view_rating"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="9dp" />
 
 </RelativeLayout>
