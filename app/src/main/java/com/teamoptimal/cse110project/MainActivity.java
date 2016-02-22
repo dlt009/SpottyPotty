@@ -10,6 +10,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.AttrRes;
@@ -30,6 +31,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression;
@@ -91,7 +94,11 @@ public class MainActivity extends AppCompatActivity
     boolean signedInFacebook;
     boolean signedInTwitter;
 
-    NavigationView navigationView;
+    View header;
+    ListView bath_reviews;
+
+    Button signInButton;
+    FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +113,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -122,13 +129,30 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
+        /* initialize shared preferences object to get info from other activities */
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
         editor = sharedPreferences.edit();
 
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
 
-        toggleNavSignIn();
+        //initialize nav, nav header, and sign in button
+        //navigationView = (NavigationView) findViewById(R.id.nav_view);
+        //navigationView.setNavigationItemSelectedListener(this);
+        //drawer.setScrimColor(getResources().getColor(android.R.color.transparent));
+
+        /* Initialize signIn button and link to SignInActivity */
+        header = findViewById(R.id.header);
+        signInButton = (Button) header.findViewById(R.id.nav_sign_in_toggle);
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
+                startActivity(intent);
+            }
+        });
+        toggleNavSignInText();
+
+        /* bathroom list view */
+        bath_reviews = (ListView) findViewById(R.id.reviews_list);
 
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
@@ -143,19 +167,40 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onStart(){
         super.onStart();
-        toggleNavSignIn();
+
+        // update button text to reflect if signing in or out
+        toggleNavSignInText();
+        String name = sharedPreferences.getString("user_name","Please login to see profile");
+        String email = sharedPreferences.getString("user_email", "");
+
+        TextView name_text = (TextView) findViewById(R.id.header_name);
+        TextView email_text = (TextView) findViewById(R.id.header_email);
+
+        // if signed in, show profile info on header, make create restroom button visible
+        if(signedInFacebook || signedInGoogle || signedInTwitter) {
+            name_text.setText(name);
+            email_text.setText(email);
+            fab.setVisibility(View.VISIBLE);
+        }
+        else {
+            name_text.setText("Please login to see profile");
+            email_text.setText("");
+            fab.setVisibility(View.GONE);
+        }
     }
 
-    private void toggleNavSignIn () {
+    private void toggleNavSignInText () {
+
+        // update login status
         signedInGoogle = sharedPreferences.getBoolean("goog", false);
         signedInFacebook = sharedPreferences.getBoolean("face", false);
         signedInTwitter = sharedPreferences.getBoolean("twit", false);
 
-        MenuItem signInToggle = navigationView.getMenu().findItem(R.id.nav_sign_in_toggle);
+        // change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook)
-            signInToggle.setTitle("Sign Out");
+            signInButton.setText("Sign Out");
         else
-            signInToggle.setTitle("Sign In");
+            signInButton.setText("Sign In");
     }
 
     private void goToCreateRestroom() {
@@ -217,20 +262,6 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_sign_in_toggle) {
-            Intent intent = new Intent(this, SignInActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

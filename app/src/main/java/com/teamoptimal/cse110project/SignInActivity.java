@@ -100,6 +100,8 @@ public class SignInActivity extends AppCompatActivity implements
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
 
+    private boolean isGoogleSilentSignIn = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -187,6 +189,7 @@ public class SignInActivity extends AppCompatActivity implements
 
             @Override
             public void onError(FacebookException error) {
+                Toast.makeText(SignInActivity.this, "Facebook sign in unsuccessful", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -215,7 +218,7 @@ public class SignInActivity extends AppCompatActivity implements
 
             @Override
             public void failure(TwitterException exception) {
-                Log.d("TwitterKit", "Login with Twitter failure", exception);
+                Toast.makeText(SignInActivity.this, "Twitter sign in unsuccessful", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -241,8 +244,7 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     public void onStart() {
         super.onStart();
-
-        /*
+        isGoogleSilentSignIn = true;
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
             Log.d(TAG, "Got cached sign-in");
@@ -255,7 +257,7 @@ public class SignInActivity extends AppCompatActivity implements
                     handleSignInResult(googleSignInResult);
                 }
             });
-        }*/
+        }
     }
 
     @Override
@@ -284,8 +286,6 @@ public class SignInActivity extends AppCompatActivity implements
             googleUser = result.getSignInAccount();
             signedInGoogle = true;
 
-            //updateUI(true);
-
             // Access with token
             String token = googleUser.getIdToken();
 
@@ -302,8 +302,10 @@ public class SignInActivity extends AppCompatActivity implements
             user.setUsername(googleUser.getDisplayName());
             new CreateUserTask(user).execute();
         } else {
-            // Signed out, show unauthenticated UI.
-            //updateUI(false);
+            if(!isGoogleSilentSignIn)
+                Toast.makeText(SignInActivity.this, "Google sign in unsuccessful", Toast.LENGTH_LONG).show();
+            else
+                isGoogleSilentSignIn = false;
         }
     }
 
@@ -399,12 +401,15 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     private void goToMain() {
-        //Intent intent = new Intent(this, MainActivity.class);
         editor.putBoolean("goog", signedInGoogle);
         editor.putBoolean("face", signedInFacebook);
         editor.putBoolean("twit", signedInTwitter);
+        editor.putString("user_email", user.getEmail());
+        editor.putString("user_name", user.getUsername());
         editor.commit();
-        finish();
-        //startActivity(intent);
+        if(isGoogleSilentSignIn)
+            isGoogleSilentSignIn = false;
+        else
+            finish();
     }
 }
