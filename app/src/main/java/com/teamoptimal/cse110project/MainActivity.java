@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.Image;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.AttrRes;
@@ -35,10 +36,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RatingBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression;
@@ -100,6 +101,15 @@ public class MainActivity extends AppCompatActivity
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
 
+    boolean signedInGoogle;
+    boolean signedInFacebook;
+    boolean signedInTwitter;
+
+    View header;
+    ListView bath_reviews;
+
+    Button signInButton;
+    FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +124,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -124,14 +134,15 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        /* initialize shared preferences object to get info from other activities */
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        editor = sharedPreferences.edit();
 
 
 
@@ -149,6 +160,27 @@ public class MainActivity extends AppCompatActivity
             }
         }) ;
 
+
+        //initialize nav, nav header, and sign in button
+        //navigationView = (NavigationView) findViewById(R.id.nav_view);
+        //navigationView.setNavigationItemSelectedListener(this);
+        //drawer.setScrimColor(getResources().getColor(android.R.color.transparent));
+
+        /* Initialize signIn button and link to SignInActivity */
+        header = findViewById(R.id.header);
+        signInButton = (Button) header.findViewById(R.id.nav_sign_in_toggle);
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
+                startActivity(intent);
+            }
+        });
+        toggleNavSignInText();
+
+        /* bathroom list view */
+        bath_reviews = (ListView) findViewById(R.id.reviews_list);
+
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
         clientManager.validateCredentials();
@@ -157,10 +189,11 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
 
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
         editor = sharedPreferences.edit();
-
+        
         boolean signedInGoogle = sharedPreferences.getBoolean("goog", false);
         boolean signedInFacebook = sharedPreferences.getBoolean("face", false);
         boolean signedInTwitter = sharedPreferences.getBoolean("twit", false);
@@ -176,6 +209,20 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+    private void toggleNavSignInText () {
+
+        // update login status
+        signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        signedInFacebook = sharedPreferences.getBoolean("face", false);
+        signedInTwitter = sharedPreferences.getBoolean("twit", false);
+
+        // change sign-in button text to reflect if currently signing in or out
+        if(signedInTwitter || signedInGoogle || signedInFacebook)
+            signInButton.setText("Sign Out");
+        else
+            signInButton.setText("Sign In");
+    }
 
     private void goToCreateRestroom() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -236,19 +283,6 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -302,7 +336,7 @@ public class MainActivity extends AppCompatActivity
         String bestProvider = locationManager.getBestProvider(criteria, true);
 
         Location location = locationManager.getLastKnownLocation(bestProvider);
-        Log.d(TAG, location.getLatitude() + ", " + location.getLongitude());
+        //Log.d(TAG, location.getLatitude() + ", " + location.getLongitude());
         if (location != null) {
             onLocationChanged(location);
         }

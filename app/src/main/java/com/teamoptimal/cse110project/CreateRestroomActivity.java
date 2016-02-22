@@ -121,35 +121,7 @@ public class CreateRestroomActivity extends ListActivity {
         EditText name = (EditText) findViewById(R.id.editText);
         EditText floor = (EditText) findViewById(R.id.editText2);
 
-
         this.addListenerOnRatingBar();
-
-        /*name.setOnEditorActionListener(new TextView.OnEditorActionListener(){
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent){
-                boolean handled = false;
-                if(i== EditorInfo.IME_ACTION_NEXT){
-                    String inputName = textView.getText().toString();
-                    restroom.setName(inputName);
-                    handled=true;
-                }
-                return handled;
-            }
-        });
-
-        floor.setOnEditorActionListener(new TextView.OnEditorActionListener(){
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent){
-                boolean handled = false;
-                if(i== EditorInfo.IME_ACTION_NEXT){
-                    String inputFloor = textView.getText().toString();
-                    restroom.setFloor(inputFloor);
-                    handled=true;
-                }
-                return handled;
-            }
-        });*/
-
 
         Button button = (Button) findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {

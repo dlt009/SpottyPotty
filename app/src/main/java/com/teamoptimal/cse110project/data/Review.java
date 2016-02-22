@@ -2,6 +2,7 @@ package com.teamoptimal.cse110project.data;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribute;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIgnore;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
 
 /**
@@ -19,6 +20,7 @@ public class Review {
     private int thumbsDown;
     private int flags;
     private int size;
+    private int reports;
 
     @DynamoDBHashKey(attributeName = "ID")
     public String getID() { return ID; }
@@ -51,4 +53,11 @@ public class Review {
     @DynamoDBAttribute(attributeName = "Restroom")
     public String getRestroomId() { return restroomID; }
     public void setRestroomId(String restroomId) { this.restroomID = restroomId; }
+
+    @DynamoDBAttribute(attributeName = "Times_Reported")
+    public int getReportCount(){return reports;}
+    public void setReportCount(int count){reports = count;}
+
+    @DynamoDBIgnore
+    public void addReport(){reports++;}
 }

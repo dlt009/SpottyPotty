@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribute;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIgnore;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIndexHashKey;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIndexRangeKey;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
@@ -32,6 +33,9 @@ public class User {
     private String username;
     private String gender; // The preferred gender for restrooms
     private int flags;
+    private int reports;
+
+    public User(){}
 
     @DynamoDBHashKey(attributeName = "Email")
     public String getEmail() { return email; }
@@ -57,6 +61,13 @@ public class User {
     public int getFlags() { return flags; }
     public void setFlags(int flags) { this.flags = flags; }
 
+    @DynamoDBAttribute(attributeName = "Times_Reported")
+    public int getReportCount(){return reports;}
+    public void setReportCount(int count){reports = count;}
+
+    @DynamoDBIgnore
+    public void addReport(){reports++;}
+
     // Create the user
     public void create() {
         AmazonDynamoDBClient ddb = SignInActivity.clientManager.ddb();
@@ -66,5 +77,46 @@ public class User {
         mapper.save(this);
     }
 
+    @DynamoDBIgnore
+    public void reportRestroom(Restroom rest, String desc){
+        Report report = new Report();
+        rest.addReport();
+        report.setObject("Restroom", rest.getID());
+        report.setReporter(this.getEmail());
+        report.setTarget(rest.getUser());
+        report.setDescription(desc);
+
+        AmazonDynamoDBClient ddb = ReportActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+        mapper.save(rest);
+
+        /*User target = new User();
+        mapper.load(target, rest.getUser());
+        target.addReport();
+        mapper.save(target);*/
+
+        report.create();
+    }
+
+    @DynamoDBIgnore
+    public void reportReview(Review review, String desc){
+        Report report = new Report();
+        review.addReport();
+        report.setObject("Review", review.getID());
+        report.setReporter(this.getEmail());
+        report.setTarget(review.getUserEmail());
+        report.setDescription(desc);
+
+        AmazonDynamoDBClient ddb = ReportActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+        mapper.save(review);
+
+        /*User target = new User();
+        mapper.load(target, review.getUserEmail());
+        target.addReport();
+        mapper.save(target);*/
+
+        report.create();
+    }
 
 }

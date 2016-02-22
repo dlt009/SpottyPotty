@@ -19,6 +19,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.teamoptimal.cse110project.CreateRestroomActivity;
 import com.teamoptimal.cse110project.MainActivity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +32,12 @@ public class Restroom {
     private double latitude;
     private String userEmail;
     private String description;
-    private String tags ="0000000000000000000000000000000";
+    private String tags;
     private String floor;
     private double rating;
     private int ratingsCount;
     private float color;
+    private int reports;
 
 
     public Restroom () {
@@ -90,12 +92,30 @@ public class Restroom {
     public float getColor() {return color;}
     public void setColor(float color) {this.color = color;Log.d(TAG, "color of marker");}
 
+    @DynamoDBAttribute(attributeName = "Times_Reported")
+    public int getReportCount(){return reports;}
+    public void setReportCount(int count){reports = count;}
+
     @DynamoDBIgnore
-    public void setTag(int index, boolean choice) {
+    public void setTag(int index, boolean choice){
         char[] chars = tags.toCharArray();
-        if(choice) { chars[index] = '1'; }
-        else { chars[index] = '0'; }
+        if(choice)chars[index] = 1;
+        else chars[index]=0;
         tags = chars.toString();
+    }
+
+    @DynamoDBIgnore
+    public int convertTags(String tagSet) {
+        char[] tag = tagSet.toCharArray();
+        int sum = 0;
+        for(int i =0; i<31; i++){
+            if(tag[i] == 1){
+                double pos = (double)i;
+                double val = Math.pow(2.0, 31-pos);
+                sum+=val;
+            }
+        }
+        return sum;
     }
 
     @DynamoDBIgnore
@@ -120,6 +140,9 @@ public class Restroom {
     }
 
     @DynamoDBIgnore
+    public void addReport(){reports++;}
+
+    @DynamoDBIgnore
     public boolean isInitialized() {
         if(longitude != 0.0d && latitude != 0.0d && !userEmail.equals("") && !description.equals(""))
             return true;
@@ -132,6 +155,8 @@ public class Restroom {
 
         mapper.save(this);
     }
+
+
 
     @DynamoDBIgnore
     public static List<Restroom> getRestrooms(double latitude, double longitude, double radius) {
@@ -164,5 +189,16 @@ public class Restroom {
         List<Restroom> scanResult = mapper.scan(Restroom.class, scanExpression);
         Log.d(TAG, "scanResult, " + scanResult.size());
         return scanResult;
+    }
+
+    public static List<Restroom> filterRestrooms(List<Restroom> scan, int filter){
+        List<Restroom> ret = new ArrayList<Restroom>();
+
+        for(int i =0;i<scan.size(); i++){
+            Restroom temp = scan.get(i);
+            if(filter == (temp.convertTags(temp.getTags()) & filter)) ret.add(temp);
+        }
+
+        return ret;
     }
 }

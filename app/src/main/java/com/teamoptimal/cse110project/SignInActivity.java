@@ -11,6 +11,7 @@ import android.webkit.CookieSyncManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -89,12 +90,17 @@ public class SignInActivity extends AppCompatActivity implements
 
     private boolean signedInTwitter;
 
+    private Button signOutButton;
+    TextView signInText;
+
     /* Our user */
     public static User user  = null;
 
     /* sharedPreferences to store log in status */
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
+
+    private boolean isGoogleSilentSignIn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,8 +137,9 @@ public class SignInActivity extends AppCompatActivity implements
         googleSignInButton = (SignInButton) findViewById(R.id.google_login_button);
         facebookSignInButton = (LoginButton) findViewById(R.id.facebook_login_button);
         twitterLoginButton = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
-        Button signOut = (Button) findViewById(R.id.button2);
-        signOut.setOnClickListener(this);
+        signOutButton = (Button) findViewById(R.id.sign_out_button);
+
+        signInText = (TextView) findViewById(R.id.sign_in_text);
 
         /* Set Facebook */
         facebookSignInButton.setReadPermissions(Arrays.asList("email"));
@@ -182,6 +189,7 @@ public class SignInActivity extends AppCompatActivity implements
 
             @Override
             public void onError(FacebookException error) {
+                Toast.makeText(SignInActivity.this, "Facebook sign in unsuccessful", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -210,7 +218,7 @@ public class SignInActivity extends AppCompatActivity implements
 
             @Override
             public void failure(TwitterException exception) {
-                Log.d("TwitterKit", "Login with Twitter failure", exception);
+                Toast.makeText(SignInActivity.this, "Twitter sign in unsuccessful", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -227,14 +235,16 @@ public class SignInActivity extends AppCompatActivity implements
 
         googleSignInButton.setSize(SignInButton.SIZE_STANDARD);
         googleSignInButton.setScopes(gso.getScopeArray());
-        findViewById(R.id.google_login_button).setOnClickListener(this);
+        googleSignInButton.setOnClickListener(this);
+        signOutButton.setOnClickListener(this);
+
+        updateUI(signedInFacebook || signedInTwitter || signedInGoogle);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
-        /* Cached sign-in with Google */
+        isGoogleSilentSignIn = true;
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
             Log.d(TAG, "Got cached sign-in");
@@ -276,8 +286,6 @@ public class SignInActivity extends AppCompatActivity implements
             googleUser = result.getSignInAccount();
             signedInGoogle = true;
 
-            updateUI(true);
-
             // Access with token
             String token = googleUser.getIdToken();
 
@@ -294,8 +302,10 @@ public class SignInActivity extends AppCompatActivity implements
             user.setUsername(googleUser.getDisplayName());
             new CreateUserTask(user).execute();
         } else {
-            // Signed out, show unauthenticated UI.
-            updateUI(false);
+            if(!isGoogleSilentSignIn)
+                Toast.makeText(SignInActivity.this, "Google sign in unsuccessful", Toast.LENGTH_LONG).show();
+            else
+                isGoogleSilentSignIn = false;
         }
     }
 
@@ -310,7 +320,7 @@ public class SignInActivity extends AppCompatActivity implements
             ResultCallback<Status> signOutCallBack = new ResultCallback<Status>() {
                 @Override
                 public void onResult(Status status) {
-                    updateUI(false);
+                    //updateUI(false);
                 }
             };
             Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(signOutCallBack);
@@ -342,9 +352,17 @@ public class SignInActivity extends AppCompatActivity implements
 
     private void updateUI(boolean signedIn) {
         if (signedIn) {
-            findViewById(R.id.google_login_button).setVisibility(View.VISIBLE);
+            signOutButton.setVisibility(View.VISIBLE);
+            signInText.setText("Are you sure you want to log out?");
+            googleSignInButton.setVisibility(View.GONE);
+            facebookSignInButton.setVisibility(View.GONE);
+            twitterLoginButton.setVisibility(View.GONE);
         } else {
-            findViewById(R.id.google_login_button).setVisibility(View.VISIBLE);
+            signOutButton.setVisibility(View.GONE);
+            signInText.setText("Choose a sign-in option");
+            googleSignInButton.setVisibility(View.VISIBLE);
+            facebookSignInButton.setVisibility(View.VISIBLE);
+            twitterLoginButton.setVisibility(View.VISIBLE);
         }
     }
 
@@ -354,8 +372,9 @@ public class SignInActivity extends AppCompatActivity implements
             case R.id.google_login_button:
                 signIn();
                 break;
-            case R.id.button2:
+            case R.id.sign_out_button:
                 signOut();
+                goToMain();
                 break;
         }
     }
@@ -382,11 +401,15 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     private void goToMain() {
-        Intent intent = new Intent(this, SearchActivity.class);
         editor.putBoolean("goog", signedInGoogle);
         editor.putBoolean("face", signedInFacebook);
         editor.putBoolean("twit", signedInTwitter);
+        editor.putString("user_email", user.getEmail());
+        editor.putString("user_name", user.getUsername());
         editor.commit();
-        startActivity(intent);
+        if(isGoogleSilentSignIn)
+            isGoogleSilentSignIn = false;
+        else
+            finish();
     }
 }
