@@ -4,8 +4,8 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:icon="@drawable/ic_action_findrr"
+            android:title="Restroom" />
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_gallery"
@@ -20,17 +20,27 @@
             android:title="Tools" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="List of Restrooms">
         <menu>
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:title="Restroom" />
             <item
                 android:id="@+id/nav_send"
                 android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:title="Restroom" />
+
+
+
         </menu>
+    </item>
+
+    <item android:title="Kevin things">
+        <ListView>
+
+        </ListView>
+
     </item>
 
 </menu>

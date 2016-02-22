@@ -34,4 +34,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="view_dist">500 ft </string>
+    <string name="view_title">Restroom Title </string>
 </resources>

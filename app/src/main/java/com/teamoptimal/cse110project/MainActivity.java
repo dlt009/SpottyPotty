@@ -10,6 +10,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.AttrRes;
@@ -17,6 +18,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,7 +31,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression;
@@ -52,6 +61,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.teamoptimal.cse110project.data.DrawerItem;
 import com.teamoptimal.cse110project.data.Restroom;
 import com.teamoptimal.cse110project.data.User;
 
@@ -71,6 +81,9 @@ public class MainActivity extends AppCompatActivity
     private User user;
 
     private List<Restroom> restrooms;
+    private ArrayList<DrawerItem> items; //= new ArrayList<DrawerItem>();
+    private ListView listView;
+
 
     /* Map */
     private GoogleMap map;
@@ -86,7 +99,7 @@ public class MainActivity extends AppCompatActivity
     private static final String PREFERENCES = "AppPrefs";
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
-    
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +124,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -119,6 +132,22 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+
+        listView = (ListView) findViewById(R.id.); // ADD LISTVIEW ID HERE ////
+
+        ArrayList<DrawerItem> items = new ArrayList<DrawerItem>();
+        generateListContent();
+
+        listView.setAdapter(new MyListAdapter(this, R.layout.mylist_layout, items));
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(MainActivity.this, "Send user to Maps Activity",
+                        Toast.LENGTH_SHORT ).show();
+            }
+        }) ;
 
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
@@ -131,11 +160,22 @@ public class MainActivity extends AppCompatActivity
 
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
         editor = sharedPreferences.edit();
-        
+
         boolean signedInGoogle = sharedPreferences.getBoolean("goog", false);
         boolean signedInFacebook = sharedPreferences.getBoolean("face", false);
         boolean signedInTwitter = sharedPreferences.getBoolean("twit", false);
     }
+
+    private void generateListContent() {
+        for (Restroom restroom : restrooms) {
+            String title = restroom.getDescription();
+            int feet = 0;
+            String dist = feet + " ft ";
+            double rate = restroom.getRating();
+            items.add(new DrawerItem(title, dist, rate, 0));
+        }
+    }
+
 
     private void goToCreateRestroom() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -343,4 +383,61 @@ public class MainActivity extends AppCompatActivity
             isExecuting = false;
         }
     }
+
+    private class MyListAdapter extends ArrayAdapter<DrawerItem> {
+        private int layout;
+        private List<DrawerItem> objects;
+
+        private MyListAdapter(Context context, int resource, List<DrawerItem> objects) {
+            super(context, resource, objects);
+            this.objects = objects;
+            layout = resource;
+        }
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder mainViewHolder = null;
+            if (convertView == null) {
+                LayoutInflater inflator = LayoutInflater.from(getContext());
+                convertView = inflator.inflate(layout, parent, false);
+
+                ViewHolder viewHolder = new ViewHolder();
+                viewHolder.imageColor = (ImageView)convertView.findViewById(R.id.view_color);
+                viewHolder.title = (TextView)convertView.findViewById(R.id.view_title);
+                viewHolder.dist = (TextView)convertView.findViewById(R.id.view_dist);
+                viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.view_rating);
+                viewHolder.details = (Button)convertView.findViewById(R.id.details_button);
+                viewHolder.details.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getContext(),
+                                "Send user to details/reviews activity", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                convertView.setTag(viewHolder);
+
+            }
+            else {
+                mainViewHolder = (ViewHolder) convertView.getTag();
+                DrawerItem dItem =  this.objects.get(position);
+
+
+                mainViewHolder.title.setText(dItem.getItemTitle());
+                mainViewHolder.dist.setText(dItem.getItemDist());
+                mainViewHolder.ratings.setRating((float)dItem.getItemRate());
+
+            }
+
+            return convertView;
+        }
+    }
+
+    public class ViewHolder {
+        ImageView imageColor;
+        TextView title;
+        TextView dist;
+        RatingBar ratings;
+        Button details;
+    }
+
 }
