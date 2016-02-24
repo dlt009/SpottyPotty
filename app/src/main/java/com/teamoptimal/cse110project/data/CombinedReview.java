@@ -5,30 +5,22 @@ package com.teamoptimal.cse110project.data;
  */
 public class CombinedReview {
 
-    private String users;
     private String comments;
-    private Double rating;
+    private Float rating;
 
-    public CombinedReview(String users, Double rating, String comments){
+    public CombinedReview(String comments, Float rating){
         super();
-        this.users = users;
         this.rating = rating;
         this.comments = comments;
     }
 
-    public String getUsers(){
-        return users;
-    }
-
     public String getComments(){
-        return comments;
+        return this.comments;
     }
-
-    public void setUsers(String newUser) {
-        this.users = newUser;
-    }
-
     public void setComments(String newComment){
         this.comments = newComment;
     }
+
+    public void setRating(Float rating){ this.rating = rating; }
+    public Float getRating() { return this.rating; }
 }
