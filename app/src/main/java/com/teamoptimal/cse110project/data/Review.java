@@ -18,7 +18,7 @@ public class Review {
     private String userEmail;
     private String message;
     private String restroomID;
-    private double rating;
+    private float rating;
     private int thumbsUp;
     private int thumbsDown;
     private int flags;
@@ -39,8 +39,8 @@ public class Review {
     public void setMessage(String message) { this.message = message; }
 
     @DynamoDBAttribute(attributeName = "Rating")
-    public double getRating() { return rating; }
-    public void setRating(String val) { rating = Double.parseDouble(val); }
+    public float getRating() { return rating; }
+    public void setRating(float val) { rating = val; }
 
     @DynamoDBAttribute(attributeName = "ThumbsUp")
     public int getThumbsUp() { return thumbsUp; }
