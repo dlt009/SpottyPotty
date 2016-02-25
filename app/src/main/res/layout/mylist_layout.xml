@@ -53,7 +53,10 @@
         android:layout_marginRight="10dp"
         style="?android:attr/ratingBarStyleSmall"
         android:layout_below="@+id/view_title"
-        android:layout_alignStart="@+id/view_title" />
+        android:layout_alignStart="@+id/view_title"
+        android:max="5"
+        android:numStars="5"
+        />
 
     <Button
         android:layout_gravity = "center"

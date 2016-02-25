@@ -87,6 +87,11 @@ public class MainActivity extends AppCompatActivity
     private View header;
     private Button signInButton;
     private FloatingActionButton fab;
+    private Menu signOutMenu;
+
+    boolean signedInGoogle;
+    boolean signedInFacebook;
+    boolean signedInTwitter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +133,7 @@ public class MainActivity extends AppCompatActivity
 
         /* Initialize signIn button and link to SignInActivity */
         header = findViewById(R.id.header);
-        signInButton = (Button) header.findViewById(R.id.nav_sign_in_toggle);
+        signInButton = (Button) header.findViewById(R.id.nav_sign_in);
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -136,7 +141,6 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
             }
         });
-        toggleNavSignInText();
 
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
@@ -161,6 +165,7 @@ public class MainActivity extends AppCompatActivity
     public void onStart() {
         super.onStart();
 
+        Log.d(TAG, "Starting app");
         // Updates button text to reflect if signing in or out
         toggleNavSignInText();
         String name = sharedPreferences.getString("user_name", "Please login to see profile");
@@ -170,7 +175,7 @@ public class MainActivity extends AppCompatActivity
         TextView email_text = (TextView) findViewById(R.id.header_email);
 
         // If signed in, show profile info on header, make create restroom button visible
-        if (signInButton.getVisibility() == View.GONE) {
+        if (signedInFacebook || signedInGoogle || signedInTwitter) {
             name_text.setText(name);
             email_text.setText(email);
             fab.setVisibility(View.VISIBLE);
@@ -184,15 +189,21 @@ public class MainActivity extends AppCompatActivity
 
     private void toggleNavSignInText () {
         // Update login status
-        boolean signedInGoogle = sharedPreferences.getBoolean("goog", false);
-        boolean signedInFacebook = sharedPreferences.getBoolean("face", false);
-        boolean signedInTwitter = sharedPreferences.getBoolean("twit", false);
+        signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        signedInFacebook = sharedPreferences.getBoolean("face", false);
+        signedInTwitter = sharedPreferences.getBoolean("twit", false);
 
         // Change sign-in button text to reflect if currently signing in or out
-        if(signedInTwitter || signedInGoogle || signedInFacebook)
+        if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-        else
-            signInButton.setText("Sign In");
+            if(signOutMenu != null && !signOutMenu.hasVisibleItems())
+                signOutMenu.add(0,R.id.sign_out,Menu.NONE,"Sign Out");
+        }
+        else {
+            signInButton.setVisibility(View.VISIBLE);
+            if(signOutMenu != null)
+                signOutMenu.clear();
+        }
     }
 
     private void goToCreateRestroom() {
@@ -226,6 +237,10 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        Log.d(TAG, "Menu inflated!");
+        signOutMenu = menu;
+        signOutMenu.clear();
+        toggleNavSignInText();
         return true;
     }
 
@@ -237,7 +252,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.sign_out) {
+            Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
+            startActivity(intent);
             return true;
         }
 
