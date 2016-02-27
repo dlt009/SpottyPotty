@@ -59,7 +59,7 @@
             android:value="AIzaSyCI8YYgH-s-epFwg-VUUdL0v3MPy4VP1hQ" />
 
         <activity
-            android:name=".ReviewsActivity"
+            android:name=".DetailActivity"
             android:label="cse110project"
             android:windowSoftInputMode="adjustPan">
         </activity>

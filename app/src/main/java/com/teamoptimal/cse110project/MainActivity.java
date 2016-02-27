@@ -32,7 +32,6 @@ import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.Toast;
 
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -140,7 +139,7 @@ public class MainActivity extends AppCompatActivity
         listView = (ListView) findViewById(R.id.restrooms_list);
 
         items = new ArrayList<>();
-        adapter = new MyListAdapter(this, R.layout.mylist_layout, items);
+        adapter = new MyListAdapter(this, R.layout.restroom_item, items);
 
         /* Initialize signIn button and link to SignInActivity */
         header = findViewById(R.id.header);
@@ -459,7 +458,7 @@ public class MainActivity extends AppCompatActivity
                         //Toast.makeText(getContext(),
                         //        "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
 
-                        Intent intent = new Intent(getApplicationContext(), ReviewsActivity.class);
+                        Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                         String [] name_dist = { mainViewHolder.title.getText(), dItem.getDistance()};
                         intent.putExtra("Title and Distance", name_dist);
                         startActivity(intent);
@@ -488,7 +487,7 @@ public class MainActivity extends AppCompatActivity
                         /*Toast.makeText(getContext(),
                                 "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();*/
 
-                    Intent intent = new Intent(getApplicationContext(), ReviewsActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                     String name = mainViewHolder.title.getText().toString();
                     String distance = mainViewHolder.distance.getText().toString();
                     intent.putExtra("name", name);

@@ -13,7 +13,6 @@ import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.teamoptimal.cse110project.MainActivity;
 import com.teamoptimal.cse110project.ReportActivity;
-import com.teamoptimal.cse110project.ReviewsActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -100,8 +99,8 @@ public class Review {
     }
 
     @DynamoDBIgnore
-    public static ArrayList<CombinedReview> getReviews(String currentID){
-        AmazonDynamoDBClient ddb = ReviewsActivity.client.ddb();
+    public static ArrayList<ReviewItem> getReviews(String currentID) {
+        AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
 
         Condition restroomID = new Condition().withComparisonOperator(ComparisonOperator.EQ)
@@ -115,11 +114,11 @@ public class Review {
 
         List<Review> scanReviews = mapper.scan(Review.class, scanExpression);
 
-        ArrayList<CombinedReview> combined = new ArrayList<>();
+        ArrayList<ReviewItem> combined = new ArrayList<>();
 
         for(int i =  0; i < scanReviews.size(); i++)
         {
-            combined.add(new CombinedReview(scanReviews.get(i).getMessage(), scanReviews.get(i).getRating()));
+            combined.add(new ReviewItem(scanReviews.get(i).getMessage(), scanReviews.get(i).getRating()));
         }
 
         return combined;

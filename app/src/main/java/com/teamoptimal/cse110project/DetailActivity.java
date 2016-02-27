@@ -5,11 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,28 +16,19 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.teamoptimal.cse110project.data.CombinedReview;
+import com.teamoptimal.cse110project.data.ReviewItem;
 import com.teamoptimal.cse110project.data.Review;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
-public class ReviewsActivity extends ListActivity {
+public class DetailActivity extends ListActivity {
     private ListView reviewList;
     private RatingBar getRatingBar;
     private Review review;
     private String currentID;
-    public static AmazonClientManager client = null; //= new AmazonClientManager(this);
-    private DynamoDBMapper mapper; //= new DynamoDBMapper(client.ddb());
-    private AmazonClientManager clientManager;
     private Intent intentExtra;
-    private ArrayList<CombinedReview> itemComments = new ArrayList<CombinedReview>();
+    private ArrayList<ReviewItem> itemComments = new ArrayList<ReviewItem>();
     private Context context = this;
 
     private MyAdapter adapter;
@@ -47,7 +36,7 @@ public class ReviewsActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.bathroom_page);
+        setContentView(R.layout.activity_details);
 
        // mapper = new DynamoDBMapper(client.ddb());
        // mapper.load(User.class, )
@@ -56,9 +45,6 @@ public class ReviewsActivity extends ListActivity {
         intentExtra = getIntent();
         String name = /*intentExtra.getStringExtra("name");*/ "test";
         String distance = /*intentExtra.getStringExtra("distance");*/ "test distance";
-
-        /* Grabs the ACM intent from MainActivity */
-        clientManager = MainActivity.clientManager;
 
         EditText comments = (EditText) findViewById(R.id.comments);
 
@@ -126,10 +112,8 @@ public class ReviewsActivity extends ListActivity {
         distanceView.setText(distance);
 
         /* Sets the ListView of comments/ratings */
-        adapter = new MyAdapter(this, generateData());
+        new GetReviewsTask(review, this);
         //ListView reviewList = getListView();
-        reviewList = (ListView)findViewById(android.R.id.list);
-        reviewList.setAdapter(adapter);
 
     }
 
@@ -143,13 +127,13 @@ public class ReviewsActivity extends ListActivity {
         });
     }*/
 
-    public ArrayList<CombinedReview> generateData(){
+    public ArrayList<ReviewItem> generateData(){
         if(itemComments.size() != 0) {
             itemComments.clear();
         }
 
         /*List<Review> items = new ArrayList<Review>();
-        //ArrayList<CombinedReview> itemComments = new ArrayList<CombinedReview>();
+        //ArrayList<ReviewItem> itemComments = new ArrayList<ReviewItem>();
         Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
         eav.put(":val1", new AttributeValue().withS(currentID));
         DynamoDBQueryExpression<Review> queryExpression = new DynamoDBQueryExpression<Review>()
@@ -162,7 +146,7 @@ public class ReviewsActivity extends ListActivity {
         items = mapper.query(Review.class, queryExpression);
         for(int i = 0; i < items.size();i++)
         {
-            itemComments.add(new CombinedReview(items.get(i).getMessage(), items.get(i).getRating()));
+            itemComments.add(new ReviewItem(items.get(i).getMessage(), items.get(i).getRating()));
         }*/
 
         itemComments = Review.getReviews(currentID);
@@ -172,12 +156,12 @@ public class ReviewsActivity extends ListActivity {
 
     }
 
-    private class MyAdapter extends ArrayAdapter<CombinedReview> {
+    private class MyAdapter extends ArrayAdapter<ReviewItem> {
         private final Context context;
-        private final ArrayList<CombinedReview> reviews;
+        private final ArrayList<ReviewItem> reviews;
 
-        public MyAdapter(Context context, ArrayList<CombinedReview> reviews) {
-            super(context, R.layout.row, reviews);
+        public MyAdapter(Context context, ArrayList<ReviewItem> reviews) {
+            super(context, R.layout.review_item, reviews);
             this.context = context;
             this.reviews = reviews;
         }
@@ -185,7 +169,7 @@ public class ReviewsActivity extends ListActivity {
         public View getView(int position, View convertView, ViewGroup parent){
             LayoutInflater inflator = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            View rowView = inflator.inflate(R.layout.row, parent, false);
+            View rowView = inflator.inflate(R.layout.review_item, parent, false);
 
             TextView commentView = (TextView) rowView.findViewById(R.id.comments);
             RatingBar ratingView = (RatingBar) rowView.findViewById(R.id.setRating);
@@ -194,6 +178,33 @@ public class ReviewsActivity extends ListActivity {
             ratingView.setRating(reviews.get(position).getRating());
 
             return rowView;
+        }
+    }
+
+
+    private class GetReviewsTask extends AsyncTask<Void, Void, Void> {
+        private Review review;
+        private Context context;
+        ArrayList<ReviewItem> reviewItems;
+
+        public GetReviewsTask(Review review, Context context) {
+            this.review = review;
+            this.context = context;
+        }
+
+        // To do in the background
+        protected Void doInBackground(Void... inputs) {
+            reviewItems = review.getReviews(currentID);
+            return null;
+        }
+
+        // To do after doInBackground is executed
+        // We can use UI elements here
+        protected void onPostExecute(Void result) {
+            adapter = new MyAdapter(context, reviewItems);
+            adapter.notifyDataSetChanged();
+            reviewList = (ListView)findViewById(android.R.id.list);
+            reviewList.setAdapter(adapter);
         }
     }
 
