@@ -78,7 +78,7 @@ public class CreateRestroomActivity extends ListActivity {
         /* Initialize restroom with data from MainActivity */
         restroom = new Restroom();
         user = MainActivity.user;
-        restroom.setUser(SignInActivity.user.getEmail());
+        restroom.setUser(user.getEmail());
 
         // Random color for this restroom
         Random random = new Random();
@@ -124,17 +124,15 @@ public class CreateRestroomActivity extends ListActivity {
                 restroom.setDescription(description.getText().toString());
                 restroom.setFloor(floor.getText().toString());
 
-                if (restroom.isInitialized()) {
+                if(restroom.getDescription() != "") {
                     new CreateRestroomTask(restroom).execute();
                     Toast.makeText(getBaseContext(),
                             restroom.getDescription() + " has been created", Toast.LENGTH_LONG).show();
 
                     finish();
-                }
-                else {
-                    Toast.makeText(getBaseContext(), "Unsuccessful", Toast.LENGTH_SHORT).show();
-                    Toast.makeText(getBaseContext(), "You must have a valid location and name",
-                            Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getBaseContext(), "Restroom must have a valid name",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
         });

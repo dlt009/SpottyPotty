@@ -1,4 +1,4 @@
-package com.teamoptimal.cse110project.data;
+package com.teamoptimal.cse110project;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

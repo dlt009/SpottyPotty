@@ -32,6 +32,7 @@ import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.Toast;
 
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -114,12 +115,22 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        /* Initialize Amazon Client Manager */
+        clientManager = new AmazonClientManager(this);
+        clientManager.validateCredentials();
+
         /* Initialize shared preferences object to get info from other activities */
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
         editor = sharedPreferences.edit();
 
+        /* Load user */
+        String userEmail = sharedPreferences.getString("user_email", "");
+        user = new User();
+
+        new GetUserTask(userEmail);
+
         /* Drawer */
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -142,10 +153,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        /* Initialize Amazon Client Manager */
-        clientManager = new AmazonClientManager(this);
-        clientManager.validateCredentials();
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -155,6 +162,12 @@ public class MainActivity extends AppCompatActivity
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                LatLng latLng = new LatLng(restrooms.get(position).getLatitude(),
+                        restrooms.get(position).getLongitude());
+                drawer.closeDrawer(GravityCompat.START);
+                map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,
+                        map.getCameraPosition().zoom));
                 Toast.makeText(MainActivity.this, "Send user to Maps Activity",
                         Toast.LENGTH_SHORT).show();
             }
@@ -352,6 +365,26 @@ public class MainActivity extends AppCompatActivity
         } else {
             GooglePlayServicesUtil.getErrorDialog(status, this, 0).show();
             return false;
+        }
+    }
+
+    private class GetUserTask extends AsyncTask<Void, Void, Void> {
+        String email;
+
+        public GetUserTask(String email) {
+            this.email = email;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Log.d(TAG, "doInBackground");
+            user = User.load(email);
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+            /* Do UI actions after getting User */
+
         }
     }
 

@@ -1,4 +1,4 @@
-package com.teamoptimal.cse110project.data;
+package com.teamoptimal.cse110project;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -13,6 +13,10 @@ import android.widget.Toast;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.teamoptimal.cse110project.AmazonClientManager;
 import com.teamoptimal.cse110project.R;
+import com.teamoptimal.cse110project.data.Report;
+import com.teamoptimal.cse110project.data.Restroom;
+import com.teamoptimal.cse110project.data.Review;
+import com.teamoptimal.cse110project.data.User;
 
 public class ReportActivity extends AppCompatActivity {
 
