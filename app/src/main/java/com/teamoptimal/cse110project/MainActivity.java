@@ -441,7 +441,8 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder mainViewHolder;
+            final ViewHolder mainViewHolder;
+
             if (convertView == null) {
                 LayoutInflater inflater = LayoutInflater.from(getContext());
                 convertView = inflater.inflate(layout, parent, false);
@@ -452,13 +453,18 @@ public class MainActivity extends AppCompatActivity
                 viewHolder.distance = (TextView)convertView.findViewById(R.id.view_dist);
                 viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.view_rating);
                 viewHolder.details = (Button)convertView.findViewById(R.id.details_button);
-                viewHolder.details.setOnClickListener(new View.OnClickListener() {
+                /*viewHolder.details.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(getContext(),
-                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(),
+                        //        "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(getApplicationContext(), ReviewsActivity.class);
+                        String [] name_dist = { mainViewHolder.title.getText(), dItem.getDistance()};
+                        intent.putExtra("Title and Distance", name_dist);
+                        startActivity(intent);
                     }
-                });
+                });*/
 
                 convertView.setTag(viewHolder);
             }
@@ -473,8 +479,23 @@ public class MainActivity extends AppCompatActivity
             // Set values
             mainViewHolder.title.setText(dItem.getTitle());
             mainViewHolder.distance.setText("" + dItem.getDistance());
-            mainViewHolder.ratings.setRating((float)dItem.getRating());
+            mainViewHolder.ratings.setRating((float) dItem.getRating());
             mainViewHolder.imageColor.setBackgroundColor(color);
+
+            mainViewHolder.details.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                        /*Toast.makeText(getContext(),
+                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();*/
+
+                    Intent intent = new Intent(getApplicationContext(), ReviewsActivity.class);
+                    String name = mainViewHolder.title.getText().toString();
+                    String distance = mainViewHolder.distance.getText().toString();
+                    intent.putExtra("name", name);
+                    intent.putExtra("distance", distance);
+                    startActivity(intent);
+                }
+            });
 
             return convertView;
         }

@@ -22,8 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/getRating"
-        android:layout_marginBottom="110dp"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@+id/buttonComment"
         android:layout_centerHorizontal="true" />
 
     <Button
@@ -32,19 +31,16 @@
         android:layout_height="wrap_content"
         android:text="Submit"
         android:id="@+id/buttonComment"
-        android:layout_marginBottom="47dp"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        />
+        android:layout_toEndOf="@+id/comments" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/comments"
-        android:layout_alignBottom="@+id/buttonComment"
-        android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/buttonComment"
         android:imeOptions="actionDone"
         android:inputType="textMultiLine"
-        />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/getRating" />
 </RelativeLayout>
