@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity
     private View header;
     private Button signInButton;
     private FloatingActionButton fab;
-    private Menu signOutMenu;
+    private Menu optionsMenu;
 
     boolean signedInGoogle;
     boolean signedInFacebook;
@@ -159,6 +159,8 @@ public class MainActivity extends AppCompatActivity
                         Toast.LENGTH_SHORT).show();
             }
         });
+
+
     }
 
     @Override
@@ -196,13 +198,16 @@ public class MainActivity extends AppCompatActivity
         // Change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            if(signOutMenu != null && !signOutMenu.hasVisibleItems())
-                signOutMenu.add(0,R.id.sign_out,Menu.NONE,"Sign Out");
+            if(optionsMenu != null) {
+                optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
+            }
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
-            if(signOutMenu != null)
-                signOutMenu.clear();
+            if(optionsMenu != null) {
+                MenuItem signOutOption = optionsMenu.findItem(R.id.sign_out);
+                signOutOption.setVisible(false);
+            }
         }
     }
 
@@ -238,9 +243,12 @@ public class MainActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         Log.d(TAG, "Menu inflated!");
-        signOutMenu = menu;
-        signOutMenu.clear();
+        optionsMenu = menu;
+        optionsMenu.clear();
         toggleNavSignInText();
+
+        optionsMenu.add(0, R.id.filter, Menu.NONE, "Filter");
+
         return true;
     }
 
@@ -254,6 +262,12 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.sign_out) {
             Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        else if (id == R.id.filter) {
+            Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
             startActivity(intent);
             return true;
         }
