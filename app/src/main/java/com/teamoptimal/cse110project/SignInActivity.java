@@ -131,6 +131,15 @@ public class SignInActivity extends AppCompatActivity implements
         /* Set content view */
         setContentView(R.layout.activity_sign_in);
 
+        //David changed some stuff for testing purposes...don't forget to revert//
+        Button b = (Button) findViewById(R.id.testbutton);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(SignInActivity.this, FilterActivity.class));
+            }
+        });
+
         Log.d("Twitter Session",""+(twitterUser != null));
 
         /* Initialize buttons  */

@@ -90,7 +90,7 @@ public class Restroom {
 
     @DynamoDBAttribute(attributeName = "Color")
     public float getColor() {return color;}
-    public void setColor(float color) {this.color = color;Log.d(TAG, "color of marker");}
+    public void setColor(float color) {this.color = color;}
 
     @DynamoDBAttribute(attributeName = "Times_Reported")
     public int getReportCount(){return reports;}

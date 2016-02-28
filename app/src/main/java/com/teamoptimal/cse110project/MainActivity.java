@@ -324,16 +324,15 @@ public class MainActivity extends AppCompatActivity
     public void generateListContent() {
         items.clear();
         for (Restroom restroom : restrooms) {
-            String title = restroom.getDescription();
 
             float[] result = new float[2];
             Location.distanceBetween(restroom.getLatitude(), restroom.getLongitude(),
                     currentLocation.latitude, currentLocation.longitude, result);
-
             double meters = result[0];
             String distance = String.format("%.2f", meters) + " meters ";
-            double rating = restroom.getRating();
-            items.add(new RestroomItem(title, distance, rating, restroom.getColor()));
+
+            items.add(new RestroomItem(restroom.getDescription(), distance,
+                    restroom.getRating(), restroom.getColor()));
         }
         adapter.notifyDataSetChanged();
     }
