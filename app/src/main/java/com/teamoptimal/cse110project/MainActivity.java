@@ -114,12 +114,22 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        /* Initialize Amazon Client Manager */
+        clientManager = new AmazonClientManager(this);
+        clientManager.validateCredentials();
+
         /* Initialize shared preferences object to get info from other activities */
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
         editor = sharedPreferences.edit();
 
+        /* Load user */
+        String userEmail = sharedPreferences.getString("user_email", "");
+        user = new User();
+
+        new GetUserTask(userEmail);
+
         /* Drawer */
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -129,7 +139,7 @@ public class MainActivity extends AppCompatActivity
         listView = (ListView) findViewById(R.id.restrooms_list);
 
         items = new ArrayList<>();
-        adapter = new MyListAdapter(this, R.layout.mylist_layout, items);
+        adapter = new MyListAdapter(this, R.layout.restroom_item, items);
 
         /* Initialize signIn button and link to SignInActivity */
         header = findViewById(R.id.header);
@@ -142,10 +152,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        /* Initialize Amazon Client Manager */
-        clientManager = new AmazonClientManager(this);
-        clientManager.validateCredentials();
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -155,6 +161,12 @@ public class MainActivity extends AppCompatActivity
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                LatLng latLng = new LatLng(restrooms.get(position).getLatitude(),
+                        restrooms.get(position).getLongitude());
+                drawer.closeDrawer(GravityCompat.START);
+                map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,
+                        map.getCameraPosition().zoom));
                 Toast.makeText(MainActivity.this, "Send user to Maps Activity",
                         Toast.LENGTH_SHORT).show();
             }
@@ -368,6 +380,26 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private class GetUserTask extends AsyncTask<Void, Void, Void> {
+        String email;
+
+        public GetUserTask(String email) {
+            this.email = email;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Log.d(TAG, "doInBackground");
+            user = User.load(email);
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+            /* Do UI actions after getting User */
+
+        }
+    }
+
     private class GetRestroomsTask extends AsyncTask<Void, Void, Void> {
         double latitude;
         double longitude;
@@ -421,7 +453,8 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder mainViewHolder;
+            final ViewHolder mainViewHolder;
+
             if (convertView == null) {
                 LayoutInflater inflater = LayoutInflater.from(getContext());
                 convertView = inflater.inflate(layout, parent, false);
@@ -432,13 +465,18 @@ public class MainActivity extends AppCompatActivity
                 viewHolder.distance = (TextView)convertView.findViewById(R.id.view_dist);
                 viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.view_rating);
                 viewHolder.details = (Button)convertView.findViewById(R.id.details_button);
-                viewHolder.details.setOnClickListener(new View.OnClickListener() {
+                /*viewHolder.details.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(getContext(),
-                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(),
+                        //        "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                        String [] name_dist = { mainViewHolder.title.getText(), dItem.getDistance()};
+                        intent.putExtra("Title and Distance", name_dist);
+                        startActivity(intent);
                     }
-                });
+                });*/
 
                 convertView.setTag(viewHolder);
             }
@@ -453,8 +491,23 @@ public class MainActivity extends AppCompatActivity
             // Set values
             mainViewHolder.title.setText(dItem.getTitle());
             mainViewHolder.distance.setText("" + dItem.getDistance());
-            mainViewHolder.ratings.setRating((float)dItem.getRating());
+            mainViewHolder.ratings.setRating((float) dItem.getRating());
             mainViewHolder.imageColor.setBackgroundColor(color);
+
+            mainViewHolder.details.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                        /*Toast.makeText(getContext(),
+                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();*/
+
+                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                    String name = mainViewHolder.title.getText().toString();
+                    String distance = mainViewHolder.distance.getText().toString();
+                    intent.putExtra("name", name);
+                    intent.putExtra("distance", distance);
+                    startActivity(intent);
+                }
+            });
 
             return convertView;
         }

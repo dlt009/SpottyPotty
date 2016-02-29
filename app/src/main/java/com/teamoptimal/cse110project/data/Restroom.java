@@ -142,13 +142,6 @@ public class Restroom {
     @DynamoDBIgnore
     public void addReport(){reports++;}
 
-    @DynamoDBIgnore
-    public boolean isInitialized() {
-        if(longitude != 0.0d && latitude != 0.0d && !userEmail.equals("") && !description.equals(""))
-            return true;
-        return false;
-    }
-
     public void create() {
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);

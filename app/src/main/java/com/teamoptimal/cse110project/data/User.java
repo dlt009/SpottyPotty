@@ -6,6 +6,7 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIgnore;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.teamoptimal.cse110project.MainActivity;
 import com.teamoptimal.cse110project.ReportActivity;
 import com.teamoptimal.cse110project.SignInActivity;
 
@@ -63,6 +64,15 @@ public class User {
 
         // Create or update the user
         mapper.save(this);
+    }
+
+    // Load the user
+    public static User load(String email) {
+        AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+
+        // Create or update the user
+        return mapper.load(User.class, email);
     }
 
     @DynamoDBIgnore
