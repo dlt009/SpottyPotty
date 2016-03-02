@@ -79,8 +79,6 @@ public class DetailActivity extends ListActivity {
         /* Sets the ListView of comments/ratings */
         reviewList = (ListView) findViewById(android.R.id.list);
         adapter = new MyAdapter(this, R.layout.review_item, itemComments);
-        reviewList.setAdapter(adapter);
-
         new GetReviewsTask(review, this);
         //ListView reviewList = getListView();
 
