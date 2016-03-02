@@ -167,8 +167,6 @@ public class MainActivity extends AppCompatActivity
                 map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,
                         map.getCameraPosition().zoom));
-                Toast.makeText(MainActivity.this, "Send user to Maps Activity",
-                        Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -325,7 +323,11 @@ public class MainActivity extends AppCompatActivity
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
                     lastKnownLocation = currentLocation;
                     Log.d(TAG, location.getLatitude() + ", " + location.getLongitude());
-                    showNearbyMarkers(location, 0.00727946446);
+                    LatLng center = map.getCameraPosition().target;
+                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                    centerLoc.setLatitude(center.latitude);
+                    centerLoc.setLongitude(center.longitude);
+                    showNearbyMarkers(centerLoc, 0.00727946446);
                     initialized = true;
                 }
 
@@ -337,9 +339,14 @@ public class MainActivity extends AppCompatActivity
                 // 0.25 miles = 402.336 meters
                 if(result[0] > 402.336) {
                     map.clear();
-                    showNearbyMarkers(location, 0.00727946446);
+                    LatLng center = map.getCameraPosition().target;
+                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                    centerLoc.setLatitude(center.latitude);
+                    centerLoc.setLongitude(center.longitude);
+                    showNearbyMarkers(centerLoc, 0.00727946446);
                     lastKnownLocation = currentLocation;
-                } else {
+                }
+                else {
                     if(restrooms != null && !restrooms.isEmpty())
                         generateListContent();
                 }
