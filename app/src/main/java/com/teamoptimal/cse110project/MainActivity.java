@@ -1,8 +1,10 @@
 package com.teamoptimal.cse110project;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -61,11 +63,11 @@ public class MainActivity extends AppCompatActivity
     public static User user;
 
     /* Drawer */
-    private ArrayList<Restroom> restrooms;
+    public static ArrayList<Restroom> restrooms;
+    public static ArrayList<Restroom> originalRestrooms;
     private ArrayList<RestroomItem> items;
     private ListView listView;
     private MyListAdapter adapter;
-    public static String clickedRestroomID;
 
     /* Map */
     private GoogleMap map;
@@ -87,7 +89,13 @@ public class MainActivity extends AppCompatActivity
     private View header;
     private Button signInButton;
     private FloatingActionButton fab;
-    private Menu signOutMenu;
+    private Menu optionsMenu;
+    private MenuItem signOutOption;
+
+    public static BroadcastReceiver receiver;
+
+    public static String filter = "";
+    public static double rated = 0.0;
 
     boolean signedInGoogle;
     boolean signedInFacebook;
@@ -114,12 +122,22 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        /* Initialize Amazon Client Manager */
+        clientManager = new AmazonClientManager(this);
+        clientManager.validateCredentials();
+
         /* Initialize shared preferences object to get info from other activities */
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
         editor = sharedPreferences.edit();
 
+        /* Load user */
+        String userEmail = sharedPreferences.getString("user_email", "");
+        user = new User();
+
+        new GetUserTask(userEmail);
+
         /* Drawer */
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -129,7 +147,7 @@ public class MainActivity extends AppCompatActivity
         listView = (ListView) findViewById(R.id.restrooms_list);
 
         items = new ArrayList<>();
-        adapter = new MyListAdapter(this, R.layout.mylist_layout, items);
+        adapter = new MyListAdapter(this, R.layout.restroom_item, items);
 
         /* Initialize signIn button and link to SignInActivity */
         header = findViewById(R.id.header);
@@ -142,10 +160,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        /* Initialize Amazon Client Manager */
-        clientManager = new AmazonClientManager(this);
-        clientManager.validateCredentials();
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -155,19 +169,43 @@ public class MainActivity extends AppCompatActivity
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(MainActivity.this, "Send user to Maps Activity",
-                        Toast.LENGTH_SHORT).show();
+                LatLng latLng = new LatLng(restrooms.get(position).getLatitude(),
+                        restrooms.get(position).getLongitude());
+                drawer.closeDrawer(GravityCompat.START);
+                map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,
+                        map.getCameraPosition().zoom));
             }
         });
+        receiver = new BroadcastReceiver(){
+            @Override
+            public void onReceive(Context arg0, Intent intent){
+                String action = intent.getAction();
+                if(action.equals("filter_done")){
+
+                    LatLng center = map.getCameraPosition().target;
+                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                    centerLoc.setLatitude(center.latitude);
+                    centerLoc.setLongitude(center.longitude);
+                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
+                    generateListContent();
+                }
+            }
+        };
+        registerReceiver(receiver, new IntentFilter("filter_done"));
+
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
         Log.d(TAG, "Starting app");
-        // Updates button text to reflect if signing in or out
-        toggleNavSignInText();
+
+        // Update login status
+        signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        signedInFacebook = sharedPreferences.getBoolean("face", false);
+        signedInTwitter = sharedPreferences.getBoolean("twit", false);
+
         String name = sharedPreferences.getString("user_name", "Please login to see profile");
         String email = sharedPreferences.getString("user_email", "");
 
@@ -185,24 +223,25 @@ public class MainActivity extends AppCompatActivity
             email_text.setText("");
             fab.setVisibility(View.GONE);
         }
+        toggleNavSignInText();
     }
 
-    private void toggleNavSignInText () {
-        // Update login status
-        signedInGoogle = sharedPreferences.getBoolean("goog", false);
-        signedInFacebook = sharedPreferences.getBoolean("face", false);
-        signedInTwitter = sharedPreferences.getBoolean("twit", false);
-
+    private void toggleNavSignInText() {
         // Change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            if(signOutMenu != null && !signOutMenu.hasVisibleItems())
-                signOutMenu.add(0,R.id.sign_out,Menu.NONE,"Sign Out");
+            if(signOutOption != null)
+                signOutOption.setVisible(true);
+            if(optionsMenu != null && !optionsMenu.hasVisibleItems())
+                optionsMenu.add(0,R.id.sign_out,Menu.NONE,"Sign Out");
+            if(optionsMenu != null) {
+                optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
+            }
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
-            if(signOutMenu != null)
-                signOutMenu.clear();
+            if(signOutOption != null)
+                signOutOption.setVisible(false);
         }
     }
 
@@ -215,12 +254,19 @@ public class MainActivity extends AppCompatActivity
             // Ask for permission
             return;
         }
-
-        // Show create restroom activity with current location
-        Intent intent = new Intent(this, CreateRestroomActivity.class);
-        double[] loc = { currentLocation.latitude, currentLocation.longitude };
-        intent.putExtra("Location", loc);
-        startActivity(intent);
+        else if(user!= null && user.getReportCount() > 3){
+            Toast.makeText(getBaseContext(),
+                    "You do not have access to this feature\n" +
+                            "Reason: too many reports against content created by this user",
+                    Toast.LENGTH_LONG).show();
+        }
+        else {
+            // Show create restroom activity with current location
+            Intent intent = new Intent(this, CreateRestroomActivity.class);
+            double[] loc = {currentLocation.latitude, currentLocation.longitude};
+            intent.putExtra("Location", loc);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -229,6 +275,7 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+            unregisterReceiver(receiver);
             super.onBackPressed();
         }
     }
@@ -238,9 +285,18 @@ public class MainActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         Log.d(TAG, "Menu inflated!");
-        signOutMenu = menu;
-        signOutMenu.clear();
+        optionsMenu = menu;
+        optionsMenu.clear();
+
+        /* Filter */
+        optionsMenu.add(0, R.id.filter, Menu.NONE, "Filter");
+
+        /* Sign out */
+        optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
+        signOutOption = optionsMenu.findItem(R.id.sign_out);
+        signOutOption.setVisible(false);
         toggleNavSignInText();
+
         return true;
     }
 
@@ -254,6 +310,13 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.sign_out) {
             Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        else if (id == R.id.filter) {
+            //registerReceiver(receiver, new IntentFilter("filter_done"));
+            Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
             startActivity(intent);
             return true;
         }
@@ -299,7 +362,11 @@ public class MainActivity extends AppCompatActivity
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
                     lastKnownLocation = currentLocation;
                     Log.d(TAG, location.getLatitude() + ", " + location.getLongitude());
-                    showNearbyMarkers(location, 0.00727946446);
+                    LatLng center = map.getCameraPosition().target;
+                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                    centerLoc.setLatitude(center.latitude);
+                    centerLoc.setLongitude(center.longitude);
+                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
                     initialized = true;
                 }
 
@@ -311,9 +378,14 @@ public class MainActivity extends AppCompatActivity
                 // 0.25 miles = 402.336 meters
                 if(result[0] > 402.336) {
                     map.clear();
-                    showNearbyMarkers(location, 0.00727946446);
+                    LatLng center = map.getCameraPosition().target;
+                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                    centerLoc.setLatitude(center.latitude);
+                    centerLoc.setLongitude(center.longitude);
+                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
                     lastKnownLocation = currentLocation;
-                } else {
+                }
+                else {
                     if(restrooms != null && !restrooms.isEmpty())
                         generateListContent();
                 }
@@ -324,24 +396,23 @@ public class MainActivity extends AppCompatActivity
     public void generateListContent() {
         items.clear();
         for (Restroom restroom : restrooms) {
-            String title = restroom.getDescription();
 
             float[] result = new float[2];
             Location.distanceBetween(restroom.getLatitude(), restroom.getLongitude(),
                     currentLocation.latitude, currentLocation.longitude, result);
-
             double meters = result[0];
             String distance = String.format("%.2f", meters) + " meters ";
-            double rating = restroom.getRating();
-            items.add(new RestroomItem(title, distance, rating, restroom.getColor()));
+
+            items.add(new RestroomItem(restroom.getID(), restroom.getDescription(), distance,
+                    restroom.getRating(), restroom.getColor()));
         }
         adapter.notifyDataSetChanged();
     }
 
-    private void showNearbyMarkers(Location location, double diameter) {
+    private void showNearbyMarkers(Location location, double diameter, String filter, double rated) {
         if(!isExecuting) {
             isExecuting = true;
-            new GetRestroomsTask(location.getLatitude(), location.getLongitude(), diameter).execute();
+            new GetRestroomsTask(location.getLatitude(), location.getLongitude(), diameter, filter, rated).execute();
         }
     }
 
@@ -355,21 +426,46 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class GetRestroomsTask extends AsyncTask<Void, Void, Void> {
-        double latitude;
-        double longitude;
-        double diameter;
+    private class GetUserTask extends AsyncTask<Void, Void, Void> {
+        String email;
 
-        public GetRestroomsTask(double latitude, double longitude, double diameter) {
-            this.latitude = latitude;
-            this.longitude = longitude;
-            this.diameter = diameter;
+        public GetUserTask(String email) {
+            this.email = email;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
             Log.d(TAG, "doInBackground");
-            restrooms = Restroom.getRestrooms(latitude, longitude, diameter);
+            user = User.load(email);
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+            /* Do UI actions after getting User */
+
+        }
+    }
+
+    private class GetRestroomsTask extends AsyncTask<Void, Void, Void> {
+        double latitude;
+        double longitude;
+        double diameter;
+        String filter;
+        double rated;
+
+        public GetRestroomsTask(double latitude, double longitude, double diameter, String filter, double rated) {
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.diameter = diameter;
+            this.filter = filter;
+            this.rated = rated;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Log.d(TAG, "doInBackground");
+            restrooms = Restroom.getRestrooms(latitude, longitude, diameter, filter, rated);
+            originalRestrooms = Restroom.getRestrooms(latitude, longitude, diameter, "", 0.0);
             return null;
         }
 
@@ -408,7 +504,8 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder mainViewHolder;
+            final ViewHolder mainViewHolder;
+
             if (convertView == null) {
                 LayoutInflater inflater = LayoutInflater.from(getContext());
                 convertView = inflater.inflate(layout, parent, false);
@@ -419,20 +516,25 @@ public class MainActivity extends AppCompatActivity
                 viewHolder.distance = (TextView)convertView.findViewById(R.id.view_dist);
                 viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.view_rating);
                 viewHolder.details = (Button)convertView.findViewById(R.id.details_button);
-                viewHolder.details.setOnClickListener(new View.OnClickListener() {
+                /*viewHolder.details.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(getContext(),
-                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(),
+                        //        "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                        String [] name_dist = { mainViewHolder.title.getText(), dItem.getDistance()};
+                        intent.putExtra("Title and Distance", name_dist);
+                        startActivity(intent);
                     }
-                });
+                });*/
 
                 convertView.setTag(viewHolder);
             }
 
             mainViewHolder = (ViewHolder) convertView.getTag();
 
-            RestroomItem dItem =  this.restrooms.get(position);
+            final RestroomItem dItem =  this.restrooms.get(position);
 
             // Get color
             int color = Color.HSVToColor(new float[] { dItem.getColor(), 1.0f, 1.0f });
@@ -440,8 +542,24 @@ public class MainActivity extends AppCompatActivity
             // Set values
             mainViewHolder.title.setText(dItem.getTitle());
             mainViewHolder.distance.setText("" + dItem.getDistance());
-            mainViewHolder.ratings.setRating((float)dItem.getRating());
+            mainViewHolder.ratings.setRating((float) dItem.getRating());
             mainViewHolder.imageColor.setBackgroundColor(color);
+
+            mainViewHolder.details.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                        /*Toast.makeText(getContext(),
+                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();*/
+
+                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                    String name = mainViewHolder.title.getText().toString();
+                    String distance = mainViewHolder.distance.getText().toString();
+                    intent.putExtra("name", name);
+                    intent.putExtra("distance", distance);
+                    intent.putExtra("restroomID", dItem.getRestroomID());
+                    startActivity(intent);
+                }
+            });
 
             return convertView;
         }
@@ -476,5 +594,6 @@ public class MainActivity extends AppCompatActivity
             return resultA[0] < resultB[0] ? -1 : resultA[0] == resultB[0] ? 0 : 1;
         }
     }
+
 }
 

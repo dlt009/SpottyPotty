@@ -43,7 +43,8 @@
 
         <activity
             android:name=".CreateRestroomActivity"
-            android:label="cse110project"
+            android:label="Creating a Restroom"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan"></activity>
 
         <!--
@@ -59,7 +60,7 @@
             android:value="AIzaSyCI8YYgH-s-epFwg-VUUdL0v3MPy4VP1hQ" />
 
         <activity
-            android:name=".ReviewsActivity"
+            android:name=".DetailActivity"
             android:label="cse110project"
             android:windowSoftInputMode="adjustPan">
         </activity>
@@ -67,6 +68,7 @@
         <activity
             android:name=".MainActivity"
             android:label="cs110project"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -75,9 +77,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".data.ReportActivity"
+            android:name=".ReportActivity"
             android:label="@string/title_activity_report"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+
+        <activity
+            android:name=".FilterActivity"
+            android:label="Filters"
+            android:theme="@style/AppTheme.FilterWindow"
+            ></activity>
+
     </application>
 
 </manifest>

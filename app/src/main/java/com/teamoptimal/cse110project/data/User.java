@@ -1,25 +1,14 @@
 package com.teamoptimal.cse110project.data;
 
-import android.os.AsyncTask;
-
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribute;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIgnore;
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIndexHashKey;
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIndexRangeKey;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBQueryExpression;
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBRangeKey;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedQueryList;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
-import com.amazonaws.services.dynamodbv2.model.Condition;
+import com.teamoptimal.cse110project.MainActivity;
+import com.teamoptimal.cse110project.ReportActivity;
 import com.teamoptimal.cse110project.SignInActivity;
-
-import java.util.SimpleTimeZone;
-import java.util.logging.StreamHandler;
 
 /**
  * Represents a User
@@ -77,6 +66,15 @@ public class User {
         mapper.save(this);
     }
 
+    // Load the user
+    public static User load(String email) {
+        AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+
+        // Create or update the user
+        return mapper.load(User.class, email);
+    }
+
     @DynamoDBIgnore
     public void reportRestroom(Restroom rest, String desc){
         Report report = new Report();
@@ -90,10 +88,10 @@ public class User {
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
         mapper.save(rest);
 
-        /*User target = new User();
-        mapper.load(target, rest.getUser());
+        User target = new User();
+        target = mapper.load(target.getClass(), rest.getUser());
         target.addReport();
-        mapper.save(target);*/
+        mapper.save(target);
 
         report.create();
     }
@@ -111,10 +109,10 @@ public class User {
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
         mapper.save(review);
 
-        /*User target = new User();
-        mapper.load(target, review.getUserEmail());
+        User target = new User();
+        target = mapper.load(target.getClass(), review.getUserEmail());
         target.addReport();
-        mapper.save(target);*/
+        mapper.save(target);
 
         report.create();
     }

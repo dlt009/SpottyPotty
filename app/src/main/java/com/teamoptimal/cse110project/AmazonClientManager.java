@@ -16,7 +16,6 @@ import java.util.Map;
  * Created by Fabian Choi on 1/31/2016.
  */
 public class AmazonClientManager {
-
     private static final String LOG_TAG = "AmazonClientManager";
     private static final String ACCOUNT_ID = "379023374138";
     private static final String IDENTITY_POOL_ID = "us-east-1:f577c8d8-69d1-4706-855a-68dd834c06a1";

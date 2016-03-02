@@ -26,71 +26,112 @@
         android:layout_alignParentStart="true"
         android:textColor="#000000" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Fill in name and wait for location to be found before saving"
-        android:id="@+id/textview2"
-        android:textColor="#9b000000"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:textSize="12sp" />
-
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editText"
         android:hint="descriptive name for restroom"
         android:inputType="textEmailAddress"
-        android:imeOptions="actionNext"
-        android:imeActionLabel="Next"
-        android:layout_below="@+id/textview2"
+        android:imeOptions="actionDone"
+        android:imeActionLabel="Done"
+        android:layout_below="@+id/textView"
         android:maxLines="2"
         android:layout_alignParentStart="true" />
 
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below = "@+id/editText"
+        android:text = "Floor #:"
+        android:textSize="20dp"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/floor"
+        />
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/editText"
+        android:layout_toRightOf= "@+id/floor"
         android:id="@+id/editText2"
         android:hint="floor"
         android:inputType="phone"
-        android:imeOptions="actionNext"
-        android:imeActionLabel="Next"
-        android:maxLines="1"
-        android:layout_above="@android:id/list"
-        android:layout_alignEnd="@+id/textView" />
+        android:imeOptions="actionDone"
+        android:imeActionLabel="Done"
+        android:maxLines="1" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below = "@+id/editText2"
+        android:text = "Gender:"
+        android:textSize="20dp"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/Gender"
+        />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/gender"
+        android:layout_toRightOf="@+id/Gender"
+        android:spinnerMode="dropdown"
+        android:layout_below="@+id/editText2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below = "@+id/gender"
+        android:text = "Access:"
+        android:textSize="20dp"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/Access"
+        />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/access"
+        android:layout_toRightOf="@+id/Access"
+        android:layout_below="@+id/gender"
+        android:spinnerMode="dropdown"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below = "@+id/access"
+        android:text = "Tags:"
+        android:textSize="20dp"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/Extra"
+        />
 
     <ListView
         android:id="@android:id/list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/editText"
+        android:layout_below="@+id/access"
         android:layout_above="@+id/ratingBar"
-        android:layout_alignStart="@+id/editText"
-        android:layout_alignEnd="@+id/ratingBar"/>
-    
+        android:layout_toRightOf="@+id/Extra"
+        android:layout_alignEnd="@+id/editText"/>
 
     <RatingBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/ratingBar"
-        android:layout_above="@+id/button"
-        android:layout_alignParentStart="true" />
+        android:layout_alignStart="@+id/listView"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save Restroom"
+        android:text="+"
         android:id="@+id/button"
         android:textColor="#ffe016"
         android:backgroundTint="#be0037ff"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
-
+        android:layout_alignBottom="@+id/ratingBar"
+        android:layout_alignParentRight="true"
+        android:textSize="16sp" />
 
 </RelativeLayout>
 

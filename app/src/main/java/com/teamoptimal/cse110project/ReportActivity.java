@@ -1,4 +1,4 @@
-package com.teamoptimal.cse110project.data;
+package com.teamoptimal.cse110project;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -13,6 +13,10 @@ import android.widget.Toast;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.teamoptimal.cse110project.AmazonClientManager;
 import com.teamoptimal.cse110project.R;
+import com.teamoptimal.cse110project.data.Report;
+import com.teamoptimal.cse110project.data.Restroom;
+import com.teamoptimal.cse110project.data.Review;
+import com.teamoptimal.cse110project.data.User;
 
 public class ReportActivity extends AppCompatActivity {
 
@@ -31,18 +35,14 @@ public class ReportActivity extends AppCompatActivity {
 
         /*Bundle extra = getIntent().getExtras();
         String currUser = extra.getString("User");
-        String currRestroom = extras.getString("Restroom");
-        String currReview = extras.getString("Review");
+        String reportObj = extras.getString("Reported_Object");
 
         TextView text = (TextView) findViewById(R.id.Title);
 
-        String reportObj;
         if(currRestroom != null){
-            reportObj = currRestroom;
             text.setText("Restroom");
         }
         else if(currReview != null){
-            reportObj = currReview;
             text.setText("Review");
         }
         else return;

@@ -5,8 +5,19 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAutoGene
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBIgnore;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
+import com.teamoptimal.cse110project.MainActivity;
+import com.teamoptimal.cse110project.ReportActivity;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a Review made by a User on a Restroom
@@ -54,11 +65,11 @@ public class Review {
     public int getFlags() { return flags; }
     public void setFlags(int flags) { this.flags = flags; }
 
-    @DynamoDBAttribute(attributeName = "Restroom")
+    @DynamoDBAttribute(attributeName = "RestroomID")
     public String getRestroomID() { return restroomID; }
     public void setRestroomID(String restroomId) { this.restroomID = restroomId; }
 
-    @DynamoDBAttribute(attributeName = "Times_Reported")
+    @DynamoDBAttribute(attributeName = "TimesReported")
     public int getReportCount(){return reports;}
     public void setReportCount(int count){reports = count;}
 
@@ -70,5 +81,46 @@ public class Review {
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
 
         mapper.save(this);
+    }
+
+    @DynamoDBIgnore
+    public void createReview() {
+        AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+
+        mapper.save(this);
+    }
+
+    @DynamoDBIgnore
+    public boolean isInitialized() {
+        if(rating != 0.0 && !userEmail.equals("") && !message.equals(""))
+            return true;
+        return false;
+    }
+
+    @DynamoDBIgnore
+    public static ArrayList<ReviewItem> getReviews(String currentID) {
+        AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+
+        Condition restroomID = new Condition().withComparisonOperator(ComparisonOperator.EQ)
+                .withAttributeValueList(new AttributeValue().withS(currentID));
+
+        Map<String, Condition> conditions = new HashMap<String, Condition>();
+        conditions.put("ID", restroomID);
+
+        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+        scanExpression.setScanFilter(conditions);
+
+        List<Review> scanReviews = mapper.scan(Review.class, scanExpression);
+
+        ArrayList<ReviewItem> combined = new ArrayList<>();
+
+        for(int i =  0; i < scanReviews.size(); i++)
+        {
+            combined.add(new ReviewItem(scanReviews.get(i).getMessage(), scanReviews.get(i).getRating()));
+        }
+
+        return combined;
     }
 }

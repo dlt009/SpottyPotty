@@ -39,6 +39,10 @@ public class Restroom {
     private float color;
     private int reports;
 
+    private int SIZEOF_GENDER=3;
+    private int SIZEOF_ACCESS=3;
+    private int SIZEOF_EXTRANEOUS=8;
+
 
     public Restroom () {
         userEmail = "";
@@ -90,25 +94,53 @@ public class Restroom {
 
     @DynamoDBAttribute(attributeName = "Color")
     public float getColor() {return color;}
-    public void setColor(float color) {this.color = color;Log.d(TAG, "color of marker");}
+    public void setColor(float color) {this.color = color;}
 
     @DynamoDBAttribute(attributeName = "Times_Reported")
     public int getReportCount(){return reports;}
     public void setReportCount(int count){reports = count;}
 
     @DynamoDBIgnore
+    public void setGender(int index){
+        char[] chars = tags.toCharArray();
+        for(int i=0; i<SIZEOF_GENDER;i++){
+            chars[i]= '0';
+        }
+        chars[index] = '1';
+        tags = String.valueOf(chars);
+    }
+
+    @DynamoDBIgnore
+    public void setAccess(int index){
+        char[] chars = tags.toCharArray();
+        for(int i=0; i<SIZEOF_ACCESS;i++){
+            chars[i+SIZEOF_GENDER]= '0';
+        }
+        chars[index+SIZEOF_GENDER] = '1';
+        tags = String.valueOf(chars);
+    }
+
+    @DynamoDBIgnore
+    public void setExtraneous(int index, boolean choice){
+        char[] chars = tags.toCharArray();
+        if(choice) chars[index+SIZEOF_GENDER+SIZEOF_ACCESS]='1';
+        else chars[index+SIZEOF_GENDER+SIZEOF_ACCESS] = '0';
+    }
+
+    @DynamoDBIgnore
     public void setTag(int index, boolean choice){
         char[] chars = tags.toCharArray();
         if(choice)chars[index] = 1;
         else chars[index]=0;
-        tags = chars.toString();
+        tags = String.valueOf(chars);
     }
 
     @DynamoDBIgnore
     public int convertTags(String tagSet) {
+        if(tagSet.length() == 0) return 0;
         char[] tag = tagSet.toCharArray();
         int sum = 0;
-        for(int i =0; i<31; i++){
+        for(int i =0; i<31 && i<tagSet.length(); i++){
             if(tag[i] == 1){
                 double pos = (double)i;
                 double val = Math.pow(2.0, 31-pos);
@@ -142,13 +174,6 @@ public class Restroom {
     @DynamoDBIgnore
     public void addReport(){reports++;}
 
-    @DynamoDBIgnore
-    public boolean isInitialized() {
-        if(longitude != 0.0d && latitude != 0.0d && !userEmail.equals("") && !description.equals(""))
-            return true;
-        return false;
-    }
-
     public void create() {
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
@@ -157,7 +182,7 @@ public class Restroom {
     }
 
     @DynamoDBIgnore
-    public static ArrayList<Restroom> getRestrooms(double latitude, double longitude, double diameter) {
+    public static ArrayList<Restroom> getRestrooms(double latitude, double longitude, double diameter, String filter, double rated) {
         Log.d(TAG, "getRestrooms");
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
@@ -193,18 +218,22 @@ public class Restroom {
         for(Restroom restroom : scanResult) {
             returnVal.add(restroom);
         }
-
+        returnVal = Restroom.filterRestrooms(returnVal, filter, rated);
         return returnVal;
     }
 
-    public static List<Restroom> filterRestrooms(List<Restroom> scan, int filter){
-        List<Restroom> ret = new ArrayList<Restroom>();
-
+    @DynamoDBIgnore
+    public static ArrayList<Restroom> filterRestrooms(List<Restroom> scan, String filter, double rated){
+        ArrayList<Restroom> ret = new ArrayList<Restroom>();
+        Restroom converter = new Restroom();
+        int filters = converter.convertTags(filter);
         for(int i =0;i<scan.size(); i++){
             Restroom temp = scan.get(i);
-            if(filter == (temp.convertTags(temp.getTags()) & filter)) ret.add(temp);
+            if(filters == (temp.convertTags(temp.getTags()) & filters)
+                    && rated <= temp.getRating()){
+                ret.add(temp);
+            }
         }
-
         return ret;
     }
 }

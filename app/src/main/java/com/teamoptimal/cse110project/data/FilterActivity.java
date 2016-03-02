@@ -1,16 +1,21 @@
 package com.teamoptimal.cse110project.data;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.ListActivity;
+
 import android.os.Bundle;
 
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckedTextView;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.TextView.BufferType;
-import android.widget.CheckBox;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 
+import com.teamoptimal.cse110project.CreateRestroomActivity;
+import com.teamoptimal.cse110project.MainActivity;
 import com.teamoptimal.cse110project.R;
 
 import java.util.ArrayList;
@@ -18,176 +23,94 @@ import java.util.ArrayList;
 /**
  * Created by Sydney on 2/23/2016.
  */
-public class FilterActivity extends AppCompatActivity {
+public class FilterActivity extends ListActivity {
 
-    public final static String[] tags = {
-            "Unisex",
-            "Female-only",
-            "Male-only",
-            "Public",
-            "Private",
-            "Pay-to-use",
-            "Handi-accessible",
-            "Changing Stations",
-            "Air Dryers",
-            "Restaurant",
-            "Store",
-            "Hotel",
-            "Portable",
-            "Residence"
+    public final String[] rating = {
+            "1 or higher",
+            "2 or higher",
+            "3 or higher",
+            "4 or higher"
     };
 
     public ArrayList<String> filters = new ArrayList<String>();
+
+    private Restroom filter = new Restroom();
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.filter_layout);
 
-        CheckBox unisex = (CheckBox) findViewById(R.id.checkBox);
-        unisex.setOnClickListener(new View.OnClickListener() {
+        Spinner gender = (Spinner)findViewById(R.id.spinner1);
+        ArrayAdapter<String> GenderAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_dropdown_item, CreateRestroomActivity.Gender);
+        gender.setAdapter(GenderAdapter);
+        gender.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(View view) {
-                if (((CheckBox) view).isChecked()) {
-                    filters.add("Unisex");
-                }
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                filter.setGender(position);
             }
-        });
-        CheckBox female = (CheckBox) findViewById(R.id.checkBox2);
-        female.setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Female-only");
-                }
-            }
-        });
-        CheckBox male = (CheckBox) findViewById(R.id.checkBox3);
-        female.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Male-only");
-                }
-            }
-        });
-        CheckBox pub = (CheckBox) findViewById(R.id.checkBox4);
-        pub.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Public");
-                }
-            }
-        });
-        CheckBox priv = (CheckBox) findViewById(R.id.checkBox5);
-        priv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Private");
-                }
+            public void onNothingSelected(AdapterView<?> parent) {
             }
         });
 
-        CheckBox pay = (CheckBox) findViewById(R.id.checkBox6);
-        pay.setOnClickListener(new View.OnClickListener() {
+        Spinner rating = (Spinner)findViewById(R.id.spinner2);
+        ArrayAdapter<String> RatingAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_dropdown_item, this.rating);
+        rating.setAdapter(GenderAdapter);
+        rating.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Pay-to-use");
-                }
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                filter.setRating((double) (position + 1));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
             }
         });
 
-        CheckBox restaurant = (CheckBox) findViewById(R.id.checkBox7);
-        restaurant.setOnClickListener(new View.OnClickListener() {
+        Spinner access = (Spinner)findViewById(R.id.filter_list_access);
+        ArrayAdapter<String> AccessAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_dropdown_item, CreateRestroomActivity.Access);
+        gender.setAdapter(GenderAdapter);
+        gender.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Restaurant");
-                }
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                filter.setAccess(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
             }
         });
 
-        CheckBox store = (CheckBox) findViewById(R.id.checkBox8);
-        store.setOnClickListener(new View.OnClickListener() {
+        ListView tagList = (ListView)findViewById(android.R.id.list);
+        tagList.setChoiceMode(tagList.CHOICE_MODE_MULTIPLE);
+        tagList.setTextFilterEnabled(true);
+        setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked,
+                CreateRestroomActivity.Extraneous));
+        tagList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Store");
-                }
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                CheckedTextView item = (CheckedTextView) view;
+                filter.setExtraneous(position, item.isChecked());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
             }
         });
 
-        CheckBox hotel = (CheckBox) findViewById(R.id.checkBox9);
-        hotel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Hotel");
-                }
-            }
-        });
-
-        CheckBox portable = (CheckBox) findViewById(R.id.checkBox10);
-        portable.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Portable");
-                }
-            }
-        });
-
-        CheckBox residence = (CheckBox) findViewById(R.id.checkBox11);
-        residence.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Residence");
-                }
-            }
-        });
-
-        CheckBox handi = (CheckBox) findViewById(R.id.checkBox12);
-        handi.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Handi-accessible");
-                }
-            }
-        });
-
-        CheckBox dry = (CheckBox) findViewById(R.id.checkBox13);
-        dry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("AirDryers");
-                }
-            }
-        });
-
-        CheckBox changing = (CheckBox) findViewById(R.id.checkBox14);
-        changing.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    filters.add("Changing Stations");
-                }
-            }
-        });
-
-        Button apply = (Button) findViewById(R.id.button);
+        Button apply = (Button)findViewById(R.id.button_apply);
         apply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(((CheckBox)view).isChecked()){
-                    //SEARCH(filters)
-                }
+                MainActivity.restrooms = filter.filterRestrooms(MainActivity.restrooms,
+                        filter.getTags(), filter.getRating());
+                finish();
             }
         });
-
     }
 }

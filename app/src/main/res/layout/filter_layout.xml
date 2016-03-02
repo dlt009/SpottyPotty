@@ -1,125 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/holo_orange_light"
+    android:weightSum="1">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Bathroom Types:"
-        android:id="@+id/textView" />
+        android:layout_gravity="center"
+        android:text="Gender"
+        android:layout_margin="8dp"
+        android:id="@+id/filter_text_gender" />
 
-    <CheckBox
-        android:layout_width="wrap_content"
+    <Spinner
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Unisex"
-        android:id="@+id/checkBox" />
+        android:id="@+id/spinner1"
+        android:prompt = "@string/spinner_gender">
 
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Female Only"
-        android:id="@+id/checkBox2" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Male Only"
-        android:id="@+id/checkBox3" />
+    </Spinner>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Access:"
-        android:id="@+id/textView2" />
+        android:layout_gravity="center"
+        android:layout_margin="8dp"
+        android:text="Rating"
+        android:id="@+id/filter_text_rating" />
 
-    <CheckBox
-        android:layout_width="wrap_content"
+    <Spinner
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Public"
-        android:id="@+id/checkBox4" />
+        android:id="@+id/spinner2"
+        android:prompt = "@string/spinner_rating">
 
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Private"
-        android:id="@+id/checkBox5" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pay to use"
-        android:id="@+id/checkBox6" />
+    </Spinner>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Environment"
-        android:id="@+id/textView4" />
+        android:layout_gravity="center"
+        android:layout_margin="8dp"
+        android:text="Access"
+        android:id="@+id/filter_text_place" />
 
-    <CheckBox
+    <Spinner
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Restaurant"
-        android:id="@+id/checkBox7" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Store"
-        android:id="@+id/checkBox8" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hotel"
-        android:id="@+id/checkBox9" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Portable"
-        android:id="@+id/checkBox10" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Residence"
-        android:id="@+id/checkBox11" />
+        android:layout_height="85dp"
+        android:id="@+id/filter_list_access">
+    </Spinner>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Amenities"
-        android:id="@+id/textView5" />
+        android:layout_gravity="center"
+        android:layout_margin="8dp"
+        android:text="Tags"
+        android:id="@+id/filter_text_extra" />
 
-    <CheckBox
+    <ListView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Handi-Accessible"
-        android:id="@+id/checkBox12" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Air Dryers"
-        android:id="@+id/checkBox13" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Changing Stations"
-        android:id="@+id/checkBox14" />
+        android:layout_height="85dp"
+        android:id="@id/android:list"
+        android:layout_weight="0.50">
+    </ListView>
 
     <Button
+        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Apply Filters"
-        android:id="@+id/button"
+        android:text="Apply"
+        android:id="@+id/button_apply"
         android:layout_gravity="center_horizontal" />
+
 
 </LinearLayout>
