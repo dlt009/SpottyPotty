@@ -88,10 +88,10 @@ public class User {
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
         mapper.save(rest);
 
-        /*User target = new User();
-        mapper.load(target, rest.getUser());
+        User target = new User();
+        target = mapper.load(target.getClass(), rest.getUser());
         target.addReport();
-        mapper.save(target);*/
+        mapper.save(target);
 
         report.create();
     }
@@ -109,10 +109,10 @@ public class User {
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
         mapper.save(review);
 
-        /*User target = new User();
-        mapper.load(target, review.getUserEmail());
+        User target = new User();
+        target = mapper.load(target.getClass(), review.getUserEmail());
         target.addReport();
-        mapper.save(target);*/
+        mapper.save(target);
 
         report.create();
     }
