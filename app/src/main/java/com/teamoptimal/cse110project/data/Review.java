@@ -65,11 +65,11 @@ public class Review {
     public int getFlags() { return flags; }
     public void setFlags(int flags) { this.flags = flags; }
 
-    @DynamoDBHashKey(attributeName = "Restroom")
+    @DynamoDBAttribute(attributeName = "RestroomID")
     public String getRestroomID() { return restroomID; }
     public void setRestroomID(String restroomId) { this.restroomID = restroomId; }
 
-    @DynamoDBAttribute(attributeName = "Times_Reported")
+    @DynamoDBAttribute(attributeName = "TimesReported")
     public int getReportCount(){return reports;}
     public void setReportCount(int count){reports = count;}
 

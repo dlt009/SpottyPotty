@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity
     private Button signInButton;
     private FloatingActionButton fab;
     private Menu optionsMenu;
+    private MenuItem signOutOption;
 
     boolean signedInGoogle;
     boolean signedInFacebook;
@@ -175,10 +176,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onStart() {
         super.onStart();
-
         Log.d(TAG, "Starting app");
         // Updates button text to reflect if signing in or out
-        toggleNavSignInText();
+        //toggleNavSignInText();
+
         String name = sharedPreferences.getString("user_name", "Please login to see profile");
         String email = sharedPreferences.getString("user_email", "");
 
@@ -190,15 +191,17 @@ public class MainActivity extends AppCompatActivity
             name_text.setText(name);
             email_text.setText(email);
             fab.setVisibility(View.VISIBLE);
+            signOutOption.setVisible(true);
         }
         else {
             name_text.setText("Please login to see profile");
             email_text.setText("");
             fab.setVisibility(View.GONE);
+            signOutOption.setVisible(false);
         }
     }
 
-    private void toggleNavSignInText () {
+    private void toggleNavSignInText() {
         // Update login status
         signedInGoogle = sharedPreferences.getBoolean("goog", false);
         signedInFacebook = sharedPreferences.getBoolean("face", false);
@@ -207,16 +210,11 @@ public class MainActivity extends AppCompatActivity
         // Change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            if(optionsMenu != null) {
-                optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
-            }
+            signOutOption.setVisible(true);
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
-            if(optionsMenu != null) {
-                MenuItem signOutOption = optionsMenu.findItem(R.id.sign_out);
-                signOutOption.setVisible(false);
-            }
+            signOutOption.setVisible(false);
         }
     }
 
@@ -254,9 +252,15 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "Menu inflated!");
         optionsMenu = menu;
         optionsMenu.clear();
-        toggleNavSignInText();
 
+        /* Filter */
         optionsMenu.add(0, R.id.filter, Menu.NONE, "Filter");
+
+        /* Sign out */
+        optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
+        signOutOption = optionsMenu.findItem(R.id.sign_out);
+        signOutOption.setVisible(false);
+        toggleNavSignInText();
 
         return true;
     }
