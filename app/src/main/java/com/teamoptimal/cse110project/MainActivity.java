@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
                     centerLoc.setLatitude(center.latitude);
                     centerLoc.setLongitude(center.longitude);
-                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
+                    //showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
                     generateListContent();
                 }
             }
