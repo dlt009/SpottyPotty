@@ -1,12 +1,11 @@
 package com.teamoptimal.cse110project;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
@@ -63,8 +62,7 @@ public class MainActivity extends AppCompatActivity
     public static User user;
 
     /* Drawer */
-    public static ArrayList<Restroom> restrooms;
-    public static ArrayList<Restroom> originalRestrooms;
+    private ArrayList<Restroom> restrooms;
     private ArrayList<RestroomItem> items;
     private ListView listView;
     private MyListAdapter adapter;
@@ -91,11 +89,6 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton fab;
     private Menu optionsMenu;
     private MenuItem signOutOption;
-
-    public static BroadcastReceiver receiver;
-
-    public static String filter = "";
-    public static double rated = 0.0;
 
     boolean signedInGoogle;
     boolean signedInFacebook;
@@ -177,22 +170,7 @@ public class MainActivity extends AppCompatActivity
                         map.getCameraPosition().zoom));
             }
         });
-        receiver = new BroadcastReceiver(){
-            @Override
-            public void onReceive(Context arg0, Intent intent){
-                String action = intent.getAction();
-                if(action.equals("filter_done")){
 
-                    LatLng center = map.getCameraPosition().target;
-                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
-                    centerLoc.setLatitude(center.latitude);
-                    centerLoc.setLongitude(center.longitude);
-                    //showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
-                    generateListContent();
-                }
-            }
-        };
-        registerReceiver(receiver, new IntentFilter("filter_done"));
 
     }
 
@@ -232,11 +210,6 @@ public class MainActivity extends AppCompatActivity
             signInButton.setVisibility(View.GONE);
             if(signOutOption != null)
                 signOutOption.setVisible(true);
-            if(optionsMenu != null && !optionsMenu.hasVisibleItems())
-                optionsMenu.add(0,R.id.sign_out,Menu.NONE,"Sign Out");
-            if(optionsMenu != null) {
-                optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
-            }
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
@@ -254,19 +227,12 @@ public class MainActivity extends AppCompatActivity
             // Ask for permission
             return;
         }
-        else if(user!= null && user.getReportCount() > 3){
-            Toast.makeText(getBaseContext(),
-                    "You do not have access to this feature\n" +
-                            "Reason: too many reports against content created by this user",
-                    Toast.LENGTH_LONG).show();
-        }
-        else {
-            // Show create restroom activity with current location
-            Intent intent = new Intent(this, CreateRestroomActivity.class);
-            double[] loc = {currentLocation.latitude, currentLocation.longitude};
-            intent.putExtra("Location", loc);
-            startActivity(intent);
-        }
+
+        // Show create restroom activity with current location
+        Intent intent = new Intent(this, CreateRestroomActivity.class);
+        double[] loc = { currentLocation.latitude, currentLocation.longitude };
+        intent.putExtra("Location", loc);
+        startActivity(intent);
     }
 
     @Override
@@ -275,7 +241,6 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            unregisterReceiver(receiver);
             super.onBackPressed();
         }
     }
@@ -294,7 +259,7 @@ public class MainActivity extends AppCompatActivity
         /* Sign out */
         optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
         signOutOption = optionsMenu.findItem(R.id.sign_out);
-        signOutOption.setVisible(false);
+
         toggleNavSignInText();
 
         return true;
@@ -315,7 +280,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         else if (id == R.id.filter) {
-            //registerReceiver(receiver, new IntentFilter("filter_done"));
             Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
             startActivity(intent);
             return true;
@@ -366,7 +330,7 @@ public class MainActivity extends AppCompatActivity
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
                     centerLoc.setLatitude(center.latitude);
                     centerLoc.setLongitude(center.longitude);
-                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
+                    showNearbyMarkers(centerLoc, 0.00727946446);
                     initialized = true;
                 }
 
@@ -382,7 +346,7 @@ public class MainActivity extends AppCompatActivity
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
                     centerLoc.setLatitude(center.latitude);
                     centerLoc.setLongitude(center.longitude);
-                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
+                    showNearbyMarkers(centerLoc, 0.00727946446);
                     lastKnownLocation = currentLocation;
                 }
                 else {
@@ -409,10 +373,10 @@ public class MainActivity extends AppCompatActivity
         adapter.notifyDataSetChanged();
     }
 
-    private void showNearbyMarkers(Location location, double diameter, String filter, double rated) {
+    private void showNearbyMarkers(Location location, double diameter) {
         if(!isExecuting) {
             isExecuting = true;
-            new GetRestroomsTask(location.getLatitude(), location.getLongitude(), diameter, filter, rated).execute();
+            new GetRestroomsTask(location.getLatitude(), location.getLongitude(), diameter).execute();
         }
     }
 
@@ -450,22 +414,17 @@ public class MainActivity extends AppCompatActivity
         double latitude;
         double longitude;
         double diameter;
-        String filter;
-        double rated;
 
-        public GetRestroomsTask(double latitude, double longitude, double diameter, String filter, double rated) {
+        public GetRestroomsTask(double latitude, double longitude, double diameter) {
             this.latitude = latitude;
             this.longitude = longitude;
             this.diameter = diameter;
-            this.filter = filter;
-            this.rated = rated;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
             Log.d(TAG, "doInBackground");
-            restrooms = Restroom.getRestrooms(latitude, longitude, diameter, filter, rated);
-            originalRestrooms = Restroom.getRestrooms(latitude, longitude, diameter, "", 0.0);
+            restrooms = Restroom.getRestrooms(latitude, longitude, diameter);
             return null;
         }
 
@@ -537,13 +496,13 @@ public class MainActivity extends AppCompatActivity
             final RestroomItem dItem =  this.restrooms.get(position);
 
             // Get color
-            int color = Color.HSVToColor(new float[] { dItem.getColor(), 1.0f, 1.0f });
+            int color = Color.HSVToColor(new float[] {dItem.getColor(), 1, 1});
 
             // Set values
             mainViewHolder.title.setText(dItem.getTitle());
             mainViewHolder.distance.setText("" + dItem.getDistance());
             mainViewHolder.ratings.setRating((float) dItem.getRating());
-            mainViewHolder.imageColor.setBackgroundColor(color);
+            mainViewHolder.imageColor.setBackgroundTintList(ColorStateList.valueOf(color));
 
             mainViewHolder.details.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -554,10 +513,8 @@ public class MainActivity extends AppCompatActivity
                     Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                     String name = mainViewHolder.title.getText().toString();
                     String distance = mainViewHolder.distance.getText().toString();
-                    Float rating = mainViewHolder.ratings.getRating();
                     intent.putExtra("name", name);
                     intent.putExtra("distance", distance);
-                    intent.putExtra("ratings", rating);
                     intent.putExtra("restroomID", dItem.getRestroomID());
                     startActivity(intent);
                 }
@@ -596,6 +553,5 @@ public class MainActivity extends AppCompatActivity
             return resultA[0] < resultB[0] ? -1 : resultA[0] == resultB[0] ? 0 : 1;
         }
     }
-
 }
 
