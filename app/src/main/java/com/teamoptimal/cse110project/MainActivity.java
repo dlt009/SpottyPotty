@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<RestroomItem> items;
     private ListView listView;
     private MyListAdapter adapter;
-    public static String clickedRestroomID;
 
     /* Map */
     private GoogleMap map;
@@ -364,7 +363,7 @@ public class MainActivity extends AppCompatActivity
             double meters = result[0];
             String distance = String.format("%.2f", meters) + " meters ";
 
-            items.add(new RestroomItem(restroom.getDescription(), distance,
+            items.add(new RestroomItem(restroom.getID(), restroom.getDescription(), distance,
                     restroom.getRating(), restroom.getColor()));
         }
         adapter.notifyDataSetChanged();
@@ -490,7 +489,7 @@ public class MainActivity extends AppCompatActivity
 
             mainViewHolder = (ViewHolder) convertView.getTag();
 
-            RestroomItem dItem =  this.restrooms.get(position);
+            final RestroomItem dItem =  this.restrooms.get(position);
 
             // Get color
             int color = Color.HSVToColor(new float[] { dItem.getColor(), 1.0f, 1.0f });
@@ -512,6 +511,7 @@ public class MainActivity extends AppCompatActivity
                     String distance = mainViewHolder.distance.getText().toString();
                     intent.putExtra("name", name);
                     intent.putExtra("distance", distance);
+                    intent.putExtra("restroomID", dItem.getRestroomID());
                     startActivity(intent);
                 }
             });
