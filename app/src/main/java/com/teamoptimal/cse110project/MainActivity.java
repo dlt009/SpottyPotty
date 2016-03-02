@@ -177,8 +177,11 @@ public class MainActivity extends AppCompatActivity
     public void onStart() {
         super.onStart();
         Log.d(TAG, "Starting app");
-        // Updates button text to reflect if signing in or out
-        //toggleNavSignInText();
+
+        // Update login status
+        signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        signedInFacebook = sharedPreferences.getBoolean("face", false);
+        signedInTwitter = sharedPreferences.getBoolean("twit", false);
 
         String name = sharedPreferences.getString("user_name", "Please login to see profile");
         String email = sharedPreferences.getString("user_email", "");
@@ -202,11 +205,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void toggleNavSignInText() {
-        // Update login status
-        signedInGoogle = sharedPreferences.getBoolean("goog", false);
-        signedInFacebook = sharedPreferences.getBoolean("face", false);
-        signedInTwitter = sharedPreferences.getBoolean("twit", false);
-
         // Change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
