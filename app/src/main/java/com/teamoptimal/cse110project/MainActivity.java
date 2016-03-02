@@ -1,8 +1,10 @@
 package com.teamoptimal.cse110project;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -61,7 +63,8 @@ public class MainActivity extends AppCompatActivity
     public static User user;
 
     /* Drawer */
-    private ArrayList<Restroom> restrooms;
+    public static ArrayList<Restroom> restrooms;
+    public static ArrayList<Restroom> originalRestrooms;
     private ArrayList<RestroomItem> items;
     private ListView listView;
     private MyListAdapter adapter;
@@ -88,6 +91,11 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton fab;
     private Menu optionsMenu;
     private MenuItem signOutOption;
+
+    public static BroadcastReceiver receiver;
+
+    public static String filter = "";
+    public static double rated = 0.0;
 
     boolean signedInGoogle;
     boolean signedInFacebook;
@@ -169,7 +177,22 @@ public class MainActivity extends AppCompatActivity
                         map.getCameraPosition().zoom));
             }
         });
+        receiver = new BroadcastReceiver(){
+            @Override
+            public void onReceive(Context arg0, Intent intent){
+                String action = intent.getAction();
+                if(action.equals("filter_done")){
 
+                    LatLng center = map.getCameraPosition().target;
+                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                    centerLoc.setLatitude(center.latitude);
+                    centerLoc.setLongitude(center.longitude);
+                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
+                    generateListContent();
+                }
+            }
+        };
+        registerReceiver(receiver, new IntentFilter("filter_done"));
 
     }
 
@@ -209,6 +232,11 @@ public class MainActivity extends AppCompatActivity
             signInButton.setVisibility(View.GONE);
             if(signOutOption != null)
                 signOutOption.setVisible(true);
+            if(optionsMenu != null && !optionsMenu.hasVisibleItems())
+                optionsMenu.add(0,R.id.sign_out,Menu.NONE,"Sign Out");
+            if(optionsMenu != null) {
+                optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
+            }
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
@@ -226,12 +254,19 @@ public class MainActivity extends AppCompatActivity
             // Ask for permission
             return;
         }
-
-        // Show create restroom activity with current location
-        Intent intent = new Intent(this, CreateRestroomActivity.class);
-        double[] loc = { currentLocation.latitude, currentLocation.longitude };
-        intent.putExtra("Location", loc);
-        startActivity(intent);
+        else if(user!= null && user.getReportCount() > 3){
+            Toast.makeText(getBaseContext(),
+                    "You do not have access to this feature\n" +
+                            "Reason: too many reports against content created by this user",
+                    Toast.LENGTH_LONG).show();
+        }
+        else {
+            // Show create restroom activity with current location
+            Intent intent = new Intent(this, CreateRestroomActivity.class);
+            double[] loc = {currentLocation.latitude, currentLocation.longitude};
+            intent.putExtra("Location", loc);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -240,6 +275,7 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+            unregisterReceiver(receiver);
             super.onBackPressed();
         }
     }
@@ -279,6 +315,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         else if (id == R.id.filter) {
+            //registerReceiver(receiver, new IntentFilter("filter_done"));
             Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
             startActivity(intent);
             return true;
@@ -329,7 +366,7 @@ public class MainActivity extends AppCompatActivity
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
                     centerLoc.setLatitude(center.latitude);
                     centerLoc.setLongitude(center.longitude);
-                    showNearbyMarkers(centerLoc, 0.00727946446);
+                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
                     initialized = true;
                 }
 
@@ -345,7 +382,7 @@ public class MainActivity extends AppCompatActivity
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
                     centerLoc.setLatitude(center.latitude);
                     centerLoc.setLongitude(center.longitude);
-                    showNearbyMarkers(centerLoc, 0.00727946446);
+                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
                     lastKnownLocation = currentLocation;
                 }
                 else {
@@ -372,10 +409,10 @@ public class MainActivity extends AppCompatActivity
         adapter.notifyDataSetChanged();
     }
 
-    private void showNearbyMarkers(Location location, double diameter) {
+    private void showNearbyMarkers(Location location, double diameter, String filter, double rated) {
         if(!isExecuting) {
             isExecuting = true;
-            new GetRestroomsTask(location.getLatitude(), location.getLongitude(), diameter).execute();
+            new GetRestroomsTask(location.getLatitude(), location.getLongitude(), diameter, filter, rated).execute();
         }
     }
 
@@ -413,17 +450,22 @@ public class MainActivity extends AppCompatActivity
         double latitude;
         double longitude;
         double diameter;
+        String filter;
+        double rated;
 
-        public GetRestroomsTask(double latitude, double longitude, double diameter) {
+        public GetRestroomsTask(double latitude, double longitude, double diameter, String filter, double rated) {
             this.latitude = latitude;
             this.longitude = longitude;
             this.diameter = diameter;
+            this.filter = filter;
+            this.rated = rated;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
             Log.d(TAG, "doInBackground");
-            restrooms = Restroom.getRestrooms(latitude, longitude, diameter);
+            restrooms = Restroom.getRestrooms(latitude, longitude, diameter, filter, rated);
+            originalRestrooms = Restroom.getRestrooms(latitude, longitude, diameter, "", 0.0);
             return null;
         }
 
@@ -552,5 +594,6 @@ public class MainActivity extends AppCompatActivity
             return resultA[0] < resultB[0] ? -1 : resultA[0] == resultB[0] ? 0 : 1;
         }
     }
+
 }
 
