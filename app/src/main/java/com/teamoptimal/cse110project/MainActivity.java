@@ -180,14 +180,15 @@ public class MainActivity extends AppCompatActivity
         receiver = new BroadcastReceiver(){
             @Override
             public void onReceive(Context arg0, Intent intent){
+                Log.d(TAG, "Received broadcast");
                 String action = intent.getAction();
                 if(action.equals("filter_done")){
-
-                    LatLng center = map.getCameraPosition().target;
-                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
-                    centerLoc.setLatitude(center.latitude);
-                    centerLoc.setLongitude(center.longitude);
-                    showNearbyMarkers(centerLoc, 0.00727946446, filter, rated);
+                    Log.d(TAG, "Filter done");
+                    Log.d(TAG, "" + filter);
+                    Log.d(TAG, "" + rated);
+                    Log.d(TAG, "" + restrooms.size());
+                    restrooms = Restroom.filterRestrooms(restrooms, filter, rated);
+                    Log.d(TAG, "" +  restrooms.size());
                     generateListContent();
                 }
             }
@@ -464,8 +465,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Void... params) {
             Log.d(TAG, "doInBackground");
-            restrooms = Restroom.getRestrooms(latitude, longitude, diameter, filter, rated);
-            originalRestrooms = Restroom.getRestrooms(latitude, longitude, diameter, "", 0.0);
+            restrooms = Restroom.getRestrooms(latitude, longitude, diameter);
             return null;
         }
 
