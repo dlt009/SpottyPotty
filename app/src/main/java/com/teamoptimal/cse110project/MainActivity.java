@@ -194,25 +194,26 @@ public class MainActivity extends AppCompatActivity
             name_text.setText(name);
             email_text.setText(email);
             fab.setVisibility(View.VISIBLE);
-            signOutOption.setVisible(true);
         }
         else {
             name_text.setText("Please login to see profile");
             email_text.setText("");
             fab.setVisibility(View.GONE);
-            signOutOption.setVisible(false);
         }
+        toggleNavSignInText();
     }
 
     private void toggleNavSignInText() {
         // Change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            signOutOption.setVisible(true);
+            if(signOutOption != null)
+                signOutOption.setVisible(true);
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
-            signOutOption.setVisible(false);
+            if(signOutOption != null)
+                signOutOption.setVisible(false);
         }
     }
 
