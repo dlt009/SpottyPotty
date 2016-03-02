@@ -512,8 +512,10 @@ public class MainActivity extends AppCompatActivity
                     Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                     String name = mainViewHolder.title.getText().toString();
                     String distance = mainViewHolder.distance.getText().toString();
+                    Float rating = mainViewHolder.ratings.getRating();
                     intent.putExtra("name", name);
                     intent.putExtra("distance", distance);
+                    intent.putExtra("ratings", rating);
                     intent.putExtra("restroomID", dItem.getRestroomID());
                     startActivity(intent);
                 }

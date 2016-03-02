@@ -93,13 +93,13 @@ public class Review {
 
     @DynamoDBIgnore
     public boolean isInitialized() {
-        if(rating != 0.0 && !userEmail.equals("") && !message.equals(""))
+        if(rating != 0.0 && !message.equals(""))
             return true;
         return false;
     }
 
     @DynamoDBIgnore
-    public static ArrayList<ReviewItem> getReviews(String currentID) {
+    public static ArrayList<Review> getReviews(String currentID) {
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
 
@@ -114,11 +114,11 @@ public class Review {
 
         List<Review> scanReviews = mapper.scan(Review.class, scanExpression);
 
-        ArrayList<ReviewItem> combined = new ArrayList<>();
+        ArrayList<Review> combined = new ArrayList<>();
 
-        for(int i =  0; i < scanReviews.size(); i++)
+        for(Review review : scanReviews)
         {
-            combined.add(new ReviewItem(scanReviews.get(i).getMessage(), scanReviews.get(i).getRating()));
+            combined.add(review);
         }
 
         return combined;
