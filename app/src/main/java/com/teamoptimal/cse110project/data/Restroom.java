@@ -182,7 +182,7 @@ public class Restroom {
     }
 
     @DynamoDBIgnore
-    public static ArrayList<Restroom> getRestrooms(double latitude, double longitude, double diameter, String filter, double rated) {
+    public static ArrayList<Restroom> getRestrooms(double latitude, double longitude, double diameter) {
         Log.d(TAG, "getRestrooms");
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
@@ -218,7 +218,6 @@ public class Restroom {
         for(Restroom restroom : scanResult) {
             returnVal.add(restroom);
         }
-        returnVal = Restroom.filterRestrooms(returnVal, filter, rated);
         return returnVal;
     }
 
