@@ -90,14 +90,14 @@ public class FilterActivity extends AppCompatActivity implements AdapterView.OnI
         lvPlaces = (ListView) findViewById(R.id.filter_list_place);
         lvPlaces.setChoiceMode(lvPlaces.CHOICE_MODE_MULTIPLE);
         lvPlaces.setTextFilterEnabled(true);
-        lvPlaces.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice,
+        lvPlaces.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice,
                 places));
 
 
         lvExtras = (ListView) findViewById(R.id.filter_list_extra);
         lvExtras.setChoiceMode(lvExtras.CHOICE_MODE_MULTIPLE);
         lvExtras.setTextFilterEnabled(true);
-        lvExtras.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice,
+        lvExtras.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice,
                 extras));
 
 
