@@ -10,8 +10,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.CheckedTextView;
+import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -28,6 +28,8 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
     private ListView lvExtras;
 
     private Restroom filter = new Restroom();
+
+    private static String TAG = "";
 
     public final static String[] places = {
             "Restaurant",
@@ -72,10 +74,11 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         genders.add("Female");
 
         List<String> ratings = new ArrayList<>();
-        ratings.add("4+");
-        ratings.add("3+");
-        ratings.add("2+");
+        ratings.add("0+");
         ratings.add("1+");
+        ratings.add("2+");
+        ratings.add("3+");
+        ratings.add("4+");
 
         // Creating adapter for spinner
         ArrayAdapter<String> dataAdapter1 = new ArrayAdapter<>(this,
@@ -107,7 +110,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         spinnerRating.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filter.setRating((double) (position + 1));
+                filter.setRating((double) (position));
             }
 
             @Override
@@ -139,7 +142,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 CheckedTextView item = (CheckedTextView) view;
-                filter.setExtraneous(position,true /*item.isChecked()*/);
+                filter.setExtraneous(position,item.isChecked());
             }
 
             @Override
@@ -151,8 +154,6 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         apply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.restrooms = filter.filterRestrooms(MainActivity.originalRestrooms,
-                        filter.getTags(), filter.getRating());
                 MainActivity.filter = filter.getTags();
                 MainActivity.rated = filter.getRating();
                 Toast.makeText(getBaseContext(),
@@ -160,7 +161,6 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
                         Toast.LENGTH_LONG).show();
                 Intent intent = new Intent("filter_done");
                 sendBroadcast(intent);
-                //unregisterReceiver(MainActivity.receiver);
                 finish();
             }
         });
@@ -169,9 +169,12 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         // TODO stuff
+        CheckedTextView item = (CheckedTextView) view;
+        filter.setExtraneous(position,item.isChecked());
     }
     public void onNothingSelected(AdapterView<?> arg0) {
         // TODO stuff
     }
+
 
 }

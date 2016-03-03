@@ -1,8 +1,10 @@
 package com.teamoptimal.cse110project;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity
 
     /* Drawer */
     private ArrayList<Restroom> restrooms;
+    private ArrayList<Restroom> originalRestrooms;
     private ArrayList<RestroomItem> items;
     private ListView listView;
     private MyListAdapter adapter;
@@ -82,6 +85,11 @@ public class MainActivity extends AppCompatActivity
     private static final String PREFERENCES = "AppPrefs";
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
+
+    public static String filter ="";
+    public static double rated = 0.0;
+
+    private BroadcastReceiver receiver;
 
     /* UI Elements */
     private View header;
@@ -170,6 +178,18 @@ public class MainActivity extends AppCompatActivity
                         map.getCameraPosition().zoom));
             }
         });
+        receiver = new BroadcastReceiver(){
+            @Override
+            public void onReceive(Context arg0, Intent intent){
+                String action = intent.getAction();
+                if(action.equals("filter_done")){
+                    Log.d(TAG, "Broadcast Received");
+                    restrooms = Restroom.filterRestrooms(originalRestrooms, filter, rated);
+                    generateListContent();
+                }
+            }
+        };
+        registerReceiver(receiver, new IntentFilter("filter_done"));
 
 
     }
@@ -280,6 +300,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         else if (id == R.id.filter) {
+            //registerReceiver(receiver, new IntentFilter("filter_done"));
             Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
             startActivity(intent);
             return true;
@@ -425,6 +446,7 @@ public class MainActivity extends AppCompatActivity
         protected Void doInBackground(Void... params) {
             Log.d(TAG, "doInBackground");
             restrooms = Restroom.getRestrooms(latitude, longitude, diameter);
+            originalRestrooms = Restroom.getRestrooms(latitude, longitude, diameter);
             return null;
         }
 
