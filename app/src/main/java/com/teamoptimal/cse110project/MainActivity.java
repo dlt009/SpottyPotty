@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity
                     Log.d(TAG, "" + restrooms.size());
                     restrooms = Restroom.filterRestrooms(restrooms, filter, rated);
                     Log.d(TAG, "" +  restrooms.size());
+                    
                     generateListContent();
                 }
             }
@@ -465,7 +466,8 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Void... params) {
             Log.d(TAG, "doInBackground");
-            restrooms = Restroom.getRestrooms(latitude, longitude, diameter);
+            restrooms = Restroom.getRestrooms(latitude, longitude, diameter, filter, rated);
+            originalRestrooms = Restroom.getRestrooms(latitude, longitude, diameter, "", 0.0);
             return null;
         }
 
