@@ -102,6 +102,7 @@ public class Restroom {
 
     @DynamoDBIgnore
     public void setGender(int index){
+        if(index < 0 || index >=SIZEOF_GENDER) return;
         char[] chars = tags.toCharArray();
         for(int i=0; i<SIZEOF_GENDER;i++){
             chars[i]= '0';
@@ -112,6 +113,7 @@ public class Restroom {
 
     @DynamoDBIgnore
     public void setAccess(int index){
+        if(index < 0 || index >=SIZEOF_ACCESS) return;
         char[] chars = tags.toCharArray();
         for(int i=0; i<SIZEOF_ACCESS;i++){
             chars[i+SIZEOF_GENDER]= '0';
@@ -122,9 +124,11 @@ public class Restroom {
 
     @DynamoDBIgnore
     public void setExtraneous(int index, boolean choice){
+        if(index < 0 || index >=(31-SIZEOF_GENDER-SIZEOF_ACCESS)) return;
         char[] chars = tags.toCharArray();
         if(choice) chars[index+SIZEOF_GENDER+SIZEOF_ACCESS]='1';
         else chars[index+SIZEOF_GENDER+SIZEOF_ACCESS] = '0';
+        tags = String.valueOf(chars);
     }
 
     @DynamoDBIgnore
@@ -145,15 +149,12 @@ public class Restroom {
         }
         char[] myTags = tags.toCharArray();
         char[] filterTags = filter.toCharArray();
-        String temp = "";
         for(int i=0; i<31;i++){
-            if(myTags[i] == '1' && filterTags[i] == '1'){
-                temp += "1";
+            if(filterTags[i] == '1'){
+                if(myTags[i] != '1') return false;
             }
-            temp += "0";
         }
-        if(tags.equals(temp)) return true;
-        return false;
+        return true;
     }
 
     @DynamoDBIgnore
@@ -233,9 +234,9 @@ public class Restroom {
         for(int i =0;i<scan.size(); i++){
             Restroom temp = scan.get(i);
 
-            Log.d(TAG, temp.getTags());
-            Log.d(TAG, filter);
-            Log.d(TAG, ""+temp.filtersThrough(filter));
+            Log.d(TAG, temp.getTags()+" - "+temp.getRating());
+            Log.d(TAG, filter+" - "+rated);
+            Log.d(TAG, " "+temp.filtersThrough(filter));
 
             if(temp.filtersThrough(filter) && rated <= temp.getRating()){
                 ret.add(temp);

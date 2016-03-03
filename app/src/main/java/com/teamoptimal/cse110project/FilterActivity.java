@@ -29,18 +29,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
 
     private Restroom filter = new Restroom();
 
-    private static String TAG = "";
-
-    public final static String[] places = {
-            "Restaurant",
-            "Store",
-            "Portable"
-    };
-    public final static String[] extras = {
-            "Handi-accessible",
-            "Changing Stations",
-            "Air Dryers"
-    };
+    private static String TAG = "FilterActivity";
 
     public ArrayList<String> filters = new ArrayList<String>();
 
@@ -69,6 +58,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
 
         // Spinner Drop down elements
         List<String> genders = new ArrayList<>();
+        genders.add("No Preference");
         genders.add("Unisex");
         genders.add("Male");
         genders.add("Female");
@@ -80,13 +70,19 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         ratings.add("3+");
         ratings.add("4+");
 
+        List<String> accessibility = new ArrayList<>();
+        accessibility.add("No Preference");
+        accessibility.add("Public");
+        accessibility.add("Private");
+        accessibility.add("Pay-to-use");
+
         // Creating adapter for spinner
         ArrayAdapter<String> dataAdapter1 = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, genders);
         ArrayAdapter<String> dataAdapter2 = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, ratings);
         ArrayAdapter<String> dataAdapter3 = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, CreateRestroomActivity.Access);
+                android.R.layout.simple_spinner_item, accessibility);
 
         // Drop down layout style - list view with radio button
         dataAdapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -98,7 +94,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         spinnerGender.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filter.setGender(position);
+                filter.setGender(position-1);
             }
 
             @Override
@@ -124,7 +120,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         lvPlaces.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filter.setAccess(position);
+                filter.setAccess(position-1);
             }
 
             @Override
@@ -138,15 +134,11 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         lvExtras.setTextFilterEnabled(true);
         setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked,
                 CreateRestroomActivity.Extraneous));
-        lvExtras.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        lvExtras.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 CheckedTextView item = (CheckedTextView) view;
-                filter.setExtraneous(position,item.isChecked());
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+                filter.setExtraneous(position, item.isChecked());
             }
         });
 
@@ -156,9 +148,6 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
             public void onClick(View view) {
                 MainActivity.filter = filter.getTags();
                 MainActivity.rated = filter.getRating();
-                Toast.makeText(getBaseContext(),
-                        filter.getTags(),
-                        Toast.LENGTH_LONG).show();
                 Intent intent = new Intent("filter_done");
                 sendBroadcast(intent);
                 finish();
@@ -170,7 +159,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         // TODO stuff
         CheckedTextView item = (CheckedTextView) view;
-        filter.setExtraneous(position,item.isChecked());
+        filter.setExtraneous(position, item.isChecked());
     }
     public void onNothingSelected(AdapterView<?> arg0) {
         // TODO stuff
