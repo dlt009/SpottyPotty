@@ -136,18 +136,24 @@ public class Restroom {
     }
 
     @DynamoDBIgnore
-    public int convertTags(String tagSet) {
-        if(tagSet.length() == 0) return 0;
-        char[] tag = tagSet.toCharArray();
-        int sum = 0;
-        for(int i =0; i<31 && i<tagSet.length(); i++){
-            if(tag[i] == 1){
-                double pos = (double)i;
-                double val = Math.pow(2.0, 31-pos);
-                sum+=val;
+    public boolean filtersThrough(String filter){
+        if(filter.length()==0) return true;
+        if(filter.length()<31){
+            for(int c=0; c<31-filter.length(); c++){
+                filter+="0";
             }
         }
-        return sum;
+        char[] myTags = tags.toCharArray();
+        char[] filterTags = filter.toCharArray();
+        String temp = "";
+        for(int i=0; i<31;i++){
+            if(myTags[i] == '1' && filterTags[i] == '1'){
+                temp += "1";
+            }
+            temp += "0";
+        }
+        if(tags.equals(temp)) return true;
+        return false;
     }
 
     @DynamoDBIgnore
@@ -182,7 +188,7 @@ public class Restroom {
     }
 
     @DynamoDBIgnore
-    public static ArrayList<Restroom> getRestrooms(double latitude, double longitude, double diameter, String filter, double rated) {
+    public static ArrayList<Restroom> getRestrooms(double latitude, double longitude, double diameter) {
         Log.d(TAG, "getRestrooms");
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
@@ -218,22 +224,25 @@ public class Restroom {
         for(Restroom restroom : scanResult) {
             returnVal.add(restroom);
         }
-        returnVal = Restroom.filterRestrooms(returnVal, filter, rated);
         return returnVal;
     }
 
     @DynamoDBIgnore
     public static ArrayList<Restroom> filterRestrooms(List<Restroom> scan, String filter, double rated){
         ArrayList<Restroom> ret = new ArrayList<Restroom>();
-        Restroom converter = new Restroom();
-        int filters = converter.convertTags(filter);
         for(int i =0;i<scan.size(); i++){
             Restroom temp = scan.get(i);
-            if(filters == (temp.convertTags(temp.getTags()) & filters)
-                    && rated <= temp.getRating()){
+
+            Log.d(TAG, temp.getTags());
+            Log.d(TAG, filter);
+            Log.d(TAG, ""+temp.filtersThrough(filter));
+
+            if(temp.filtersThrough(filter) && rated <= temp.getRating()){
                 ret.add(temp);
             }
         }
+        Log.d(TAG, ""+scan.size());
+        Log.d(TAG, ""+ret.size());
         return ret;
     }
 }

@@ -112,7 +112,8 @@
         android:layout_below="@+id/access"
         android:layout_above="@+id/ratingBar"
         android:layout_toRightOf="@+id/Extra"
-        android:layout_alignEnd="@+id/editText"/>
+        android:layout_alignEnd="@+id/editText"
+        android:clickable = "true"/>
 
     <RatingBar
         android:layout_width="wrap_content"
