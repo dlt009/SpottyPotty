@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="8dp"
-        android:text="Access"
+        android:text="Places"
         android:id="@+id/filter_text_place" />
 
     <ListView

@@ -24,8 +24,8 @@ import java.util.List;
 
 public class FilterActivity extends ListActivity implements AdapterView.OnItemSelectedListener {
 
-    private Spinner spinnerGender, spinnerRating, lvPlaces;
-    private ListView lvExtras;
+    private Spinner spinnerGender, spinnerRating;
+    private ListView lvPlaces, lvExtras;
 
     private Restroom filter = new Restroom();
 
@@ -116,7 +116,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         });
 
         //Set the tags
-        lvPlaces = (Spinner) findViewById(R.id.filter_list_access);
+        lvPlaces = (ListView) findViewById(R.id.filter_list_place);
         lvPlaces.setAdapter(dataAdapter3);
         lvPlaces.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -151,6 +151,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         apply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                /*
                 MainActivity.restrooms = filter.filterRestrooms(MainActivity.originalRestrooms,
                         filter.getTags(), filter.getRating());
                 MainActivity.filter = filter.getTags();
@@ -162,6 +163,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
                 sendBroadcast(intent);
                 //unregisterReceiver(MainActivity.receiver);
                 finish();
+                   */
             }
         });
     }
