@@ -61,13 +61,5 @@
         android:layout_alignTop="@+id/google_login_button"
         android:layout_centerInParent="true" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/testbutton"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />
 
 </RelativeLayout>
