@@ -35,18 +35,14 @@ public class ReportActivity extends AppCompatActivity {
 
         /*Bundle extra = getIntent().getExtras();
         String currUser = extra.getString("User");
-        String currRestroom = extras.getString("Restroom");
-        String currReview = extras.getString("Review");
+        String reportObj = extras.getString("Reported_Object");
 
         TextView text = (TextView) findViewById(R.id.Title);
 
-        String reportObj;
         if(currRestroom != null){
-            reportObj = currRestroom;
             text.setText("Restroom");
         }
         else if(currReview != null){
-            reportObj = currReview;
             text.setText("Review");
         }
         else return;

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
@@ -65,7 +66,6 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<RestroomItem> items;
     private ListView listView;
     private MyListAdapter adapter;
-    public static String clickedRestroomID;
 
     /* Map */
     private GoogleMap map;
@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity
     private Button signInButton;
     private FloatingActionButton fab;
     private Menu optionsMenu;
+    private MenuItem signOutOption;
 
     boolean signedInGoogle;
     boolean signedInFacebook;
@@ -176,10 +177,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onStart() {
         super.onStart();
-
         Log.d(TAG, "Starting app");
-        // Updates button text to reflect if signing in or out
-        toggleNavSignInText();
+
+        // Update login status
+        signedInGoogle = sharedPreferences.getBoolean("goog", false);
+        signedInFacebook = sharedPreferences.getBoolean("face", false);
+        signedInTwitter = sharedPreferences.getBoolean("twit", false);
+
         String name = sharedPreferences.getString("user_name", "Please login to see profile");
         String email = sharedPreferences.getString("user_email", "");
 
@@ -197,27 +201,20 @@ public class MainActivity extends AppCompatActivity
             email_text.setText("");
             fab.setVisibility(View.GONE);
         }
+        toggleNavSignInText();
     }
 
-    private void toggleNavSignInText () {
-        // Update login status
-        signedInGoogle = sharedPreferences.getBoolean("goog", false);
-        signedInFacebook = sharedPreferences.getBoolean("face", false);
-        signedInTwitter = sharedPreferences.getBoolean("twit", false);
-
+    private void toggleNavSignInText() {
         // Change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            if(optionsMenu != null) {
-                optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
-            }
+            if(signOutOption != null)
+                signOutOption.setVisible(true);
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
-            if(optionsMenu != null) {
-                MenuItem signOutOption = optionsMenu.findItem(R.id.sign_out);
+            if(signOutOption != null)
                 signOutOption.setVisible(false);
-            }
         }
     }
 
@@ -255,9 +252,15 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "Menu inflated!");
         optionsMenu = menu;
         optionsMenu.clear();
-        toggleNavSignInText();
 
+        /* Filter */
         optionsMenu.add(0, R.id.filter, Menu.NONE, "Filter");
+
+        /* Sign out */
+        optionsMenu.add(0, R.id.sign_out, Menu.NONE, "Sign Out");
+        signOutOption = optionsMenu.findItem(R.id.sign_out);
+
+        toggleNavSignInText();
 
         return true;
     }
@@ -364,7 +367,7 @@ public class MainActivity extends AppCompatActivity
             double meters = result[0];
             String distance = String.format("%.2f", meters) + " meters ";
 
-            items.add(new RestroomItem(restroom.getDescription(), distance,
+            items.add(new RestroomItem(restroom.getID(), restroom.getDescription(), distance,
                     restroom.getRating(), restroom.getColor()));
         }
         adapter.notifyDataSetChanged();
@@ -490,16 +493,16 @@ public class MainActivity extends AppCompatActivity
 
             mainViewHolder = (ViewHolder) convertView.getTag();
 
-            RestroomItem dItem =  this.restrooms.get(position);
+            final RestroomItem dItem =  this.restrooms.get(position);
 
             // Get color
-            int color = Color.HSVToColor(new float[] { dItem.getColor(), 1.0f, 1.0f });
+            int color = Color.HSVToColor(new float[] {dItem.getColor(), 1, 1});
 
             // Set values
             mainViewHolder.title.setText(dItem.getTitle());
             mainViewHolder.distance.setText("" + dItem.getDistance());
             mainViewHolder.ratings.setRating((float) dItem.getRating());
-            mainViewHolder.imageColor.setBackgroundColor(color);
+            mainViewHolder.imageColor.setBackgroundTintList(ColorStateList.valueOf(color));
 
             mainViewHolder.details.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -512,6 +515,7 @@ public class MainActivity extends AppCompatActivity
                     String distance = mainViewHolder.distance.getText().toString();
                     intent.putExtra("name", name);
                     intent.putExtra("distance", distance);
+                    intent.putExtra("restroomID", dItem.getRestroomID());
                     startActivity(intent);
                 }
             });

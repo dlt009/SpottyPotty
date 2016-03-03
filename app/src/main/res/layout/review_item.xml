@@ -16,4 +16,13 @@
         android:id="@+id/setRating"
         android:layout_below="@+id/comments"/>
 
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Report"
+        android:id="@+id/button_report"
+        android:layout_alignBottom="@+id/setRating"
+        android:layout_alignParentEnd="true" />
+
 </RelativeLayout>
