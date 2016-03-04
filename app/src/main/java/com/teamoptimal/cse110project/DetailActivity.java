@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatTextView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.teamoptimal.cse110project.data.Restroom;
 import com.teamoptimal.cse110project.data.ReviewItem;
 import com.teamoptimal.cse110project.data.Review;
 
@@ -47,28 +49,6 @@ public class DetailActivity extends AppCompatActivity {
         String name = intentExtra.getStringExtra("name");;
         String distance = intentExtra.getStringExtra("distance");
         Float ratings = intentExtra.getFloatExtra("ratings", 0.0f);
-        EditText comments = (EditText) findViewById(R.id.comments);
-
-        reviewList = (ListView)findViewById(R.id.list_reviews);
-
-        itemComments = new ArrayList<>();
-        /* Grabs the Restroom ID that is clicked from MainActivity */
-        currentID = intentExtra.getStringExtra("restroomID");
-
-        /* Initialize new Review with data from MainActivity */
-        review = new Review();
-        review.setRestroomID(currentID);
-        review.setUserEmail(MainActivity.user.getEmail());
-
-
-        // Set rating bar
-        RatingBar ratingBar = (RatingBar) findViewById(R.id.getRating);
-        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
-            @Override
-            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-                review.setRating(rating);
-            }
-        });
 
         /* Sets the TextView of the name and distance of the current bathroom displayed */
         TextView nameView = (TextView) findViewById(R.id.textView2);
@@ -80,14 +60,32 @@ public class DetailActivity extends AppCompatActivity {
         distanceView.setText(distance);
         ratingBar2.setRating(ratings);
 
+        reviewList = (ListView)findViewById(R.id.list_reviews);
+        itemComments = new ArrayList<>();
+
+        /* Grabs the Restroom ID that is clicked from MainActivity */
+        currentID = intentExtra.getStringExtra("restroomID");
+
+        /* Initialize new Review with data from MainActivity */
+        review = new Review();
+        review.setRestroomID(currentID);
+        review.setUserEmail(MainActivity.user.getEmail());
+
+        // Set rating bar
+        RatingBar ratingBar = (RatingBar) findViewById(R.id.getRating);
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+                review.setRating(rating);
+            }
+        });
+
 
         /* Sets the ListView of comments/ratings */
         itemComments = new ArrayList<>();
         adapter = new MyAdapter(this, R.layout.review_item, itemComments);
 
         new GetReviewsTask(currentID).execute();
-        Log.d(TAG, "SIZE: " + itemComments.size());
-        numView.setText(itemComments.size() + " Reviews");
 
         /* Sets the button */
         Button button = (Button) findViewById(R.id.buttonComment);
@@ -96,11 +94,14 @@ public class DetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                EditText comments = (EditText)findViewById(R.id.comments);
+                EditText comments = (EditText) findViewById(R.id.comments);
                 review.setMessage(comments.getText().toString());
 
                 if(review.isInitialized()) {
                     new CreateReviewTask(review).execute();
+
+                    //review.updateRating(currentID, review.getRating());
+
                     Toast.makeText(getBaseContext(), "Review has been created", Toast.LENGTH_SHORT).show();
 
                     finish();
@@ -112,6 +113,9 @@ public class DetailActivity extends AppCompatActivity {
         });
 
         reviewList.setAdapter(adapter);
+
+        Log.d(TAG, "SIZE: " + itemComments.size());
+        numView.setText(itemComments.size() + " Reviews");
 
     }
 
