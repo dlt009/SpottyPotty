@@ -43,27 +43,30 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="8dp"
-        android:text="Places"
+        android:text="Access"
         android:id="@+id/filter_text_place" />
 
-    <ListView
+    <Spinner
         android:layout_width="wrap_content"
         android:layout_height="85dp"
-        android:id="@+id/filter_list_place">
-    </ListView>
+        android:id="@+id/filter_list_access">
+    </Spinner>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="8dp"
-        android:text="Amenities"
+        android:text="Tags"
         android:id="@+id/filter_text_extra" />
 
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="85dp"
-        android:id="@+id/filter_list_extra">
+        android:id="@id/android:list"
+        android:layout_weight="0.50"
+        android:choiceMode="multipleChoice"
+        android:clickable ="true">
     </ListView>
 
     <Button

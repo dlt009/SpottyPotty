@@ -102,6 +102,7 @@ public class Restroom {
 
     @DynamoDBIgnore
     public void setGender(int index){
+        if(index < 0 || index >=SIZEOF_GENDER) return;
         char[] chars = tags.toCharArray();
         for(int i=0; i<SIZEOF_GENDER;i++){
             chars[i]= '0';
@@ -112,6 +113,7 @@ public class Restroom {
 
     @DynamoDBIgnore
     public void setAccess(int index){
+        if(index < 0 || index >=SIZEOF_ACCESS) return;
         char[] chars = tags.toCharArray();
         for(int i=0; i<SIZEOF_ACCESS;i++){
             chars[i+SIZEOF_GENDER]= '0';
@@ -122,9 +124,11 @@ public class Restroom {
 
     @DynamoDBIgnore
     public void setExtraneous(int index, boolean choice){
+        if(index < 0 || index >=(31-SIZEOF_GENDER-SIZEOF_ACCESS)) return;
         char[] chars = tags.toCharArray();
         if(choice) chars[index+SIZEOF_GENDER+SIZEOF_ACCESS]='1';
         else chars[index+SIZEOF_GENDER+SIZEOF_ACCESS] = '0';
+        tags = String.valueOf(chars);
     }
 
     @DynamoDBIgnore
@@ -136,18 +140,21 @@ public class Restroom {
     }
 
     @DynamoDBIgnore
-    public int convertTags(String tagSet) {
-        if(tagSet.length() == 0) return 0;
-        char[] tag = tagSet.toCharArray();
-        int sum = 0;
-        for(int i =0; i<31 && i<tagSet.length(); i++){
-            if(tag[i] == 1){
-                double pos = (double)i;
-                double val = Math.pow(2.0, 31-pos);
-                sum+=val;
+    public boolean filtersThrough(String filter){
+        if(filter.length()==0) return true;
+        if(filter.length()<31){
+            for(int c=0; c<31-filter.length(); c++){
+                filter+="0";
             }
         }
-        return sum;
+        char[] myTags = tags.toCharArray();
+        char[] filterTags = filter.toCharArray();
+        for(int i=0; i<31;i++){
+            if(filterTags[i] == '1'){
+                if(myTags[i] != '1') return false;
+            }
+        }
+        return true;
     }
 
     @DynamoDBIgnore
@@ -224,15 +231,19 @@ public class Restroom {
     @DynamoDBIgnore
     public static ArrayList<Restroom> filterRestrooms(List<Restroom> scan, String filter, double rated){
         ArrayList<Restroom> ret = new ArrayList<Restroom>();
-        Restroom converter = new Restroom();
-        int filters = converter.convertTags(filter);
         for(int i =0;i<scan.size(); i++){
             Restroom temp = scan.get(i);
-            if(filters == (temp.convertTags(temp.getTags()) & filters)
-                    && rated <= temp.getRating()){
+
+            Log.d(TAG, temp.getTags()+" - "+temp.getRating());
+            Log.d(TAG, filter+" - "+rated);
+            Log.d(TAG, " "+temp.filtersThrough(filter));
+
+            if(temp.filtersThrough(filter) && rated <= temp.getRating()){
                 ret.add(temp);
             }
         }
+        Log.d(TAG, ""+scan.size());
+        Log.d(TAG, ""+ret.size());
         return ret;
     }
 }

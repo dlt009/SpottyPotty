@@ -48,8 +48,8 @@ public class CreateRestroomActivity extends ListActivity {
     };
     public final static String[] tags = {
             "Unisex",
-            "Female-only",
             "Male-only",
+            "Female-only",
             "Public",
             "Private",
             "Pay-to-use",

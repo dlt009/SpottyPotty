@@ -1,8 +1,10 @@
 package com.teamoptimal.cse110project;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity
 
     /* Drawer */
     private ArrayList<Restroom> restrooms;
+    private ArrayList<Restroom> originalRestrooms;
     private ArrayList<RestroomItem> items;
     private ListView listView;
     private MyListAdapter adapter;
@@ -82,6 +85,11 @@ public class MainActivity extends AppCompatActivity
     private static final String PREFERENCES = "AppPrefs";
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
+
+    public static String filter ="";
+    public static double rated = 0.0;
+
+    private BroadcastReceiver receiver;
 
     /* UI Elements */
     private View header;
@@ -170,8 +178,26 @@ public class MainActivity extends AppCompatActivity
                         map.getCameraPosition().zoom));
             }
         });
+        receiver = new BroadcastReceiver(){
+            @Override
+            public void onReceive(Context arg0, Intent intent){
+                Log.d(TAG, "Received broadcast");
+                String action = intent.getAction();
+                if(action.equals("filter_done")){
+                    Log.d(TAG, "Filter done");
+                    Log.d(TAG, "" + filter);
+                    Log.d(TAG, "" + rated);
+                    Log.d(TAG, "" + restrooms.size());
+                    restrooms = Restroom.filterRestrooms(originalRestrooms, filter, rated);
+                    Log.d(TAG, "" +  restrooms.size());
 
-
+                    generateListContent();
+                    map.clear();
+                    createMarkers();
+                }
+            }
+        };
+        Log.d(TAG, " Activity Created");
     }
 
     @Override
@@ -202,6 +228,8 @@ public class MainActivity extends AppCompatActivity
             fab.setVisibility(View.GONE);
         }
         toggleNavSignInText();
+
+        registerReceiver(receiver, new IntentFilter("filter_done"));
     }
 
     private void toggleNavSignInText() {
@@ -227,12 +255,19 @@ public class MainActivity extends AppCompatActivity
             // Ask for permission
             return;
         }
-
-        // Show create restroom activity with current location
-        Intent intent = new Intent(this, CreateRestroomActivity.class);
-        double[] loc = { currentLocation.latitude, currentLocation.longitude };
-        intent.putExtra("Location", loc);
-        startActivity(intent);
+        else if(user!= null && user.getReportCount() > 3){
+            Toast.makeText(getBaseContext(),
+                    "You do not have access to this feature\n" +
+                            "Reason: too many reports against content created by this user",
+                    Toast.LENGTH_LONG).show();
+        }
+        else {
+            // Show create restroom activity with current location
+            Intent intent = new Intent(this, CreateRestroomActivity.class);
+            double[] loc = {currentLocation.latitude, currentLocation.longitude};
+            intent.putExtra("Location", loc);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -425,6 +460,7 @@ public class MainActivity extends AppCompatActivity
         protected Void doInBackground(Void... params) {
             Log.d(TAG, "doInBackground");
             restrooms = Restroom.getRestrooms(latitude, longitude, diameter);
+            originalRestrooms = Restroom.getRestrooms(latitude, longitude, diameter);
             return null;
         }
 
@@ -434,21 +470,33 @@ public class MainActivity extends AppCompatActivity
             Collections.sort(restrooms, new RestroomComparator(latitude, longitude));
 
             // Add markers
-            for(Restroom restroom : restrooms) {
-                LatLng latLng = new LatLng(restroom.getLatitude(), restroom.getLongitude());
-                float markerColor = restroom.getColor();
+            createMarkers();
 
-                map.addMarker(new MarkerOptions()
-                                .position(latLng)
-                                .title(restroom.getDescription())
-                                .icon(BitmapDescriptorFactory.defaultMarker(markerColor)
-                ));
-            }
             isExecuting = false;
 
             // Generate drawer list of restrooms
             generateListContent();
         }
+    }
+
+    private void createMarkers(){
+        for(Restroom restroom : restrooms) {
+            LatLng latLng = new LatLng(restroom.getLatitude(), restroom.getLongitude());
+            float markerColor = restroom.getColor();
+
+            map.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title(restroom.getDescription())
+                    .icon(BitmapDescriptorFactory.defaultMarker(markerColor)
+                    ));
+        }
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        unregisterReceiver(receiver);
+        Log.d(TAG, " STOPPING THE APP");
     }
 
     private class MyListAdapter extends ArrayAdapter<RestroomItem> {
