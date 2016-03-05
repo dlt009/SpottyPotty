@@ -13,7 +13,9 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -42,6 +44,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.teamoptimal.cse110project.data.RestroomItem;
@@ -73,10 +76,17 @@ public class MainActivity extends AppCompatActivity
     /* Map */
     private GoogleMap map;
     private LatLng currentLocation;
+    private LatLng lastNavigatedLocation;
     private LatLng lastKnownLocation;
+    private FloatingActionButton recenter;
+    private boolean centeredSearch = true;
 
-    /* Location */
-    private LocationManager locationManager;
+    /* Snackbar */
+    private CoordinatorLayout coordinatorLayout;
+    private Snackbar snackbar;
+    private float currentZoom;
+    private View.OnClickListener onRefreshRestroomsClick;
+    private int shownReason; // -1 == moved out of location, 1 == zoomed in or out
 
     /* Vars */
     private boolean initialized = false;
@@ -86,10 +96,11 @@ public class MainActivity extends AppCompatActivity
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
 
-    public static String filter ="";
+    public static String filter = "";
     public static double rated = 0.0;
 
     private BroadcastReceiver receiver;
+
 
     /* UI Elements */
     private View header;
@@ -122,6 +133,26 @@ public class MainActivity extends AppCompatActivity
                 goToCreateRestroom();
             }
         });
+
+        recenter = (FloatingActionButton) findViewById(R.id.center);
+        recenter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, currentZoom));
+                if(!centeredSearch) {
+                    map.clear();
+                    map.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
+                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                    centerLoc.setLatitude(currentLocation.latitude);
+                    centerLoc.setLongitude(currentLocation.longitude);
+                    lastNavigatedLocation = currentLocation;
+                    centeredSearch = true;
+                    showNearbyMarkers(centerLoc, 0.00727946446);
+                }
+            }
+        });
+        recenter.setVisibility(View.VISIBLE);
 
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
@@ -197,6 +228,11 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
+
+        // Set snackbar stuff
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
+        setUpSnackBar();
+
         Log.d(TAG, " Activity Created");
     }
 
@@ -331,22 +367,83 @@ public class MainActivity extends AppCompatActivity
                 != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                         != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
 
         map = googleMap;
         map.getUiSettings().setZoomGesturesEnabled((true));
         map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        map.getUiSettings().setRotateGesturesEnabled(false);
+        map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition cameraPosition) {
+                // If not initialized and not zoomed in to the default zoom in value, return,
+                // otherwise, set initialized to true
+                if(!initialized && cameraPosition.zoom != 18)
+                    return;
+                else
+                    initialized = true;
+
+                // Get difference in distance from target screen to currentLocation
+                float[] result = new float[2];
+                Location.distanceBetween(lastNavigatedLocation.latitude, lastNavigatedLocation.longitude,
+                        map.getCameraPosition().target.latitude, map.getCameraPosition().target.longitude,
+                        result);
+
+                // If zoom level is different or moved out of lastKnownLocation,
+                // show restroom search ui
+                // shownReason: -1 = moved out of location, 1 = zoomed in or out
+                if(currentZoom != cameraPosition.zoom || result[0] > 402.336) {
+                    if(!snackbar.isShown())
+                        snackbar.show();
+
+                    if(currentZoom != cameraPosition.zoom) {
+                        shownReason = -1;
+                    } else if (result[0] > 402.336) {
+                        shownReason = 1;
+                    }
+                }
+
+                if((shownReason == -1 && currentZoom == cameraPosition.zoom) ||
+                        (shownReason == 1 && result[0] <= 402.336)) {
+                    snackbar.dismiss();
+                    setUpSnackBar();
+                    shownReason = 0;
+                }
+            }
+        });
+
+        onRefreshRestroomsClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                map.clear();
+                // Get restrooms nearby the new point
+                LatLng center = map.getCameraPosition().target;
+                Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                centerLoc.setLatitude(center.latitude);
+                centerLoc.setLongitude(center.longitude);
+                showNearbyMarkers(centerLoc, 0.00727946446);
+                currentZoom = map.getCameraPosition().zoom;
+                lastNavigatedLocation = center;
+                snackbar.dismiss();
+                shownReason = 0;
+                centeredSearch = false;
+                setUpSnackBar();
+            }
+        };
+
         map.setBuildingsEnabled(true);
         map.setMyLocationEnabled(true);
         map.setOnMyLocationChangeListener(myLocationChangeListener());
+    }
+
+    private void setUpSnackBar() {
+        snackbar = Snackbar
+                .make(coordinatorLayout, "Search restrooms near this point", Snackbar.LENGTH_INDEFINITE)
+                .setAction("Search",  onRefreshRestroomsClick);
+        snackbar.setActionTextColor(getResources().getColor(R.color.colorPrimary));
+        View sbView = snackbar.getView();
+        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
     }
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener() {
@@ -360,13 +457,13 @@ public class MainActivity extends AppCompatActivity
                     map.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
                     lastKnownLocation = currentLocation;
+                    lastNavigatedLocation = currentLocation;
+                    currentZoom = 18;
                     Log.d(TAG, location.getLatitude() + ", " + location.getLongitude());
-                    LatLng center = map.getCameraPosition().target;
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
-                    centerLoc.setLatitude(center.latitude);
-                    centerLoc.setLongitude(center.longitude);
+                    centerLoc.setLatitude(currentLocation.latitude);
+                    centerLoc.setLongitude(currentLocation.longitude);
                     showNearbyMarkers(centerLoc, 0.00727946446);
-                    initialized = true;
                 }
 
                 float[] result = new float[2];
@@ -377,10 +474,9 @@ public class MainActivity extends AppCompatActivity
                 // 0.25 miles = 402.336 meters
                 if(result[0] > 402.336) {
                     map.clear();
-                    LatLng center = map.getCameraPosition().target;
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
-                    centerLoc.setLatitude(center.latitude);
-                    centerLoc.setLongitude(center.longitude);
+                    centerLoc.setLatitude(currentLocation.latitude);
+                    centerLoc.setLongitude(currentLocation.longitude);
                     showNearbyMarkers(centerLoc, 0.00727946446);
                     lastKnownLocation = currentLocation;
                 }

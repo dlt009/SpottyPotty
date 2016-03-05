@@ -32,7 +32,7 @@ android {
         javaMaxHeapSize "4g"
     }
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion '23.0.2'
     defaultConfig {
         applicationId "com.teamoptimal.cse110project"
         minSdkVersion 19

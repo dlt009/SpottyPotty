@@ -1,10 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:map="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    tools:context="com.teamoptimal.cse110project.MainActivity"
-    tools:showIn="@layout/app_bar_main" />
+    android:layout_height="wrap_content">
+    <android.support.design.widget.CoordinatorLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:id="@+id/coordinatorLayout"
+        android:layout_height="wrap_content">
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:context="com.teamoptimal.cse110project.MainActivity"
+            tools:showIn="@layout/app_bar_main" />
+
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="12dp"
+            android:src="@android:drawable/ic_input_add"
+            app:backgroundTint="@color/colorPrimary"
+            android:tint="@android:color/white" />
+
+        <ImageView
+            android:id="@+id/divider"
+            android:layout_width="1dp"
+            android:layout_height="40dp"
+            app:layout_anchor="@id/fab"
+            app:layout_anchorGravity="end" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/fab_margin"
+            android:layout_gravity="end"
+            app:layout_anchor="@id/divider"
+            app:backgroundTint="@android:color/white"
+            app:layout_anchorGravity="right|end"
+            android:scaleType="centerInside"
+            android:src="@mipmap/ic_pin" />
+
+    </android.support.design.widget.CoordinatorLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pin"
+        android:src="@mipmap/ic_pin"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"/>
+</RelativeLayout>
