@@ -33,7 +33,7 @@
         <ImageView
             android:id="@+id/divider"
             android:layout_width="1dp"
-            android:layout_height="34dp"
+            android:layout_height="32dp"
             app:layout_anchor="@id/fab"
             app:layout_anchorGravity="end" />
 
