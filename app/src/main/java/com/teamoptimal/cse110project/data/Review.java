@@ -102,7 +102,7 @@ public class Review {
     }
 
     @DynamoDBIgnore
-    public void updateRating(String restroomID, float newRating) {
+    public void updateRating(String restroomID, double newRating) {
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
         Restroom curRestroom = mapper.load(Restroom.class, restroomID);

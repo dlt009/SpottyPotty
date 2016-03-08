@@ -38,6 +38,7 @@ public class DetailActivity extends ListActivity {
     private ArrayList<ReviewItem> itemComments;
     private ArrayList<Review> reviews;
     private MyAdapter adapter;
+    private TextView numView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +55,7 @@ public class DetailActivity extends ListActivity {
         TextView nameView = (TextView) findViewById(R.id.textView2);
         TextView distanceView = (TextView) findViewById(R.id.textView3);
         RatingBar  ratingBar2 = (RatingBar) findViewById(R.id.ratingBar2);
-        TextView numView = (TextView) findViewById(R.id.num_reviews);
+        numView = (TextView) findViewById(R.id.num_reviews);
 
         nameView.setText(name);
         distanceView.setText(distance);
@@ -99,9 +100,9 @@ public class DetailActivity extends ListActivity {
                 review.setMessage(comments.getText().toString());
 
                 if(review.isInitialized()) {
-                    new CreateReviewTask(review).execute();
+                    //review.updateRating(review.getRestroomID(), review.getRating());
 
-                    //review.updateRating(currentID, review.getRating());
+                    new CreateReviewTask(review).execute();
 
                     Toast.makeText(getBaseContext(), "Review has been created", Toast.LENGTH_SHORT).show();
 
@@ -115,8 +116,8 @@ public class DetailActivity extends ListActivity {
 
         reviewList.setAdapter(adapter);
 
-        Log.d(TAG, "SIZE: " + itemComments.size());
-        numView.setText(itemComments.size() + " Reviews");
+        //Log.d(TAG, "SIZE: " + itemComments.size());
+        //numView.setText(itemComments.size() + " Reviews");
 
     }
 
@@ -147,6 +148,8 @@ public class DetailActivity extends ListActivity {
         // We can use UI elements here
         protected void onPostExecute(Void result) {
             Log.d(TAG, "Found " + reviews.size() + " reviews");
+
+            numView.setText(reviews.size() + " Reviews");
 
             generateReviews();
         }
