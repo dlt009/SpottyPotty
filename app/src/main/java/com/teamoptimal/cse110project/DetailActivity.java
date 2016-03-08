@@ -43,7 +43,7 @@ public class DetailActivity extends ListActivity {
 
         /* Grabs the passed intent from MainActivity */
         intentExtra = getIntent();
-        String name = intentExtra.getStringExtra("name");;
+        String name = intentExtra.getStringExtra("name");
         String distance = intentExtra.getStringExtra("distance");
         Float ratings = intentExtra.getFloatExtra("ratings", 0.0f);
         EditText comments = (EditText) findViewById(R.id.comments);
@@ -79,7 +79,7 @@ public class DetailActivity extends ListActivity {
         /* Sets the ListView of comments/ratings */
         reviewList = (ListView) findViewById(android.R.id.list);
         adapter = new MyAdapter(this, R.layout.review_item, itemComments);
-        new GetReviewsTask(review, this);
+        new GetReviewsTask(review, this).execute();
         //ListView reviewList = getListView();
 
         //this.addListenerToRatingBar();

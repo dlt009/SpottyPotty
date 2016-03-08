@@ -404,8 +404,10 @@ public class SignInActivity extends AppCompatActivity implements
         editor.putBoolean("goog", signedInGoogle);
         editor.putBoolean("face", signedInFacebook);
         editor.putBoolean("twit", signedInTwitter);
-        editor.putString("user_email", user.getEmail());
-        editor.putString("user_name", user.getUsername());
+        if (user != null) {
+            editor.putString("user_email", user.getEmail());
+            editor.putString("user_name", user.getUsername());
+        }
         editor.commit();
         if(isGoogleSilentSignIn)
             isGoogleSilentSignIn = false;

@@ -107,7 +107,7 @@ public class Review {
                 .withAttributeValueList(new AttributeValue().withS(currentID));
 
         Map<String, Condition> conditions = new HashMap<String, Condition>();
-        conditions.put("ID", restroomID);
+        conditions.put("RestroomID", restroomID);
 
         DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
         scanExpression.setScanFilter(conditions);
