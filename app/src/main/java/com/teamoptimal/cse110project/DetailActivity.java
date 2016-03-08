@@ -173,6 +173,7 @@ public class DetailActivity extends ListActivity {
         // To do in the background
         protected Void doInBackground(Void... inputs) {
             review.createReview(); // Use the method from the User class to create it
+            review.updateRating(review.getRestroomID(), review.getRating());
             return null;
         }
 
