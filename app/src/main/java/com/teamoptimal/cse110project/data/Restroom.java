@@ -32,17 +32,23 @@ public class Restroom {
     private double latitude;
     private String userEmail;
     private String description;
+    private float color;
     private String tags;
     private String floor;
     private double rating;
     private int ratingsCount;
-    private float color;
     private int reports;
 
     private int SIZEOF_GENDER=3;
     private int SIZEOF_ACCESS=3;
     private int SIZEOF_EXTRANEOUS=8;
 
+    public static final float[] colors = { BitmapDescriptorFactory.HUE_YELLOW,
+            BitmapDescriptorFactory.HUE_ROSE, BitmapDescriptorFactory.HUE_CYAN,
+            BitmapDescriptorFactory.HUE_GREEN, BitmapDescriptorFactory.HUE_MAGENTA,
+            BitmapDescriptorFactory.HUE_ORANGE, BitmapDescriptorFactory.HUE_RED,
+            BitmapDescriptorFactory.HUE_BLUE, BitmapDescriptorFactory.HUE_VIOLET,
+            BitmapDescriptorFactory.HUE_AZURE };
 
     public Restroom () {
         userEmail = "";
@@ -80,9 +86,54 @@ public class Restroom {
     public String getTags() { return tags; }
     public void setTags(String tags) { this.tags = tags; }
 
+    @DynamoDBIgnore
+    public static String getFormattedTags(String tags) {
+        String result = "";
+        for(int i = 0; i < CreateRestroomActivity.tags.length; i++) {
+            if(tags.charAt(i) == '1') {
+                result += CreateRestroomActivity.tags[i].toLowerCase() + ", ";
+            }
+        }
+        if(result != "")
+            result = result.substring(0, result.length() - 2);
+        else
+            result = "No tags";
+
+        return result;
+    }
+
+    @DynamoDBIgnore
+    public String getFormattedTags() {
+        String result = "";
+        for(int i = 0; i < CreateRestroomActivity.tags.length; i++) {
+            if(getTags().charAt(i) == '1') {
+                result += CreateRestroomActivity.tags[i].toLowerCase() + ", ";
+            }
+        }
+        if(result != "")
+            result = result.substring(0, result.length() - 2);
+        else
+            result = "No tags";
+
+        return result;
+    }
+
+    @DynamoDBIgnore
+    public String getFormattedTags(boolean firstCapitalized) {
+        String result = getFormattedTags();
+        if(firstCapitalized)
+            return result.substring(0, 1).toUpperCase() + result.substring(1);
+        else
+            return result;
+    }
+
     @DynamoDBAttribute (attributeName = "Floor")
     public String getFloor() { return floor; }
     public void setFloor(String floor) { this.floor = floor; }
+
+    @DynamoDBIgnore
+    public float getColor() { return color; }
+    public void setColor(float color) { this.color = color; }
 
     @DynamoDBAttribute(attributeName = "Rating")
     public double getRating() { return rating; }
@@ -91,10 +142,6 @@ public class Restroom {
     @DynamoDBAttribute(attributeName = "NumberOfRatings")
     public int getRatingsCount() { return ratingsCount; }
     public void setRatingsCount(int ratingsCount) { this.ratingsCount = ratingsCount; }
-
-    @DynamoDBAttribute(attributeName = "Color")
-    public float getColor() {return color;}
-    public void setColor(float color) {this.color = color;}
 
     @DynamoDBAttribute(attributeName = "Times_Reported")
     public int getReportCount(){return reports;}
@@ -222,7 +269,14 @@ public class Restroom {
         Log.d(TAG, "scanResult, " + scanResult.size());
 
         ArrayList<Restroom> returnVal = new ArrayList<>();
+        int colorIndex = 0;
         for(Restroom restroom : scanResult) {
+            float color = Restroom.colors[colorIndex];
+            restroom.setColor(color);
+            if(colorIndex == 9)
+                colorIndex = 0;
+            else
+                colorIndex++;
             returnVal.add(restroom);
         }
         return returnVal;

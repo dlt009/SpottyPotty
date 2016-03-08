@@ -63,13 +63,6 @@ public class CreateRestroomActivity extends ListActivity {
             "Residence"
     };
 
-    private static final float[] colors = { BitmapDescriptorFactory.HUE_YELLOW,
-            BitmapDescriptorFactory.HUE_ROSE, BitmapDescriptorFactory.HUE_CYAN,
-            BitmapDescriptorFactory.HUE_GREEN, BitmapDescriptorFactory.HUE_MAGENTA,
-            BitmapDescriptorFactory.HUE_ORANGE, BitmapDescriptorFactory.HUE_RED,
-            BitmapDescriptorFactory.HUE_BLUE, BitmapDescriptorFactory.HUE_VIOLET,
-            BitmapDescriptorFactory.HUE_AZURE };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,11 +77,6 @@ public class CreateRestroomActivity extends ListActivity {
         if(SignInActivity.user == null){ email = "FakeUser@test.com";}
         else email = SignInActivity.user.getEmail();
         restroom.setUser(email);
-
-        // Random color for this restroom
-        Random random = new Random();
-        int colorIndex = random.nextInt(colors.length);
-        restroom.setColor(colors[colorIndex]);
 
         /* Get ACM */
         clientManager = MainActivity.clientManager;
