@@ -21,6 +21,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.teamoptimal.cse110project.data.Report;
 import com.teamoptimal.cse110project.data.Restroom;
 import com.teamoptimal.cse110project.data.ReviewItem;
 import com.teamoptimal.cse110project.data.Review;
@@ -55,6 +56,8 @@ public class DetailActivity extends ListActivity {
         TextView nameView = (TextView) findViewById(R.id.textView2);
         TextView distanceView = (TextView) findViewById(R.id.textView3);
         RatingBar  ratingBar2 = (RatingBar) findViewById(R.id.ratingBar2);
+        Button report = (Button) findViewById(R.id.report_rest);
+
         numView = (TextView) findViewById(R.id.num_reviews);
 
         nameView.setText(name);
@@ -67,6 +70,16 @@ public class DetailActivity extends ListActivity {
 
         /* Grabs the Restroom ID that is clicked from MainActivity */
         currentID = intentExtra.getStringExtra("restroomID");
+
+        report.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
+                intent.putExtra("object", "Restroom");
+                intent.putExtra("objId", currentID);
+                startActivity(intent); // Go to ReportActivity
+            }
+        });
 
         /* Initialize new Review with data from MainActivity */
         review = new Review();
@@ -99,7 +112,7 @@ public class DetailActivity extends ListActivity {
                 EditText comments = (EditText) findViewById(R.id.newComments);
                 review.setMessage(comments.getText().toString());
 
-                if(review.isInitialized()) {
+                if (review.isInitialized()) {
                     //review.updateRating(review.getRestroomID(), review.getRating());
 
                     new CreateReviewTask(review).execute();
@@ -107,18 +120,13 @@ public class DetailActivity extends ListActivity {
                     Toast.makeText(getBaseContext(), "Review has been created", Toast.LENGTH_SHORT).show();
 
                     finish();
-                }
-                else {
+                } else {
                     Toast.makeText(getBaseContext(), "Unsuccessful", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
         reviewList.setAdapter(adapter);
-
-        //Log.d(TAG, "SIZE: " + itemComments.size());
-        //numView.setText(itemComments.size() + " Reviews");
-
     }
 
     public void generateReviews() {
@@ -195,6 +203,7 @@ public class DetailActivity extends ListActivity {
                 ViewHolder viewHolder = new ViewHolder();
                 viewHolder.comments = (TextView)convertView.findViewById(R.id.comments);
                 viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.setRating);
+                viewHolder.report = (ImageButton)convertView.findViewById(R.id.button_report);
 
                 convertView.setTag(viewHolder);
 
@@ -205,6 +214,15 @@ public class DetailActivity extends ListActivity {
 
             mainViewHolder.comments.setText(rItem.getComments());
             mainViewHolder.ratings.setRating(rItem.getRating());
+            mainViewHolder.report.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
+                    intent.putExtra("object", "Review");
+                    intent.putExtra("objId", review.getID());
+                    startActivity(intent); // Go to ReportActivity
+                }
+            });
             return convertView;
         }
     }
