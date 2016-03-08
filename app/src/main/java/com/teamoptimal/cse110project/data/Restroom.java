@@ -87,9 +87,44 @@ public class Restroom {
     public void setTags(String tags) { this.tags = tags; }
 
     @DynamoDBIgnore
-    public String getFormattedTags() {
+    public static String getFormattedTags(String tags) {
+        String result = "";
+        for(int i = 0; i < CreateRestroomActivity.tags.length; i++) {
+            if(tags.charAt(i) == '1') {
+                result += CreateRestroomActivity.tags[i].toLowerCase() + ", ";
+            }
+        }
+        if(result != "")
+            result = result.substring(0, result.length() - 2);
+        else
+            result = "No tags";
 
-        return "";
+        return result;
+    }
+
+    @DynamoDBIgnore
+    public String getFormattedTags() {
+        String result = "";
+        for(int i = 0; i < CreateRestroomActivity.tags.length; i++) {
+            if(getTags().charAt(i) == '1') {
+                result += CreateRestroomActivity.tags[i].toLowerCase() + ", ";
+            }
+        }
+        if(result != "")
+            result = result.substring(0, result.length() - 2);
+        else
+            result = "No tags";
+
+        return result;
+    }
+
+    @DynamoDBIgnore
+    public String getFormattedTags(boolean firstCapitalized) {
+        String result = getFormattedTags();
+        if(firstCapitalized)
+            return result.substring(0, 1).toUpperCase() + result.substring(1);
+        else
+            return result;
     }
 
     @DynamoDBAttribute (attributeName = "Floor")

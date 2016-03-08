@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/tw__transparent"
                 android:text="Filter"
-                android:id="@+id/button2"
+                android:id="@+id/filter_button"
                 android:layout_marginRight="8dp"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"

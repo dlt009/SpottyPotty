@@ -16,6 +16,7 @@ public class RestroomItem {
         this.restroomID = restroomID;
         this.title = title;
         this.distance = distance;
+        this.tags = tags;
         this.rating = rating;
         this.color = color;
     }
