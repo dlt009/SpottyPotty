@@ -9,12 +9,9 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.teamoptimal.cse110project.CreateRestroomActivity">
-
-    <!--<android.support.v7.app.WindowDecorActionBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/decorBar"/>-->
+    tools:context="com.teamoptimal.cse110project.CreateRestroomActivity"
+    android:clickable = "true"
+    android:focusableInTouchMode = "true">
 
     <TextView
         android:layout_width="wrap_content"
@@ -23,7 +20,7 @@
         android:text="Creating new restroom at current location"
         android:id="@+id/textView"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
+        android:layout_centerHorizontal="true"
         android:textColor="#000000" />
 
     <EditText
@@ -35,20 +32,20 @@
         android:imeOptions="actionDone"
         android:imeActionLabel="Done"
         android:layout_below="@+id/textView"
-        android:maxLines="2"
-        android:layout_alignParentStart="true" />
+        android:layout_centerHorizontal="true"
+        android:maxLines="2" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below = "@+id/editText"
-        android:text = "Floor #:"
+        android:text = "Floor #:  "
         android:textSize="20dp"
         android:layout_alignParentLeft="true"
         android:id="@+id/floor"
         />
     <EditText
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/editText"
         android:layout_toRightOf= "@+id/floor"
@@ -70,10 +67,10 @@
         />
 
     <Spinner
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/gender"
-        android:layout_toRightOf="@+id/Gender"
+        android:layout_toEndOf="@+id/Gender"
         android:spinnerMode="dropdown"
         android:layout_below="@+id/editText2" />
 
@@ -88,10 +85,10 @@
         />
 
     <Spinner
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/access"
-        android:layout_toRightOf="@+id/Access"
+        android:layout_toEndOf="@+id/Access"
         android:layout_below="@+id/gender"
         android:spinnerMode="dropdown"/>
 
@@ -99,7 +96,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below = "@+id/access"
-        android:text = "Tags:"
+        android:text = "Tags:    "
         android:textSize="20dp"
         android:layout_alignParentLeft="true"
         android:id="@+id/Extra"
@@ -107,21 +104,31 @@
 
     <ListView
         android:id="@android:id/list"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/access"
-        android:layout_above="@+id/ratingBar"
-        android:layout_toRightOf="@+id/Extra"
-        android:layout_alignEnd="@+id/editText"
+        android:layout_above="@+id/starScroll"
+        android:layout_toEndOf="@+id/Extra"
         android:clickable = "true"/>
+
+    <HorizontalScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/starScroll"
+        android:layout_alignStart="@+id/android:list"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:focusableInTouchMode="true"
+        android:layout_toStartOf="@+id/button">
 
     <RatingBar
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:id="@+id/ratingBar"
-        android:layout_alignStart="@android:id/list"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"/>
+        android:numStars="5"
+        />
+
+    </HorizontalScrollView>
 
     <Button
         android:layout_width="wrap_content"
@@ -130,7 +137,7 @@
         android:id="@+id/button"
         android:textColor="#ffe016"
         android:backgroundTint="#be0037ff"
-        android:layout_alignBottom="@+id/ratingBar"
+        android:layout_alignBottom="@+id/starScroll"
         android:layout_alignParentRight="true"
         android:textSize="16sp" />
 
