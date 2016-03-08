@@ -7,11 +7,12 @@ public class RestroomItem {
     String restroomID;
     String title;
     String distance;
+    String tags;
     double rating;
     float color;
 
-    public RestroomItem(String restroomID, String title, String distance, double rating,
-                        float color) {
+    public RestroomItem(String restroomID, String title, String distance, String tags,
+                        double rating, float color) {
         this.restroomID = restroomID;
         this.title = title;
         this.distance = distance;
@@ -27,6 +28,9 @@ public class RestroomItem {
 
     public String getDistance() { return distance; }
     public void setDistance(String distance) { this.distance = distance; }
+
+    public String getTags() { return tags; }
+    public void setTags(String tags) { this.tags = tags; }
 
     public double getRating() { return rating; }
     public void setRating(double rating) { this.rating = rating; }

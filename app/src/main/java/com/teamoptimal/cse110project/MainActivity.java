@@ -409,6 +409,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
+        setUpSnackBar();
         map = googleMap;
         map.getUiSettings().setZoomGesturesEnabled((true));
         map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -529,16 +530,19 @@ public class MainActivity extends AppCompatActivity
 
     public void generateListContent() {
         items.clear();
+        int colorIndex = 0;
         for (Restroom restroom : restrooms) {
-
             float[] result = new float[2];
             Location.distanceBetween(restroom.getLatitude(), restroom.getLongitude(),
                     currentLocation.latitude, currentLocation.longitude, result);
             double meters = result[0];
             String distance = String.format("%.2f", meters) + " meters ";
 
+            // Get tags
+            String tags = restroom.getTags();
+
             items.add(new RestroomItem(restroom.getID(), restroom.getDescription(), distance,
-                    restroom.getRating(), restroom.getColor()));
+                    tags, restroom.getRating(), restroom.getColor()));
         }
         adapter.notifyDataSetChanged();
     }
@@ -656,20 +660,9 @@ public class MainActivity extends AppCompatActivity
                 viewHolder.imageColor = (ImageView)convertView.findViewById(R.id.view_color);
                 viewHolder.title = (TextView)convertView.findViewById(R.id.view_title);
                 viewHolder.distance = (TextView)convertView.findViewById(R.id.view_dist);
+                viewHolder.tags = (TextView)convertView.findViewById(R.id.view_tags);
                 viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.view_rating);
                 viewHolder.details = (Button)convertView.findViewById(R.id.details_button);
-                /*viewHolder.details.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //Toast.makeText(getContext(),
-                        //        "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
-
-                        Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
-                        String [] name_dist = { mainViewHolder.title.getText(), dItem.getDistance()};
-                        intent.putExtra("Title and Distance", name_dist);
-                        startActivity(intent);
-                    }
-                });*/
 
                 convertView.setTag(viewHolder);
             }
@@ -685,6 +678,7 @@ public class MainActivity extends AppCompatActivity
             mainViewHolder.title.setText(dItem.getTitle());
             mainViewHolder.distance.setText("" + dItem.getDistance());
             mainViewHolder.ratings.setRating((float) dItem.getRating());
+            mainViewHolder.tags.setText("" + dItem.getTags());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mainViewHolder.imageColor.setBackgroundTintList(ColorStateList.valueOf(color));
             }
@@ -713,6 +707,7 @@ public class MainActivity extends AppCompatActivity
         ImageView imageColor;
         TextView title;
         TextView distance;
+        TextView tags;
         RatingBar ratings;
         Button details;
     }
