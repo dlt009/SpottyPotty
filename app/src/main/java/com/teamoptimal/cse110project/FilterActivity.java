@@ -37,17 +37,6 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.filter_layout);
 
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-
-        int width = dm.widthPixels;
-        int height = dm.heightPixels;
-
-        double widthAdjust = 0.8;
-        double heightAdjust = 0.75;
-
-        getWindow().setLayout((int) (width * widthAdjust), (int) (height * heightAdjust));
-
         // Spinner element
         spinnerGender = (Spinner) findViewById(R.id.spinner1);
         spinnerGender.setOnItemSelectedListener(this);

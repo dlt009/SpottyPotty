@@ -55,6 +55,18 @@
         android:layout_alignTop="@+id/view_dist"
         android:layout_alignStart="@+id/details_button" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        android:id="@+id/view_tags"
+        android:layout_below="@+id/view_dist"
+        android:layout_alignStart="@+id/view_dist"
+        android:layout_marginRight="80dp"
+        android:layout_marginTop="12dp"/>
+
     <Button
         android:layout_gravity = "center"
         android:layout_width="wrap_content"
@@ -67,16 +79,5 @@
         android:layout_marginRight="4dp"
         android:layout_below="@+id/view_rating"
         android:layout_alignParentEnd="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="@string/view_dist"
-        android:id="@+id/view_tags"
-        android:layout_below="@+id/view_dist"
-        android:layout_alignStart="@+id/view_dist"
-        android:layout_marginTop="12dp"/>
 
 </RelativeLayout>

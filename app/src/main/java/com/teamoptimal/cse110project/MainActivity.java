@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity
 
     /* User */
     public static User user;
-    private boolean isLoggedIn = false;
 
     /* Drawer */
     private ArrayList<Restroom> restrooms;
@@ -100,7 +99,6 @@ public class MainActivity extends AppCompatActivity
 
     private static final String PREFERENCES = "AppPrefs";
     private static SharedPreferences sharedPreferences;
-    private static SharedPreferences.Editor editor;
 
     public static String filter = "";
     public static double rated = 0.0;
@@ -138,7 +136,6 @@ public class MainActivity extends AppCompatActivity
 
         /* Initialize shared preferences object to get info from other activities */
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
-        editor = sharedPreferences.edit();
 
         /* Load user */
         String userEmail = sharedPreferences.getString("user_email", "");
@@ -149,11 +146,10 @@ public class MainActivity extends AppCompatActivity
         /* Set up fab icons */
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(onAddRestroomClick());
-
+        fab.setVisibility(View.GONE);
         recenter = (FloatingActionButton) findViewById(R.id.center);
         recenter.setOnClickListener(onRecenterClick());
-
-        setFABUI(false);
+        recenter.setVisibility(View.GONE);
 
         /* Drawer */
         final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -209,12 +205,27 @@ public class MainActivity extends AppCompatActivity
                     restrooms = Restroom.filterRestrooms(originalRestrooms, filter, rated);
                     Log.d(TAG, "" +  restrooms.size());
 
+                    String tags = Restroom.getFormattedTags(filter);
+                    if(tags == "No tags") tags = "ALL";
+                    String tagText = "Showing " + tags + " restrooms";
+                    ((TextView)findViewById(R.id.filter_text)).setText(tagText);
+
                     generateListContent();
                     map.clear();
                     createMarkers();
                 }
             }
         };
+
+        /* Filter button */
+        View filtersView = findViewById(R.id.filters);
+        filtersView.findViewById(R.id.filter_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
+                startActivity(intent);
+            }
+        });
 
         // Set snackbar stuff
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
@@ -272,7 +283,6 @@ public class MainActivity extends AppCompatActivity
         if (signedInFacebook || signedInGoogle || signedInTwitter) {
             name_text.setText(name);
             email_text.setText(email);
-            isLoggedIn = true;
         }
         else {
             name_text.setText("Please login to see profile");
@@ -287,13 +297,13 @@ public class MainActivity extends AppCompatActivity
         // Change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            setFABUI(true);
+            if(initialized) setFABUI(true);
             if(signOutOption != null)
                 signOutOption.setVisible(true);
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
-            setFABUI(false);
+            if(initialized) setFABUI(false);
             if(signOutOption != null)
                 signOutOption.setVisible(false);
         }
@@ -421,8 +431,11 @@ public class MainActivity extends AppCompatActivity
                 // otherwise, set initialized to true
                 if(!initialized && cameraPosition.zoom != 18)
                     return;
-                else
+                else {
                     initialized = true;
+                    fab.setVisibility(View.VISIBLE);
+                    recenter.setVisibility(View.VISIBLE);
+                }
 
                 // Get difference in distance from target screen to currentLocation
                 float[] result = new float[2];
@@ -539,7 +552,7 @@ public class MainActivity extends AppCompatActivity
             String distance = String.format("%.2f", meters) + " meters ";
 
             // Get tags
-            String tags = restroom.getTags();
+            String tags = restroom.getFormattedTags(true);
 
             items.add(new RestroomItem(restroom.getID(), restroom.getDescription(), distance,
                     tags, restroom.getRating(), restroom.getColor()));
@@ -579,8 +592,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         protected void onPostExecute(Void result) {
-            if(user.getProviderID() != null || user.getProviderID() != "")
-                isLoggedIn = true;
         }
     }
 
@@ -695,6 +706,7 @@ public class MainActivity extends AppCompatActivity
                     intent.putExtra("name", name);
                     intent.putExtra("distance", distance);
                     intent.putExtra("restroomID", dItem.getRestroomID());
+                    intent.putExtra("ratings", (float)dItem.getRating());
                     startActivity(intent);
                 }
             });

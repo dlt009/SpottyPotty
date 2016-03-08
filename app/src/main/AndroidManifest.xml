@@ -83,7 +83,7 @@
         <activity
             android:name=".FilterActivity"
             android:label="Filters"
-            android:theme="@style/AppTheme.FilterWindow"
+            android:theme="@style/Theme.AppCompat.Dialog"
             ></activity>
 
     </application>

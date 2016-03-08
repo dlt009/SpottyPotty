@@ -102,6 +102,17 @@ public class Review {
     }
 
     @DynamoDBIgnore
+    public void updateRating(String restroomID, double newRating) {
+        AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+        Restroom curRestroom = mapper.load(Restroom.class, restroomID);
+        double curRating = curRestroom.getRating();
+        double averageRating = (curRating + newRating)/2;
+        curRestroom.setRating(averageRating);
+        mapper.save(curRestroom);
+    }
+
+    @DynamoDBIgnore
     public static ArrayList<Review> getReviews(String currentID) {
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
