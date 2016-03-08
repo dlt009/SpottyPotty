@@ -146,11 +146,10 @@ public class MainActivity extends AppCompatActivity
         /* Set up fab icons */
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(onAddRestroomClick());
-
+        fab.setVisibility(View.GONE);
         recenter = (FloatingActionButton) findViewById(R.id.center);
         recenter.setOnClickListener(onRecenterClick());
-
-        setFABUI(false);
+        recenter.setVisibility(View.GONE);
 
         /* Drawer */
         final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -298,13 +297,13 @@ public class MainActivity extends AppCompatActivity
         // Change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            setFABUI(true);
+            if(initialized) setFABUI(true);
             if(signOutOption != null)
                 signOutOption.setVisible(true);
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
-            setFABUI(false);
+            if(initialized) setFABUI(false);
             if(signOutOption != null)
                 signOutOption.setVisible(false);
         }
@@ -432,8 +431,11 @@ public class MainActivity extends AppCompatActivity
                 // otherwise, set initialized to true
                 if(!initialized && cameraPosition.zoom != 18)
                     return;
-                else
+                else {
                     initialized = true;
+                    fab.setVisibility(View.VISIBLE);
+                    recenter.setVisibility(View.VISIBLE);
+                }
 
                 // Get difference in distance from target screen to currentLocation
                 float[] result = new float[2];
