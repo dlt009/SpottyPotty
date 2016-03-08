@@ -1,8 +1,10 @@
 package com.teamoptimal.cse110project;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -12,9 +14,14 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.TintManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +49,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.teamoptimal.cse110project.data.RestroomItem;
@@ -62,6 +70,7 @@ public class MainActivity extends AppCompatActivity
 
     /* User */
     public static User user;
+    private boolean isLoggedIn = false;
 
     /* Drawer */
     private ArrayList<Restroom> restrooms;
@@ -73,10 +82,17 @@ public class MainActivity extends AppCompatActivity
     /* Map */
     private GoogleMap map;
     private LatLng currentLocation;
+    private LatLng lastNavigatedLocation;
     private LatLng lastKnownLocation;
+    private FloatingActionButton recenter;
+    private boolean centeredSearch = true;
 
-    /* Location */
-    private LocationManager locationManager;
+    /* Snackbar */
+    private CoordinatorLayout coordinatorLayout;
+    private Snackbar snackbar;
+    private float currentZoom;
+    private View.OnClickListener onRefreshRestroomsClick;
+    private int shownReason; // -1 == moved out of location, 1 == zoomed in or out
 
     /* Vars */
     private boolean initialized = false;
@@ -86,10 +102,11 @@ public class MainActivity extends AppCompatActivity
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
 
-    public static String filter ="";
+    public static String filter = "";
     public static double rated = 0.0;
 
     private BroadcastReceiver receiver;
+
 
     /* UI Elements */
     private View header;
@@ -115,14 +132,6 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                goToCreateRestroom();
-            }
-        });
-
         /* Initialize Amazon Client Manager */
         clientManager = new AmazonClientManager(this);
         clientManager.validateCredentials();
@@ -136,6 +145,15 @@ public class MainActivity extends AppCompatActivity
         user = new User();
 
         new GetUserTask(userEmail);
+
+        /* Set up fab icons */
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(onAddRestroomClick());
+
+        recenter = (FloatingActionButton) findViewById(R.id.center);
+        recenter.setOnClickListener(onRecenterClick());
+
+        setFABUI(false);
 
         /* Drawer */
         final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -197,7 +215,41 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
+
+        // Set snackbar stuff
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
+        setUpSnackBar();
+
         Log.d(TAG, " Activity Created");
+    }
+
+    private View.OnClickListener onAddRestroomClick() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToCreateRestroom();
+            }
+        };
+    }
+
+    private View.OnClickListener onRecenterClick() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, currentZoom));
+                if(!centeredSearch) {
+                    map.clear();
+                    map.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
+                    Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                    centerLoc.setLatitude(currentLocation.latitude);
+                    centerLoc.setLongitude(currentLocation.longitude);
+                    lastNavigatedLocation = currentLocation;
+                    centeredSearch = true;
+                    showNearbyMarkers(centerLoc, 0.00727946446);
+                }
+            }
+        };
     }
 
     @Override
@@ -220,12 +272,11 @@ public class MainActivity extends AppCompatActivity
         if (signedInFacebook || signedInGoogle || signedInTwitter) {
             name_text.setText(name);
             email_text.setText(email);
-            fab.setVisibility(View.VISIBLE);
+            isLoggedIn = true;
         }
         else {
             name_text.setText("Please login to see profile");
             email_text.setText("");
-            fab.setVisibility(View.GONE);
         }
         toggleNavSignInText();
 
@@ -236,13 +287,37 @@ public class MainActivity extends AppCompatActivity
         // Change sign-in button text to reflect if currently signing in or out
         if(signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
+            setFABUI(true);
             if(signOutOption != null)
                 signOutOption.setVisible(true);
         }
         else {
             signInButton.setVisibility(View.VISIBLE);
+            setFABUI(false);
             if(signOutOption != null)
                 signOutOption.setVisible(false);
+        }
+    }
+
+    private void setFABUI(boolean showAddRestroom) {
+        if (showAddRestroom) {
+            fab.setImageResource(android.R.drawable.ic_input_add);
+            fab.setBackgroundTintList(new ColorStateList(new int[][]{new int[]{0}},
+                    new int[]{ getResources().getColor(R.color.colorPrimary )}));
+            fab.setImageTintList(new ColorStateList(new int[][]{new int[]{0}},
+                    new int[]{ getResources().getColor(R.color.white )}));
+            fab.setOnClickListener(onAddRestroomClick());
+
+            recenter.setVisibility(View.VISIBLE);
+        } else {
+            fab.setImageResource(R.mipmap.ic_pin);
+            fab.setBackgroundTintList(new ColorStateList(new int[][]{new int[]{0}},
+                    new int[]{ getResources().getColor(R.color.white )}));
+            fab.setImageTintList(new ColorStateList(new int[][]{new int[]{0}},
+                    new int[]{ getResources().getColor(R.color.colorPrimary )}));
+            fab.setOnClickListener(onRecenterClick());
+
+            recenter.setVisibility(View.GONE);
         }
     }
 
@@ -255,7 +330,7 @@ public class MainActivity extends AppCompatActivity
             // Ask for permission
             return;
         }
-        else if(user!= null && user.getReportCount() > 3){
+        else if(user!= null && user.getReportCount() > 3) {
             Toast.makeText(getBaseContext(),
                     "You do not have access to this feature\n" +
                             "Reason: too many reports against content created by this user",
@@ -331,22 +406,84 @@ public class MainActivity extends AppCompatActivity
                 != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                         != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
 
+        setUpSnackBar();
         map = googleMap;
         map.getUiSettings().setZoomGesturesEnabled((true));
         map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        map.getUiSettings().setRotateGesturesEnabled(false);
+        map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition cameraPosition) {
+                // If not initialized and not zoomed in to the default zoom in value, return,
+                // otherwise, set initialized to true
+                if(!initialized && cameraPosition.zoom != 18)
+                    return;
+                else
+                    initialized = true;
+
+                // Get difference in distance from target screen to currentLocation
+                float[] result = new float[2];
+                Location.distanceBetween(lastNavigatedLocation.latitude, lastNavigatedLocation.longitude,
+                        map.getCameraPosition().target.latitude, map.getCameraPosition().target.longitude,
+                        result);
+
+                // If zoom level is different or moved out of lastKnownLocation,
+                // show restroom search ui
+                // shownReason: -1 = moved out of location, 1 = zoomed in or out
+                if(currentZoom != cameraPosition.zoom || result[0] > 402.336) {
+                    if(!snackbar.isShown())
+                        snackbar.show();
+
+                    if(currentZoom != cameraPosition.zoom) {
+                        shownReason = -1;
+                    } else if (result[0] > 402.336) {
+                        shownReason = 1;
+                    }
+                }
+
+                if((shownReason == -1 && currentZoom == cameraPosition.zoom) ||
+                        (shownReason == 1 && result[0] <= 402.336)) {
+                    snackbar.dismiss();
+                    setUpSnackBar();
+                    shownReason = 0;
+                }
+            }
+        });
+
+        onRefreshRestroomsClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                map.clear();
+                // Get restrooms nearby the new point
+                LatLng center = map.getCameraPosition().target;
+                Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
+                centerLoc.setLatitude(center.latitude);
+                centerLoc.setLongitude(center.longitude);
+                showNearbyMarkers(centerLoc, 0.00727946446);
+                currentZoom = map.getCameraPosition().zoom;
+                lastNavigatedLocation = center;
+                snackbar.dismiss();
+                shownReason = 0;
+                centeredSearch = false;
+                setUpSnackBar();
+            }
+        };
+
         map.setBuildingsEnabled(true);
         map.setMyLocationEnabled(true);
         map.setOnMyLocationChangeListener(myLocationChangeListener());
+    }
+
+    private void setUpSnackBar() {
+        snackbar = Snackbar
+                .make(coordinatorLayout, "Search restrooms near this point", Snackbar.LENGTH_INDEFINITE)
+                .setAction("Search",  onRefreshRestroomsClick);
+        snackbar.setActionTextColor(getResources().getColor(R.color.colorPrimary));
+        View sbView = snackbar.getView();
+        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
     }
 
     private GoogleMap.OnMyLocationChangeListener myLocationChangeListener() {
@@ -360,13 +497,13 @@ public class MainActivity extends AppCompatActivity
                     map.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
                     lastKnownLocation = currentLocation;
+                    lastNavigatedLocation = currentLocation;
+                    currentZoom = 18;
                     Log.d(TAG, location.getLatitude() + ", " + location.getLongitude());
-                    LatLng center = map.getCameraPosition().target;
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
-                    centerLoc.setLatitude(center.latitude);
-                    centerLoc.setLongitude(center.longitude);
+                    centerLoc.setLatitude(currentLocation.latitude);
+                    centerLoc.setLongitude(currentLocation.longitude);
                     showNearbyMarkers(centerLoc, 0.00727946446);
-                    initialized = true;
                 }
 
                 float[] result = new float[2];
@@ -377,10 +514,9 @@ public class MainActivity extends AppCompatActivity
                 // 0.25 miles = 402.336 meters
                 if(result[0] > 402.336) {
                     map.clear();
-                    LatLng center = map.getCameraPosition().target;
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
-                    centerLoc.setLatitude(center.latitude);
-                    centerLoc.setLongitude(center.longitude);
+                    centerLoc.setLatitude(currentLocation.latitude);
+                    centerLoc.setLongitude(currentLocation.longitude);
                     showNearbyMarkers(centerLoc, 0.00727946446);
                     lastKnownLocation = currentLocation;
                 }
@@ -394,16 +530,19 @@ public class MainActivity extends AppCompatActivity
 
     public void generateListContent() {
         items.clear();
+        int colorIndex = 0;
         for (Restroom restroom : restrooms) {
-
             float[] result = new float[2];
             Location.distanceBetween(restroom.getLatitude(), restroom.getLongitude(),
                     currentLocation.latitude, currentLocation.longitude, result);
             double meters = result[0];
             String distance = String.format("%.2f", meters) + " meters ";
 
+            // Get tags
+            String tags = restroom.getTags();
+
             items.add(new RestroomItem(restroom.getID(), restroom.getDescription(), distance,
-                    restroom.getRating(), restroom.getColor()));
+                    tags, restroom.getRating(), restroom.getColor()));
         }
         adapter.notifyDataSetChanged();
     }
@@ -440,8 +579,8 @@ public class MainActivity extends AppCompatActivity
         }
 
         protected void onPostExecute(Void result) {
-            /* Do UI actions after getting User */
-
+            if(user.getProviderID() != null || user.getProviderID() != "")
+                isLoggedIn = true;
         }
     }
 
@@ -521,20 +660,9 @@ public class MainActivity extends AppCompatActivity
                 viewHolder.imageColor = (ImageView)convertView.findViewById(R.id.view_color);
                 viewHolder.title = (TextView)convertView.findViewById(R.id.view_title);
                 viewHolder.distance = (TextView)convertView.findViewById(R.id.view_dist);
+                viewHolder.tags = (TextView)convertView.findViewById(R.id.view_tags);
                 viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.view_rating);
                 viewHolder.details = (Button)convertView.findViewById(R.id.details_button);
-                /*viewHolder.details.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //Toast.makeText(getContext(),
-                        //        "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();
-
-                        Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
-                        String [] name_dist = { mainViewHolder.title.getText(), dItem.getDistance()};
-                        intent.putExtra("Title and Distance", name_dist);
-                        startActivity(intent);
-                    }
-                });*/
 
                 convertView.setTag(viewHolder);
             }
@@ -550,7 +678,10 @@ public class MainActivity extends AppCompatActivity
             mainViewHolder.title.setText(dItem.getTitle());
             mainViewHolder.distance.setText("" + dItem.getDistance());
             mainViewHolder.ratings.setRating((float) dItem.getRating());
-            mainViewHolder.imageColor.setBackgroundTintList(ColorStateList.valueOf(color));
+            mainViewHolder.tags.setText("" + dItem.getTags());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mainViewHolder.imageColor.setBackgroundTintList(ColorStateList.valueOf(color));
+            }
 
             mainViewHolder.details.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -576,6 +707,7 @@ public class MainActivity extends AppCompatActivity
         ImageView imageColor;
         TextView title;
         TextView distance;
+        TextView tags;
         RatingBar ratings;
         Button details;
     }

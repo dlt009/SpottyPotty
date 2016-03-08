@@ -7,10 +7,10 @@
     tools:context=".DetailActivity">
 
     <TextView
-        android:layout_width="119dp"
-        android:layout_height="48dp"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
+        android:text="Restroom Title"
         android:id="@+id/textView2"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
@@ -22,34 +22,66 @@
         style="?android:attr/ratingBarStyleSmall"
         android:numStars="5"
         android:layout_gravity="right"
-        android:layout_below="@+id/textView2"
         android:isIndicator="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_below="@+id/textView2"
+        android:layout_toEndOf="@+id/textView5" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Small Text"
+        android:text="0 Reviews"
+        android:id="@+id/num_reviews"
+        android:layout_below="@+id/textView2"
+        android:layout_toEndOf="@+id/ratingBar2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="0 meters"
         android:id="@+id/textView3"
-        android:layout_alignTop="@+id/ratingBar2"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceListItem"
+        android:text="Reviews:"
+        android:id="@+id/textView4"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_below="@+id/num_reviews"
         android:layout_alignParentStart="true" />
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="263dp"
-        android:id="@+id/android:list"
-        android:layout_above="@+id/getRating"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/ratingBar2" />
+        android:layout_height="250dp"
+        android:id="@+id/list_reviews"
+        android:layout_below="@+id/textView4"
+        android:layout_alignEnd="@+id/textView3" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceListItem"
+        android:text="Write a Review:"
+        android:id="@+id/textView5"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_below="@+id/list_reviews"
+        android:layout_alignParentStart="true" />
 
     <RatingBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/getRating"
         android:layout_gravity="center_horizontal"
-        android:layout_above="@+id/buttonComment"
-        android:layout_toEndOf="@+id/textView3" />
+        android:layout_below="@+id/textView5"
+        android:layout_centerHorizontal="true" />
 
     <EditText
         android:layout_width="match_parent"
@@ -57,19 +89,19 @@
         android:id="@+id/comments"
         android:imeOptions="actionDone"
         android:inputType="textMultiLine"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/getRating" />
+        android:layout_above="@+id/buttonComment"
+        android:layout_alignParentStart="true" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Submit"
+        android:text="Submit Review"
         android:id="@+id/buttonComment"
-        android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/comments"
         android:layout_gravity="right"
-        />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
+
+
 
 </RelativeLayout>
