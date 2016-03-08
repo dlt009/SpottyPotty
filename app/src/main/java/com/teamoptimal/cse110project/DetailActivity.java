@@ -48,7 +48,7 @@ public class DetailActivity extends ListActivity {
 
         /* Grabs the passed intent from MainActivity */
         intentExtra = getIntent();
-        String name = intentExtra.getStringExtra("name");;
+        String name = intentExtra.getStringExtra("name");
         String distance = intentExtra.getStringExtra("distance");
         Float ratings = intentExtra.getFloatExtra("ratings", 0.0f);
 
@@ -62,6 +62,7 @@ public class DetailActivity extends ListActivity {
 
         nameView.setText(name);
         distanceView.setText(distance);
+        Toast.makeText(getBaseContext(), ""+ratings, Toast.LENGTH_SHORT).show();
         ratingBar2.setRating(ratings);
 
         //reviewList = (ListView)findViewById(R.id.list_reviews);
@@ -180,6 +181,7 @@ public class DetailActivity extends ListActivity {
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            //review.updateRating(review.getRestroomID(), review.getRating());
             //execute
         }
     }
