@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends ListActivity {
     private static String TAG = "DetailActivity";
     private ListView reviewList;
     private Review review;
@@ -60,7 +60,8 @@ public class DetailActivity extends AppCompatActivity {
         distanceView.setText(distance);
         ratingBar2.setRating(ratings);
 
-        reviewList = (ListView)findViewById(R.id.list_reviews);
+        //reviewList = (ListView)findViewById(R.id.list_reviews);
+        reviewList = getListView();
         itemComments = new ArrayList<>();
 
         /* Grabs the Restroom ID that is clicked from MainActivity */
@@ -94,7 +95,7 @@ public class DetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                EditText comments = (EditText) findViewById(R.id.comments);
+                EditText comments = (EditText) findViewById(R.id.newComments);
                 review.setMessage(comments.getText().toString());
 
                 if(review.isInitialized()) {
