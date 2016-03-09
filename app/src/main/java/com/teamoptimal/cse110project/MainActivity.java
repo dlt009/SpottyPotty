@@ -23,14 +23,15 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.TintManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
+
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -801,7 +802,6 @@ public class MainActivity extends AppCompatActivity
                     intent.putExtra("name", name);
                     intent.putExtra("distance", distance);
                     intent.putExtra("restroomID", dItem.getRestroomID());
-                    //intent.putExtra("ratings", (float)dItem.getRating());
                     startActivity(intent);
                 }
             });
