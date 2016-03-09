@@ -121,7 +121,7 @@ public class DetailActivity extends ListActivity {
                             Toast.LENGTH_SHORT).show();
                 }else if(reportCount > 4){
                     Toast.makeText(getBaseContext(), "Cannot create a review\n"+
-                                    "Reason: too many reports against content created by this user",
+                                    "Reason: too many reports against content created by current user",
                             Toast.LENGTH_SHORT).show();
                 }
                 else if (review.isInitialized()) {

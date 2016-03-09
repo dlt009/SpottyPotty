@@ -149,7 +149,6 @@ public class ReportActivity extends AppCompatActivity {
                 Log.d(TAG, "Current User has been loaded with ID:"+user.getEmail());
                 description.setVisibility(View.VISIBLE);
             }
-
         }
     }
 
