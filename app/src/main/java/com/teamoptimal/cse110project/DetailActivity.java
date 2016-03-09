@@ -21,6 +21,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.teamoptimal.cse110project.data.Report;
 import com.teamoptimal.cse110project.data.Restroom;
 import com.teamoptimal.cse110project.data.ReviewItem;
 import com.teamoptimal.cse110project.data.Review;
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends ListActivity {
     private static String TAG = "DetailActivity";
     private ListView reviewList;
     private Review review;
@@ -38,6 +39,7 @@ public class DetailActivity extends AppCompatActivity {
     private ArrayList<ReviewItem> itemComments;
     private ArrayList<Review> reviews;
     private MyAdapter adapter;
+    private TextView numView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +48,7 @@ public class DetailActivity extends AppCompatActivity {
 
         /* Grabs the passed intent from MainActivity */
         intentExtra = getIntent();
-        String name = intentExtra.getStringExtra("name");;
+        String name = intentExtra.getStringExtra("name");
         String distance = intentExtra.getStringExtra("distance");
         Float ratings = intentExtra.getFloatExtra("ratings", 0.0f);
 
@@ -54,17 +56,31 @@ public class DetailActivity extends AppCompatActivity {
         TextView nameView = (TextView) findViewById(R.id.textView2);
         TextView distanceView = (TextView) findViewById(R.id.textView3);
         RatingBar  ratingBar2 = (RatingBar) findViewById(R.id.ratingBar2);
-        TextView numView = (TextView) findViewById(R.id.num_reviews);
+        Button report = (Button) findViewById(R.id.report_rest);
+
+        numView = (TextView) findViewById(R.id.num_reviews);
 
         nameView.setText(name);
         distanceView.setText(distance);
+        Toast.makeText(getBaseContext(), ""+ratings, Toast.LENGTH_SHORT).show();
         ratingBar2.setRating(ratings);
 
-        reviewList = (ListView)findViewById(R.id.list_reviews);
+        //reviewList = (ListView)findViewById(R.id.list_reviews);
+        reviewList = getListView();
         itemComments = new ArrayList<>();
 
         /* Grabs the Restroom ID that is clicked from MainActivity */
         currentID = intentExtra.getStringExtra("restroomID");
+
+        report.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
+                intent.putExtra("object", "Restroom");
+                intent.putExtra("objId", currentID);
+                startActivity(intent); // Go to ReportActivity
+            }
+        });
 
         /* Initialize new Review with data from MainActivity */
         review = new Review();
@@ -94,29 +110,24 @@ public class DetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                EditText comments = (EditText) findViewById(R.id.comments);
+                EditText comments = (EditText) findViewById(R.id.newComments);
                 review.setMessage(comments.getText().toString());
 
-                if(review.isInitialized()) {
-                    new CreateReviewTask(review).execute();
+                if (review.isInitialized()) {
+                    //review.updateRating(review.getRestroomID(), review.getRating());
 
-                    //review.updateRating(currentID, review.getRating());
+                    new CreateReviewTask(review).execute();
 
                     Toast.makeText(getBaseContext(), "Review has been created", Toast.LENGTH_SHORT).show();
 
                     finish();
-                }
-                else {
+                } else {
                     Toast.makeText(getBaseContext(), "Unsuccessful", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
         reviewList.setAdapter(adapter);
-
-        Log.d(TAG, "SIZE: " + itemComments.size());
-        numView.setText(itemComments.size() + " Reviews");
-
     }
 
     public void generateReviews() {
@@ -147,6 +158,8 @@ public class DetailActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             Log.d(TAG, "Found " + reviews.size() + " reviews");
 
+            numView.setText(reviews.size() + " Reviews");
+
             generateReviews();
         }
     }
@@ -161,12 +174,14 @@ public class DetailActivity extends AppCompatActivity {
         // To do in the background
         protected Void doInBackground(Void... inputs) {
             review.createReview(); // Use the method from the User class to create it
+            review.updateRating(review.getRestroomID(), review.getRating());
             return null;
         }
 
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            //review.updateRating(review.getRestroomID(), review.getRating());
             //execute
         }
     }
@@ -191,6 +206,7 @@ public class DetailActivity extends AppCompatActivity {
                 ViewHolder viewHolder = new ViewHolder();
                 viewHolder.comments = (TextView)convertView.findViewById(R.id.comments);
                 viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.setRating);
+                viewHolder.report = (ImageButton)convertView.findViewById(R.id.button_report);
 
                 convertView.setTag(viewHolder);
 
@@ -201,6 +217,15 @@ public class DetailActivity extends AppCompatActivity {
 
             mainViewHolder.comments.setText(rItem.getComments());
             mainViewHolder.ratings.setRating(rItem.getRating());
+            mainViewHolder.report.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
+                    intent.putExtra("object", "Review");
+                    intent.putExtra("objId", review.getID());
+                    startActivity(intent); // Go to ReportActivity
+                }
+            });
             return convertView;
         }
     }

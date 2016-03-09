@@ -29,6 +29,9 @@
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+
         android:id="@+id/button_report"
         android:layout_alignParentEnd="true"
         android:background="@android:drawable/ic_dialog_alert"

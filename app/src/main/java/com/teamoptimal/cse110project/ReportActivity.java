@@ -1,5 +1,6 @@
 package com.teamoptimal.cse110project;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,8 +26,10 @@ public class ReportActivity extends AppCompatActivity {
 
     public static AmazonClientManager clientManager = null;
 
-    private Report report = new Report();
-    private User user = new User();
+    private Report report;
+    private User user;
+    private EditText description;
+    private TextView text;
 
     private SharedPreferences sharedPreferences;
 
@@ -35,43 +38,56 @@ public class ReportActivity extends AppCompatActivity {
     private static Restroom restroom;
     private static Review review;
 
-    private static String reportObj;
-    private static String objId;
+    private String reportObj;
+    private String objId;
     private static DynamoDBMapper mapper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_report);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.content_report);
+
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+
+        report = new Report();
+        user = new User();
+
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
 
-        Bundle extra = getIntent().getExtras();
-        reportObj = extra.getString("Reported_Object");
-        objId = extra.getString("ObjectId");
-        TextView text = (TextView) findViewById(R.id.Title);
 
-        text.setText(reportObj+": "+objId);
+        Intent intentExtra = getIntent();
+        reportObj = intentExtra.getStringExtra("object");
+        objId = intentExtra.getStringExtra("objId");
+
+        text = (TextView) findViewById(R.id.Title);
+        description = (EditText) findViewById(R.id.reportDesc);
+
+        //text.setText(reportObj+": "+objId);
 
         clientManager = new AmazonClientManager(this);
-
         mapper = new DynamoDBMapper(clientManager.ddb());
 
         new getUserTask(sharedPreferences.getString("user_email",""));
+
+        //Toast.makeText(getBaseContext(),reportObj, Toast.LENGTH_SHORT).show();
 
         Button submitButton = (Button) findViewById(R.id.submitButton);
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText description = (EditText) findViewById(R.id.reportDesc);
+
                 String desc = description.getText().toString();
-                if(reportObj == "Restroom"){
+                if(reportObj.equals("Restroom")){
+                    Toast.makeText(getBaseContext(), "Restroom has been reported",
+                            Toast.LENGTH_SHORT).show();
                     new getRestroomTask(objId);
                     new ReportRestroomTask(user, restroom, desc);
                     finish();
                 }
-                else if(reportObj == "Review"){
+                else if(reportObj.equals("Review")){
+                    Toast.makeText(getBaseContext(), "Review has been reported",
+                            Toast.LENGTH_SHORT).show();
                     new getReviewTask(objId);
                     new ReportReviewTask(user, review, desc);
                     finish();
