@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity
 
                 if(directionsMode) {
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLocation.getLatitude(),
-                            currentLocation.getLongitude()), 18));
+                            currentLocation.getLongitude()), map.getCameraPosition().zoom));
                 }
 
                 float[] result = new float[2];
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity
                 intent.putExtra("name", name);
                 intent.putExtra("distance", "");
                 intent.putExtra("restroomID", restroom.getID());
-                intent.putExtra("restroom_tags", restroom.getFormattedTags());
+                intent.putExtra("restroomTags", restroom.getFormattedTags());
                 intent.putExtra("ratings", restroom.getRating());
                 startActivity(intent);
             }
@@ -398,6 +398,9 @@ public class MainActivity extends AppCompatActivity
         toggleNavSignInText();
 
         registerReceiver(receiver, new IntentFilter("filter_done"));
+
+        clientManager = new AmazonClientManager(this);
+        clientManager.validateCredentials();
     }
 
     private void toggleNavSignInText() {
@@ -689,6 +692,7 @@ public class MainActivity extends AppCompatActivity
         if(isOn) {
             navigationLayout.setVisibility(View.VISIBLE);
             map.getUiSettings().setAllGesturesEnabled(false);
+            map.getUiSettings().setZoomGesturesEnabled(true);
             directionsMode = true;
         } else {
             navigationLayout.setVisibility(View.GONE);
@@ -887,6 +891,7 @@ public class MainActivity extends AppCompatActivity
                     intent.putExtra("name", name);;
                     intent.putExtra("restroomID", dItem.getRestroomID());
                     intent.putExtra("restroomTags", dItem.getTags());
+                    intent.putExtra("ratings", dItem.getRating());
                     startActivity(intent);
                 }
             });

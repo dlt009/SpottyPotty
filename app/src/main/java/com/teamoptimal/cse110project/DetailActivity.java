@@ -183,7 +183,7 @@ public class DetailActivity extends ListActivity {
         for(Review review : reviews) {
             if(review.getReportCount()<5) {
                 itemComments.add(new ReviewItem(review.getMessage(), review.getRating(),
-                        review.getID(), review.getThumbsUp(), review.getThumbsDown()));
+                        review.getID(), review.getThumbsUp(), review.getThumbsDown(), 0));
             }
         }
         adapter.notifyDataSetChanged();
@@ -266,43 +266,48 @@ public class DetailActivity extends ListActivity {
                 convertView.setTag(viewHolder);
             }
             mainViewHolder = (ViewHolder) convertView.getTag();
-            final ReviewItem rItem = this.reviews.get(position);
+            ReviewItem item = this.reviews.get(position);
 
-            mainViewHolder.comments.setText(rItem.getComments());
-            mainViewHolder.ratings.setRating(rItem.getRating());
-            mainViewHolder.thumbs.setText("" + (rItem.getThumbsUp() - rItem.getThumbsDown()));
+            mainViewHolder.comments.setText(item.getComments());
+            mainViewHolder.ratings.setRating(item.getRating());
+            mainViewHolder.thumbs.setText("" + (item.getThumbsUp() - item.getThumbsDown()));
 
             mainViewHolder.thumbsUp.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Review updated = new Review();
-                    ReviewItem item = reviews.get(position);
-                    updated.setID(item.getReviewID());
-                    updated.setThumbsUp(item.getThumbsUp() + 1);
-                    item.setThumbsUp(item.getThumbsUp() + 1);
-                    mainViewHolder.thumbs.setText(""+(item.getThumbsUp()-item.getThumbsDown()+1));
-                    new updateReviewThumbsTask(updated).execute();
+                    Log.d(TAG, "thumbsupclick");
+                    ReviewItem reviewItem = reviews.get(position);
+                    if(reviewItem.getAction() != 0)
+                        return;
+
+                    reviewItem.setThumbsUp(reviewItem.getThumbsUp() + 1);
+                    reviewItem.setAction(1);
+                    mainViewHolder.thumbs.setText("" + (reviewItem.getThumbsUp() -
+                            reviewItem.getThumbsDown()));
+                    new getReviewTask(reviewItem.getReviewID(), 1).execute();
                 }
             });
+
             mainViewHolder.thumbsDown.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Review updated = new Review();
-                    ReviewItem item = reviews.get(position);
-                    updated.setID(item.getReviewID());
-                    updated.setThumbsDown(item.getThumbsDown() + 1);
-                    item.setThumbsDown(item.getThumbsDown() + 1);
-                    mainViewHolder.thumbs.setText(""+(item.getThumbsUp()-item.getThumbsDown()-1));
-                    new updateReviewThumbsTask(updated).execute();
+                    Log.d(TAG, "thumbsdownclick");
+                    ReviewItem reviewItem = reviews.get(position);
+                    if(reviews.get(position).getAction() != 0)
+                        return;
+
+                    reviewItem.setThumbsDown(reviewItem.getThumbsDown() + 1);
+                    reviewItem.setAction(-1);
+                    mainViewHolder.thumbs.setText("" + (reviewItem.getThumbsUp() -
+                            reviewItem.getThumbsDown()));
+                    new getReviewTask(reviewItem.getReviewID(), -1).execute();
                 }
             });
-
-
-
 
             mainViewHolder.reportReview.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    ReviewItem reviewItem = reviews.get(position);
                     if (!signedIn){
                         Toast.makeText(getBaseContext(), "Cannot report a review\n" +
                                         "Reason: User is not signed in",
@@ -311,7 +316,7 @@ public class DetailActivity extends ListActivity {
                         Toast.makeText(getBaseContext(), "Cannot report a review\n" +
                                         "Reason: too many reports against content created by user",
                                 Toast.LENGTH_SHORT).show();
-                    } else new goToReportTask(user_email, rItem.getReviewID(),"Review").execute();
+                    } else new goToReportTask(user_email, reviewItem.getReviewID(),"Review").execute();
                 }
             });
             return convertView;
@@ -361,6 +366,29 @@ public class DetailActivity extends ListActivity {
         }
     }
 
+    private class getReviewTask extends AsyncTask<Void, Void, Void> {
+        String id;
+        Review review;
+        int amount;
+
+        public getReviewTask(String id, int amount) {
+            this.id = id;
+            this.amount = amount;
+        }
+
+        protected Void doInBackground(Void... inputs) {
+            this.review = Review.getReview(id);
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+            if(amount == 1) review.setThumbsUp(review.getThumbsUp() + 1);
+            else review.setThumbsDown(review.getThumbsDown() + 1);
+            Log.d(TAG, review.getID() + ", " + review.getThumbsUp() + ", " + review.getThumbsDown());
+            new updateReviewThumbsTask(review).execute();
+        }
+    }
+
     private class updateReviewThumbsTask extends AsyncTask<Void, Void, Void> {
         Review newThumbsReview;
 
@@ -374,6 +402,7 @@ public class DetailActivity extends ListActivity {
         }
 
         protected void onPostExecute(Void result) {
+            Log.d(TAG, "Updated");
         }
     }
 

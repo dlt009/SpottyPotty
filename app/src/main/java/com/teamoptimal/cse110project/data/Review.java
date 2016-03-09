@@ -124,6 +124,14 @@ public class Review {
     }
 
     @DynamoDBIgnore
+    public static Review getReview(String id) {
+        AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
+        DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+        Review review = mapper.load(Review.class, id);
+        return review;
+    }
+
+    @DynamoDBIgnore
     public static ArrayList<Review> getReviews(String currentID) {
         AmazonDynamoDBClient ddb = MainActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
@@ -143,7 +151,7 @@ public class Review {
 
         try{
             scanReviews = mapper.scan(Review.class, scanExpression);
-        }catch(AmazonClientException a){
+        } catch(AmazonClientException a) {
             Log.d(TAG, "AmazonClientException Thrown, returning empty list");
             return combined;
         }

@@ -6,8 +6,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginStart="5dp"
         android:id="@+id/comments"
+        android:layout_marginEnd="90dp"
         style="?android:attr/textAppearanceMedium"
         android:paddingLeft="5dp"
         android:layout_below="@+id/setRating"
@@ -40,19 +43,19 @@
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:id="@+id/thumbs_down"
+        android:layout_alignParentEnd="true"
         android:src="@drawable/thumbs_down"
-        android:layout_marginEnd="17dp"
-        android:layout_alignTop="@+id/comments"
-        android:layout_toStartOf="@+id/thumbs_sum" />
+        android:layout_marginRight="24dp"
+        android:layout_alignBottom="@+id/comments" />
 
     <ImageButton
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:id="@+id/thumbs_up"
+        android:layout_marginRight="50dp"
+        android:layout_alignParentEnd="true"
         android:src="@drawable/thumbs_up"
-        android:layout_marginEnd="21dp"
-        android:layout_alignTop="@+id/thumbs_down"
-        android:layout_toStartOf="@+id/thumbs_down" />
+        android:layout_alignBottom="@+id/comments"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -61,6 +64,9 @@
         android:text="0"
         android:id="@+id/thumbs_sum"
         android:layout_alignBottom="@+id/comments"
-        android:layout_toStartOf="@+id/button_report" />
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp" />
 
 </RelativeLayout>
