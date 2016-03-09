@@ -55,9 +55,7 @@ public class FusedLocationService implements
                 .addOnConnectionFailedListener(this)
                 .build();
 
-        if (googleApiClient != null) {
-            googleApiClient.connect();
-        }
+        googleApiClient.connect();
     }
 
     @Override
@@ -76,19 +74,8 @@ public class FusedLocationService implements
     @Override
     public void onLocationChanged(Location location) {
         Log.i(TAG, "Location is changed!");
-        //if the existing location is empty or
-        //the current location accuracy is greater than existing accuracy
-        //then store the current location
-        if (null == this.location || location.getAccuracy() < this.location.getAccuracy()) {
-            this.location = location;
-// let's inform my client class through the receiver
-            Log.i(TAG, "onLocationChanged");
-            locationReceiver.onLocationChanged();
-            //if the accuracy is not better, remove all location updates for this listener
-            if (this.location.getAccuracy() < MINIMUM_ACCURACY) {
-                fusedLocationProviderApi.removeLocationUpdates(googleApiClient, this);
-            }
-        }
+        this.location = location;
+        locationReceiver.onLocationChanged();
     }
 
     public Location getLocation() {

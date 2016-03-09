@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
+
     <android.support.design.widget.CoordinatorLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -18,7 +19,6 @@
             android:layout_height="wrap_content"
             tools:context="com.teamoptimal.cse110project.MainActivity"
             tools:showIn="@layout/app_bar_main" />
-
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
@@ -49,6 +49,58 @@
             android:scaleType="centerInside"
             android:src="@mipmap/ic_pin" />
 
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:theme="@android:style/Theme.Translucent"
+            android:orientation="vertical"
+            android:layout_marginTop="42dp"
+            android:layout_gravity="start|top"
+            android:background="@color/colorPrimaryDark"
+            android:id="@+id/navigationLayout"
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="NAVIGATION MODE"
+                android:textColor="@android:color/white"
+                android:id="@+id/filter_text"
+                android:layout_marginTop="24dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="60dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true" />
+
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/tw__transparent"
+                android:text="REVIEW RESTROOM"
+                android:textColor="@android:color/white"
+                android:id="@+id/addReview"
+                android:layout_marginRight="68dp"
+                android:layout_marginTop="12dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true" />
+
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/tw__transparent"
+                android:textColor="@android:color/white"
+                android:text="CANCEL"
+                android:id="@+id/cancelNavigation"
+                android:layout_marginRight="12dp"
+                android:layout_marginTop="12dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
     </android.support.design.widget.CoordinatorLayout>
 
     <ImageView
@@ -58,4 +110,5 @@
         android:src="@mipmap/ic_pin"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"/>
+
 </RelativeLayout>

@@ -1,10 +1,8 @@
 package com.teamoptimal.cse110project;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -17,21 +15,16 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.TintManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -42,6 +35,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -51,17 +45,13 @@ import android.widget.Toast;
 import com.akexorcist.googledirection.DirectionCallback;
 import com.akexorcist.googledirection.GoogleDirection;
 import com.akexorcist.googledirection.constant.RequestResult;
+import com.akexorcist.googledirection.constant.TransportMode;
 import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.util.DirectionConverter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderApi;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -81,8 +71,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback {
@@ -108,9 +96,15 @@ public class MainActivity extends AppCompatActivity
     private Location lastKnownLocation;
     private FloatingActionButton recenter;
     private boolean centeredSearch = true;
-    private Polyline prevDir; // previous direction polyline
 
-    FusedLocationService fusedLocationService;
+    private FusedLocationService fusedLocationService;
+    private boolean directionsMode = false;
+    private PolylineOptions polylineOptions;
+    private Marker destinationMarker;
+    private Polyline prevMarker; // previous direction polyline
+
+    /* Navigation layout */
+    RelativeLayout navigationLayout;
 
     /* Snackbar */
     private CoordinatorLayout coordinatorLayout;
@@ -176,8 +170,6 @@ public class MainActivity extends AppCompatActivity
                 Log.i(TAG, "Location changed");
                 currentLocation = fusedLocationService.getLocation();
                 if (!initialized) {
-                    map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(),
-                            currentLocation.getLongitude())));
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLocation.getLatitude(),
                             currentLocation.getLongitude()), 18));
                     lastKnownLocation = currentLocation;
@@ -186,6 +178,11 @@ public class MainActivity extends AppCompatActivity
                     Log.d(TAG, fusedLocationService.getLocation().getLatitude() + ", " +
                             fusedLocationService.getLocation().getLongitude());
                     showNearbyMarkers(currentLocation, 0.00727946446);
+                }
+
+                if(directionsMode) {
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLocation.getLatitude(),
+                            currentLocation.getLongitude()), 18));
                 }
 
                 float[] result = new float[2];
@@ -221,6 +218,42 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
+
+        /* Navigation layout */
+        navigationLayout = (RelativeLayout) findViewById(R.id.navigationLayout);
+        navigationLayout.setVisibility(View.GONE);
+        // Review restroom
+        findViewById(R.id.addReview).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Find restroom using destination marker's title
+                Restroom restroom = new Restroom();
+                Log.d(TAG, destinationMarker.getTitle());
+                for (Restroom r: restrooms) {
+                    Log.d(TAG, r.getDescription() + " =? " + destinationMarker.getTitle());
+                    if(r.getDescription().equals(destinationMarker.getTitle())) {
+                        restroom = r;
+                        break;
+                    }
+                }
+
+                Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                String name = restroom.getDescription();
+                intent.putExtra("name", name);
+                intent.putExtra("distance", "");
+                intent.putExtra("restroomID", restroom.getID());
+                intent.putExtra("ratings", restroom.getRating());
+                startActivity(intent);
+            }
+        });
+
+        // Cancel navigation
+        findViewById(R.id.cancelNavigation).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setDirectionsMode(false);
+            }
+        });
 
         /* Bathroom list view */
         listView = (ListView) findViewById(R.id.restrooms_list);
@@ -270,13 +303,14 @@ public class MainActivity extends AppCompatActivity
                     Log.d(TAG, "" + restrooms.size());
 
                     String tags = Restroom.getFormattedTags(filter);
-                    if (tags == "No tags") tags = "ALL";
+                    if (tags.equals("No tags")) tags = "ALL";
                     String tagText = "Showing " + tags + " restrooms";
-                    ((TextView) findViewById(R.id.filter_text)).setText(tagText);
+                    View filtersView = findViewById(R.id.filters);
+                    ((TextView) filtersView.findViewById(R.id.filter_text)).setText(tagText);
 
                     generateListContent();
                     map.clear();
-                    createMarkers();
+                    drawMap();
                 }
             }
         };
@@ -315,7 +349,7 @@ public class MainActivity extends AppCompatActivity
                         currentLocation.getLongitude());
                 currentZoom = 18;
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
-                if (!centeredSearch) {
+                if (!directionsMode && !centeredSearch) {
                     map.clear();
                     map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
@@ -363,12 +397,12 @@ public class MainActivity extends AppCompatActivity
         // Change sign-in button text to reflect if currently signing in or out
         if (signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            setFABUI(true);
+            if (initialized) setFABUI(true);
             if (signOutOption != null)
                 signOutOption.setVisible(true);
         } else {
             signInButton.setVisibility(View.VISIBLE);
-            setFABUI(false);
+            if (initialized) setFABUI(false);
             if (signOutOption != null)
                 signOutOption.setVisible(false);
         }
@@ -381,20 +415,22 @@ public class MainActivity extends AppCompatActivity
                     new int[]{getResources().getColor(R.color.colorPrimary)}));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 fab.setImageTintList(new ColorStateList(new int[][]{new int[]{0}},
-                        new int[]{getResources().getColor(R.color.white)}));
+                        new int[] { getResources().getColor(R.color.white) } ));
             }
             fab.setOnClickListener(onAddRestroomClick());
+
             recenter.setVisibility(View.VISIBLE);
         }
         else {
             fab.setImageResource(R.mipmap.ic_pin);
-            fab.setBackgroundTintList(new ColorStateList(new int[][]{new int[]{0}},
+            fab.setBackgroundTintList(new ColorStateList(new int[][]{ new int[]{0} },
                     new int[]{getResources().getColor(R.color.white)}));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                fab.setImageTintList(new ColorStateList(new int[][]{new int[]{0}},
-                        new int[]{getResources().getColor(R.color.colorPrimary)}));
+                fab.setImageTintList(new ColorStateList(new int[][] { new int[]{0} },
+                        new int[] { getResources().getColor(R.color.colorPrimary) } ));
             }
             fab.setOnClickListener(onRecenterClick());
+
             recenter.setVisibility(View.GONE);
         }
     }
@@ -453,12 +489,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.sign_out) {
             Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
             startActivity(intent);
@@ -518,15 +550,12 @@ public class MainActivity extends AppCompatActivity
                     return;
                 else {
                     initialized = true;
-                    Log.d(TAG, "x"+ signedInTwitter + signedInGoogle + signedInFacebook);
                     fab.setVisibility(View.VISIBLE);
-                    if (!(signedInTwitter || signedInGoogle || signedInFacebook)) {
-                        recenter.setVisibility(View.GONE);
-                    }
-                    else {
-                        recenter.setVisibility(View.VISIBLE);
-                    }
+                    toggleNavSignInText();
                 }
+
+                if(directionsMode)
+                    return;
 
                 // Get difference in distance from target screen to currentLocation
                 float[] result = new float[2];
@@ -564,7 +593,6 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public View getInfoContents(Marker marker) {
-
                 Context context = getApplicationContext(); //or getActivity(), YourActivity.this, etc.
 
                 LinearLayout info = new LinearLayout(context);
@@ -595,7 +623,7 @@ public class MainActivity extends AppCompatActivity
         });
         map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
-            public void onInfoWindowClick(Marker marker) {
+            public void onInfoWindowClick(final Marker marker) {
                 Log.d(TAG, "Getting direction");
                 String serverKey = "";
                 LatLng origin = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
@@ -603,21 +631,29 @@ public class MainActivity extends AppCompatActivity
                 GoogleDirection.withServerKey(serverKey)
                         .from(origin)
                         .to(destination)
+                        .transportMode(TransportMode.WALKING)
                         .execute(new DirectionCallback() {
                             @Override
                             public void onDirectionSuccess(Direction direction, String rawBody) {
                                 String status = direction.getStatus();
                                 if (status.equals(RequestResult.OK)) {
                                     Log.d(TAG, "Direction success");
-                                    if (prevDir != null)
-                                        prevDir.remove();
+                                    if (prevMarker != null)
+                                        prevMarker.remove();
                                     Route route = direction.getRouteList().get(0);
                                     Leg leg = route.getLegList().get(0);
                                     ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
-                                    PolylineOptions polylineOptions =
+                                    polylineOptions =
                                             DirectionConverter.createPolyline(getApplicationContext(),
                                                     directionPositionList, 5, Color.RED);
-                                    prevDir = map.addPolyline(polylineOptions);
+                                    prevMarker = map.addPolyline(polylineOptions);
+                                    destinationMarker = marker;
+                                    setDirectionsMode(true);
+                                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                                            new LatLng(currentLocation.getLatitude(),
+                                            currentLocation.getLongitude()), 18));
+
+                                    if(snackbar.isShown()) snackbar.dismiss();
                                 } else if (status.equals(RequestResult.NOT_FOUND)) {
                                     Log.d(TAG, "Direction not found");
                                 }
@@ -633,6 +669,22 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+    }
+
+    private void setDirectionsMode(boolean isOn) {
+        if(isOn) {
+            navigationLayout.setVisibility(View.VISIBLE);
+            map.getUiSettings().setAllGesturesEnabled(false);
+            directionsMode = true;
+        } else {
+            navigationLayout.setVisibility(View.GONE);
+            map.getUiSettings().setAllGesturesEnabled(true);
+            map.getUiSettings().setRotateGesturesEnabled(false);
+            prevMarker.remove();
+            directionsMode = false;
+            polylineOptions = null;
+            destinationMarker = null;
+        }
     }
 
     private void setUpSnackBar() {
@@ -723,13 +775,25 @@ public class MainActivity extends AppCompatActivity
             Collections.sort(restrooms, new RestroomComparator(latitude, longitude));
 
             // Add markers
-            createMarkers();
+            drawMap();
 
             isExecuting = false;
 
             // Generate drawer list of restrooms
             generateListContent();
         }
+    }
+
+    private void drawMap() {
+        if(directionsMode) {
+            map.addPolyline(polylineOptions);
+            map.addMarker(new MarkerOptions()
+                .position(destinationMarker.getPosition())
+                .title(destinationMarker.getTitle())
+                .snippet(destinationMarker.getSnippet())
+                .icon(BitmapDescriptorFactory.defaultMarker(destinationMarker.getAlpha())));
+        }
+        createMarkers();
     }
 
     private void createMarkers(){

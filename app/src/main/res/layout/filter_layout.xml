@@ -1,72 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:weightSum="1">
 
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginEnd="8dp"
+        android:id="@+id/spinner1"
+        android:prompt = "@string/spinner_gender"
+        android:layout_marginTop="24dp"
+        android:layout_alignParentEnd="true" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:text="Gender"
-        android:layout_margin="8dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginStart="12dp"
         android:id="@+id/filter_text_gender" />
 
     <Spinner
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/spinner1"
-        android:prompt = "@string/spinner_gender">
-
-    </Spinner>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="8dp"
-        android:text="Rating"
-        android:id="@+id/filter_text_rating" />
-
-    <Spinner
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:id="@+id/spinner2"
-        android:prompt = "@string/spinner_rating">
-
-    </Spinner>
+        android:layout_marginStart="70dp"
+        android:layout_marginEnd="8dp"
+        android:prompt = "@string/spinner_rating"
+        android:layout_below="@id/spinner1"
+        android:layout_marginTop="8dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="8dp"
-        android:text="Access"
-        android:id="@+id/filter_text_place" />
+        android:text="Rating"
+        android:id="@+id/filter_text_rating"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_alignTop="@id/spinner2" />
 
     <Spinner
         android:layout_width="wrap_content"
-        android:layout_height="85dp"
-        android:id="@+id/filter_list_access">
+        android:layout_height="40dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginEnd="8dp"
+        android:id="@+id/filter_list_access"
+        android:layout_below="@id/spinner2"
+        android:layout_marginTop="8dp">
     </Spinner>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="8dp"
+        android:text="Access"
+        android:id="@+id/filter_text_place"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_alignTop="@id/filter_list_access"
+        android:layout_below="@id/spinner2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="Tags"
-        android:id="@+id/filter_text_extra" />
+        android:id="@+id/filter_text_extra"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:layout_below="@+id/filter_list_access" />
 
     <ListView
         android:layout_width="wrap_content"
-        android:layout_height="85dp"
+        android:layout_height="wrap_content"
         android:id="@id/android:list"
         android:layout_weight="0.50"
         android:choiceMode="multipleChoice"
-        android:clickable ="true">
+        android:clickable ="true"
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="62dp"
+        android:layout_below="@id/filter_list_access"
+        android:layout_above="@+id/button_apply">
     </ListView>
 
     <Button
@@ -75,7 +94,11 @@
         android:layout_height="wrap_content"
         android:text="Apply"
         android:id="@+id/button_apply"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="end"
+        android:layout_marginEnd = "8dp"
+        android:layout_marginBottom = "12dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
 
 
-</LinearLayout>
+</RelativeLayout>
