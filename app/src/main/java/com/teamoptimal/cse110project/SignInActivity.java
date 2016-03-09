@@ -355,6 +355,7 @@ public class SignInActivity extends AppCompatActivity implements
             editor.putBoolean("twit", signedInTwitter);
             editor.commit();
         }
+        goToMain();
     }
 
     @Override
@@ -388,7 +389,6 @@ public class SignInActivity extends AppCompatActivity implements
                 break;
             case R.id.sign_out_button:
                 signOut();
-                goToMain();
                 break;
         }
     }

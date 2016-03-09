@@ -170,11 +170,11 @@ public class DetailActivity extends ListActivity {
                     Toast.makeText(getBaseContext(), "Cannot report this restroom\n" +
                                     "Reason: User is not signed in",
                             Toast.LENGTH_SHORT).show();
-                }else if (reportCount > 4) {
+                } else if (reportCount > 4) {
                     Toast.makeText(getBaseContext(), "Cannot report a restroom\n" +
                                     "Reason: too many reports against content created by this user",
                             Toast.LENGTH_SHORT).show();
-                }else new goToReportTask(user_email, currentID, "Restroom").execute();
+                } else new goToReportTask(user_email, currentID, "Restroom").execute();
             }
         });
 

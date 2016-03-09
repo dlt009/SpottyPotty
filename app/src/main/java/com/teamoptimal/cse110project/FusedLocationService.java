@@ -46,7 +46,6 @@ public class FusedLocationService implements
         locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(INTERVAL);
-        locationRequest.setSmallestDisplacement(5);
         locationRequest.setFastestInterval(FASTEST_INTERVAL);
         this.locationActivity = locationActivity;
 
