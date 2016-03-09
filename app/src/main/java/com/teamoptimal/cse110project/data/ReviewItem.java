@@ -1,17 +1,19 @@
 package com.teamoptimal.cse110project.data;
 
-/**
- * Created by Tony on 2/9/2016.
- */
 public class ReviewItem {
     private String comments;
     private Float rating;
+    private String reviewID;
 
-    public ReviewItem(String comments, Float rating){
+    public ReviewItem(String comments, Float rating, String reviewID){
         super();
         this.rating = rating;
         this.comments = comments;
+        this.reviewID = reviewID;
     }
+
+    public String getReviewID() { return reviewID; }
+    public void setReviewID(String restroomID) { this.reviewID = reviewID; }
 
     public String getComments(){
         return this.comments;

@@ -65,16 +65,6 @@ public class DetailActivity extends ListActivity {
         /* Grabs the Restroom ID that is clicked from MainActivity */
         currentID = intentExtra.getStringExtra("restroomID");
 
-        report.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
-                intent.putExtra("object", "Restroom");
-                intent.putExtra("objId", currentID);
-                startActivity(intent); // Go to ReportActivity
-            }
-        });
-
         /* Initialize new Review with data from MainActivity */
         review = new Review();
         review.setRestroomID(currentID);
@@ -116,6 +106,16 @@ public class DetailActivity extends ListActivity {
             }
         });
 
+        report.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
+                intent.putExtra("object", "Restroom");
+                intent.putExtra("objId", review.getRestroomID());
+                startActivity(intent); // Go to ReportActivity
+            }
+        });
+
         reviewList.setAdapter(adapter);
 
     }
@@ -124,7 +124,7 @@ public class DetailActivity extends ListActivity {
         itemComments.clear();
 
         for(Review review : reviews) {
-            itemComments.add(new ReviewItem(review.getMessage(), review.getRating()));
+            itemComments.add(new ReviewItem(review.getMessage(), review.getRating(), review.getID()));
         }
         adapter.notifyDataSetChanged();
     }
@@ -212,7 +212,7 @@ public class DetailActivity extends ListActivity {
                 public void onClick(View v) {
                     Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
                     intent.putExtra("object", "Review");
-                    intent.putExtra("objId", review.getID());
+                    intent.putExtra("objId", rItem.getReviewID());
                     startActivity(intent); // Go to ReportActivity
                 }
             });
