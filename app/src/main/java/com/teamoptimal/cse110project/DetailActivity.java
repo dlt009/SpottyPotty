@@ -28,6 +28,7 @@ import android.widget.Toast;
 import com.teamoptimal.cse110project.data.Report;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.teamoptimal.cse110project.data.Restroom;
+import com.teamoptimal.cse110project.data.RestroomItem;
 import com.teamoptimal.cse110project.data.ReviewItem;
 import com.teamoptimal.cse110project.data.Review;
 import com.teamoptimal.cse110project.data.User;
@@ -180,7 +181,8 @@ public class DetailActivity extends ListActivity {
 
         for(Review review : reviews) {
             if(review.getReportCount()<5) {
-                itemComments.add(new ReviewItem(review.getMessage(), review.getRating(), review.getID()));
+                itemComments.add(new ReviewItem(review.getMessage(), review.getRating(),
+                        review.getID(), review.getThumbsUp(), review.getThumbsDown()));
             }
         }
         adapter.notifyDataSetChanged();
@@ -245,7 +247,7 @@ public class DetailActivity extends ListActivity {
             layout = resource;
         }
 
-        public View getView(int position, View convertView, ViewGroup parent){
+        public View getView(final int position, View convertView, ViewGroup parent){
             final ViewHolder mainViewHolder;
 
             if(convertView == null) {
@@ -256,6 +258,9 @@ public class DetailActivity extends ListActivity {
                 viewHolder.comments = (TextView)convertView.findViewById(R.id.comments);
                 viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.setRating);
                 viewHolder.reportReview = (ImageButton)convertView.findViewById(R.id.button_report);
+                viewHolder.thumbsUp = (ImageButton) convertView.findViewById(R.id.thumbs_up);
+                viewHolder.thumbsDown = (ImageButton) convertView.findViewById(R.id.thumbs_down);
+                viewHolder.thumbs = (TextView) convertView.findViewById(R.id.thumbs_sum);
 
                 convertView.setTag(viewHolder);
             }
@@ -264,6 +269,35 @@ public class DetailActivity extends ListActivity {
 
             mainViewHolder.comments.setText(rItem.getComments());
             mainViewHolder.ratings.setRating(rItem.getRating());
+            mainViewHolder.thumbs.setText("" + (rItem.getThumbsUp() - rItem.getThumbsDown()));
+
+            mainViewHolder.thumbsUp.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Review updated = new Review();
+                    ReviewItem item = reviews.get(position);
+                    updated.setID(item.getReviewID());
+                    updated.setThumbsUp(item.getThumbsUp() + 1);
+                    item.setThumbsUp(item.getThumbsUp() + 1);
+                    mainViewHolder.thumbs.setText(""+(item.getThumbsUp()-item.getThumbsDown()+1));
+                    new updateReviewThumbsTask(updated).execute();
+                }
+            });
+            mainViewHolder.thumbsDown.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Review updated = new Review();
+                    ReviewItem item = reviews.get(position);
+                    updated.setID(item.getReviewID());
+                    updated.setThumbsDown(item.getThumbsDown() + 1);
+                    item.setThumbsDown(item.getThumbsDown() + 1);
+                    mainViewHolder.thumbs.setText(""+(item.getThumbsUp()-item.getThumbsDown()-1));
+                    new updateReviewThumbsTask(updated).execute();
+                }
+            });
+
+
+
 
             mainViewHolder.reportReview.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -285,7 +319,10 @@ public class DetailActivity extends ListActivity {
 
     private class ViewHolder {
         TextView comments;
+        TextView thumbs;
         RatingBar ratings;
+        ImageButton thumbsUp;
+        ImageButton thumbsDown;
         ImageButton reportReview;
     }
 
@@ -320,6 +357,22 @@ public class DetailActivity extends ListActivity {
                 Toast.makeText(getBaseContext(), "You have already reported this "+objectType,
                         Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    private class updateReviewThumbsTask extends AsyncTask<Void, Void, Void> {
+        Review newThumbsReview;
+
+        public updateReviewThumbsTask(Review review) {
+            this.newThumbsReview = review;
+        }
+
+        protected Void doInBackground(Void... inputs) {
+            newThumbsReview.createReview();
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
         }
     }
 
