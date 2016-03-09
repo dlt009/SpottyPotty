@@ -25,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amazonaws.AmazonClientException;
 import com.teamoptimal.cse110project.data.Report;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.teamoptimal.cse110project.data.Restroom;
@@ -161,11 +162,11 @@ public class DetailActivity extends ListActivity {
             @Override
             public void onClick(View v) {
                 if(!signedIn){
-                    Toast.makeText(getBaseContext(), "Cannot report a review\n" +
+                    Toast.makeText(getBaseContext(), "Cannot report this restroom\n" +
                                     "Reason: User is not signed in",
                             Toast.LENGTH_SHORT).show();
                 }else if (reportCount > 4) {
-                    Toast.makeText(getBaseContext(), "Cannot report a review\n" +
+                    Toast.makeText(getBaseContext(), "Cannot report a restroom\n" +
                                     "Reason: too many reports against content created by this user",
                             Toast.LENGTH_SHORT).show();
                 }else new goToReportTask(user_email, currentID, "Restroom").execute();

@@ -245,6 +245,7 @@ public class MainActivity extends AppCompatActivity
                 intent.putExtra("name", name);
                 intent.putExtra("distance", "");
                 intent.putExtra("restroomID", restroom.getID());
+                intent.putExtra("restroom_tags", restroom.getFormattedTags());
                 intent.putExtra("ratings", restroom.getRating());
                 startActivity(intent);
             }
@@ -305,9 +306,12 @@ public class MainActivity extends AppCompatActivity
                     restrooms = Restroom.filterRestrooms(originalRestrooms, filter, rated);
                     Log.d(TAG, "" + restrooms.size());
 
+                    String rate = "";
+                    if(rated != 0.0) {rate = " "+Double.toString(rated)+"+";}
+
                     String tags = Restroom.getFormattedTags(filter);
                     if (tags.equals("No tags")) tags = "ALL";
-                    String tagText = "Showing " + tags + " restrooms";
+                    String tagText = "Showing " + tags + rate + " restrooms";
                     View filtersView = findViewById(R.id.filters);
                     ((TextView) filtersView.findViewById(R.id.filter_text)).setText(tagText);
 
