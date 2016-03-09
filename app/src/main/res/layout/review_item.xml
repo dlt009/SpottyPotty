@@ -27,8 +27,8 @@
         />
 
     <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
 
@@ -36,5 +36,30 @@
         android:layout_alignParentEnd="true"
         android:background="@android:drawable/ic_dialog_alert"
         android:backgroundTint="@android:color/holo_red_dark" />
+
+    <ImageView
+        android:layout_width="25dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/upvote"
+        android:background="@drawable/com_facebook_tooltip_blue_topnub"
+        android:layout_below="@+id/setRating"
+        android:layout_alignStart="@+id/button_report" />
+
+    <ImageView
+        android:layout_width="25dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/downvote"
+        android:background="@drawable/com_facebook_tooltip_blue_bottomnub"
+        android:layout_below="@+id/comments"
+        android:layout_alignEnd="@+id/upvote" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="0"
+        android:id="@+id/num_vote"
+        android:layout_above="@+id/downvote"
+        android:layout_alignStart="@+id/upvote" />
 
 </RelativeLayout>
