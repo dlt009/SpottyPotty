@@ -9,63 +9,78 @@
     android:focusableInTouchMode="true"
     android:id="@+id/detail_layout">
 
-    <TextView
-        android:layout_width="250dp"
-        android:layout_height="50dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Restroom Title"
-        android:id="@+id/textView2"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/top"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/tag_list"
-        android:layout_below="@+id/textView2"
-        android:layout_centerHorizontal="true"
-        android:gravity ="center"/>
+        android:background="@color/colorPrimary">
 
-    <RatingBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/ratingBar2"
-        style="?android:attr/ratingBarStyleSmall"
-        android:numStars="5"
-        android:layout_gravity="right"
-        android:isIndicator="true"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_below="@+id/tag_list"
-        android:layout_toEndOf="@+id/textView5" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Restroom Title"
+            android:id="@+id/textView2"
+            android:textColor="@color/white"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="84dp"
+            android:layout_marginStart="10dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="tags"
+            android:textColor="@color/white"
+            android:id="@+id/tag_list"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="6dp"
+            android:layout_below="@+id/ratingBar2"/>
+
+        <RatingBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ratingBar2"
+            style="?android:attr/ratingBarStyleSmall"
+            android:numStars="5"
+            android:layout_marginStart="9dp"
+            android:layout_marginTop="4dp"
+            android:isIndicator="true"
+            android:layout_below="@+id/textView2" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="REPORT"
+            android:textColor="@color/white"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/transparent"
+            android:id="@+id/report_rest"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="0 Reviews"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
         android:id="@+id/num_reviews"
-        android:layout_below="@+id/tag_list"
-        android:layout_toEndOf="@+id/ratingBar2" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="0 meters"
-        android:id="@+id/textView3"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/top"
         android:layout_alignParentEnd="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceListItem"
-        android:text="Reviews:"
+        android:text="Reviews"
         android:id="@+id/textView4"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_below="@+id/num_reviews"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="8dp"
+        android:layout_below="@+id/top"
         android:layout_alignParentStart="true" />
 
     <ListView
@@ -73,58 +88,67 @@
         android:layout_height="265dp"
         android:layout_margin="8dp"
         android:id="@android:id/list"
-        android:layout_below="@+id/textView4"
-        android:layout_alignEnd="@+id/textView3"
-        />
+        android:focusableInTouchMode="true"
+        android:clickable = "true"
+        android:layout_below="@+id/textView4" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceListItem"
-        android:text="Write a Review:"
-        android:id="@+id/textView5"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_below="@android:id/list"
-        android:layout_alignParentStart="true" />
 
-    <RatingBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/getRating"
-        android:layout_gravity="center_horizontal"
-        android:layout_below="@+id/textView5"
-        android:layout_centerHorizontal="true" />
-
-    <EditText
+    <RelativeLayout
+        android:id="@+id/bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/newComments"
-        android:hint="write your review"
-        android:imeOptions="actionDone"
-        android:imeActionLabel="Done"
-        android:inputType="textMultiLine"
-        android:layout_above="@+id/buttonComment"
-        android:layout_alignParentStart="true"
-        android:focusableInTouchMode="true"/>
+        android:layout_below="@android:id/list"
+        android:focusableInTouchMode="true"
+        android:clickable = "true"
+        android:background="@color/colorPrimary">
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Submit Review"
-        android:id="@+id/buttonComment"
-        android:layout_gravity="right"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceListItem"
+            android:text="Write a review"
+            android:textColor="@color/white"
+            android:id="@+id/textView5"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_alignParentStart="true" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="REPORT"
-        android:id="@+id/report_rest"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />
+        <RatingBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/getRating"
+            android:layout_marginTop="12dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_below="@+id/textView5"
+            android:layout_centerHorizontal="true" />
 
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/newComments"
+            android:hint="your review"
+            android:imeOptions="actionDone"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:imeActionLabel="Done"
+            android:inputType="textMultiLine"
+            android:layout_above="@+id/buttonComment"
+            android:layout_alignParentStart="true"
+            android:focusableInTouchMode="true"/>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Submit Review"
+            android:id="@+id/buttonComment"
+            android:layout_gravity="right"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="12dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
 
 </RelativeLayout>

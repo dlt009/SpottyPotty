@@ -67,20 +67,17 @@ public class DetailActivity extends ListActivity {
         /* Grabs the passed intent from MainActivity */
         intentExtra = getIntent();
         String name = intentExtra.getStringExtra("name");
-        String distance = intentExtra.getStringExtra("distance");
-        String tag = intentExtra.getStringExtra("restroom_tags");
+        String tag = intentExtra.getStringExtra("restroomTags");
 
         signedIn = MainActivity.signedInFacebook || MainActivity.signedInGoogle ||
                 MainActivity.signedInTwitter;
 
         /* Sets the TextView of the name and distance of the current bathroom displayed */
         TextView nameView = (TextView) findViewById(R.id.textView2);
-        TextView distanceView = (TextView) findViewById(R.id.textView3);
         TextView tags = (TextView)findViewById(R.id.tag_list);
         Button report = (Button) findViewById(R.id.report_rest);
 
         nameView.setText(name);
-        distanceView.setText(distance);
         tags.setText(tag);
 
         averageRating = (RatingBar) findViewById(R.id.ratingBar2);

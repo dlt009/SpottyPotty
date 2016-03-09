@@ -880,10 +880,9 @@ public class MainActivity extends AppCompatActivity
                     Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                     String name = mainViewHolder.title.getText().toString();
                     String distance = mainViewHolder.distance.getText().toString();
-                    intent.putExtra("name", name);
-                    intent.putExtra("distance", distance);
+                    intent.putExtra("name", name);;
                     intent.putExtra("restroomID", dItem.getRestroomID());
-                    intent.putExtra("restroom_tags", dItem.getTags());
+                    intent.putExtra("restroomTags", dItem.getTags());
                     startActivity(intent);
                 }
             });
