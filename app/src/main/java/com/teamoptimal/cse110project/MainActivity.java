@@ -117,8 +117,10 @@ public class MainActivity extends AppCompatActivity
     private boolean initialized = false;
     private boolean isExecuting = false; // Is executing the getting of restrooms
 
-    private static final String PREFERENCES = "AppPrefs";
+    protected static final String PREFERENCES = "AppPrefs";
     private static SharedPreferences sharedPreferences;
+
+    private int reportCount;
 
     public static String filter = "";
     public static double rated = 0.0;
@@ -133,9 +135,9 @@ public class MainActivity extends AppCompatActivity
     private Menu optionsMenu;
     private MenuItem signOutOption;
 
-    boolean signedInGoogle;
-    boolean signedInFacebook;
-    boolean signedInTwitter;
+    static boolean signedInGoogle;
+    static boolean signedInFacebook;
+    static boolean signedInTwitter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,6 +161,7 @@ public class MainActivity extends AppCompatActivity
 
         /* Load user */
         String userEmail = sharedPreferences.getString("user_email", "");
+        reportCount = sharedPreferences.getInt("times_reported",0);
         user = new User();
 
         new GetUserTask(userEmail);
@@ -443,7 +446,12 @@ public class MainActivity extends AppCompatActivity
                         PackageManager.PERMISSION_GRANTED) {
             // Ask for permission
             return;
-        } else if (user != null && user.getReportCount() > 3) {
+        }else if(user == null){
+            Toast.makeText(getBaseContext(),
+                    "You do not have access to this feature\n" +
+                            "Reason: You must be signed in to create a restroom",
+                    Toast.LENGTH_LONG).show();
+        }else if (reportCount > 4) {
             Toast.makeText(getBaseContext(),
                     "You do not have access to this feature\n" +
                             "Reason: too many reports against content created by this user",

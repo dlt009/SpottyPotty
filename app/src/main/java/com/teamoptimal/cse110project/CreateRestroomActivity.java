@@ -2,6 +2,7 @@ package com.teamoptimal.cse110project;
 
 import android.app.Activity;
 import android.app.ListActivity;
+import android.content.SharedPreferences;
 import android.media.Rating;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -78,12 +79,9 @@ public class CreateRestroomActivity extends ListActivity {
 
         /* Initialize restroom with data from MainActivity */
         restroom = new Restroom();
-        user = MainActivity.user;
-        
 
-        String email;
-        if(SignInActivity.user == null){ email = "FakeUser@test.com";}
-        else email = SignInActivity.user.getEmail();
+        SharedPreferences pref = getSharedPreferences(MainActivity.PREFERENCES, 0);
+        String email = pref.getString("user_email", "");
         restroom.setUser(email);
 
         /* Get ACM */

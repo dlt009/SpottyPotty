@@ -14,11 +14,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.teamoptimal.cse110project.data.Report;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.teamoptimal.cse110project.data.ReviewItem;
 import com.teamoptimal.cse110project.data.Review;
@@ -33,7 +35,7 @@ public class DetailActivity extends ListActivity {
     private static final String PREFERENCES = "AppPrefs";
     private SharedPreferences sharedPreferences;
     private ListView reviewList;
-    private Review review;
+    private static Review review;
     private String currentID;
     private Intent intentExtra;
     private ArrayList<ReviewItem> itemComments;
@@ -42,6 +44,9 @@ public class DetailActivity extends ListActivity {
     private TextView numView;
     private double ratings;
     private RatingBar averageRating;
+    private static String user_email;
+    private int reportCount;
+    private boolean signedIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +57,9 @@ public class DetailActivity extends ListActivity {
         intentExtra = getIntent();
         String name = intentExtra.getStringExtra("name");
         String distance = intentExtra.getStringExtra("distance");
+
+        signedIn = MainActivity.signedInFacebook || MainActivity.signedInGoogle ||
+                MainActivity.signedInTwitter;
 
         /* Sets the TextView of the name and distance of the current bathroom displayed */
         TextView nameView = (TextView) findViewById(R.id.textView2);
@@ -77,7 +85,11 @@ public class DetailActivity extends ListActivity {
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
 
         Log.d(TAG, "hey "+ sharedPreferences.getString("user_email",""));
-        review.setUserEmail(sharedPreferences.getString("user_email",""));
+
+        user_email = sharedPreferences.getString("user_email", "");
+        review.setUserEmail(user_email);
+
+        reportCount = sharedPreferences.getInt("times_reported", 0);
 
         /* Sets the ListView of comments/ratings */
         itemComments = new ArrayList<>();
@@ -103,8 +115,17 @@ public class DetailActivity extends ListActivity {
 
                 EditText comments = (EditText) findViewById(R.id.newComments);
                 review.setMessage(comments.getText().toString().trim());
-
-                if (review.isInitialized()) {
+                if(!signedIn){
+                    Toast.makeText(getBaseContext(), "Cannot create a review\n"+
+                            "Reason: User is not signed in",
+                            Toast.LENGTH_SHORT).show();
+                }else if(reportCount > 4){
+                    Toast.makeText(getBaseContext(), "Cannot create a review\n"+
+                                    "Reason: too many reports against content created by this user",
+                            Toast.LENGTH_SHORT).show();
+                }
+                else if (review.isInitialized()) {
+                    //review.updateRating(review.getRestroomID(), review.getRating());
                     new CreateReviewTask(review).execute();
                     Toast.makeText(getBaseContext(), "Review has been created", Toast.LENGTH_SHORT).show();
                     finish();
@@ -118,10 +139,15 @@ public class DetailActivity extends ListActivity {
         report.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
-                intent.putExtra("object", "Restroom");
-                intent.putExtra("objId", review.getRestroomID());
-                startActivity(intent); // Go to ReportActivity
+                if(!signedIn){
+                    Toast.makeText(getBaseContext(), "Cannot report a review\n" +
+                                    "Reason: User is not signed in",
+                            Toast.LENGTH_SHORT).show();
+                }else if (reportCount > 4) {
+                    Toast.makeText(getBaseContext(), "Cannot report a review\n" +
+                                    "Reason: too many reports against content created by this user",
+                            Toast.LENGTH_SHORT).show();
+                }else new goToReportTask(user_email, currentID, "Restroom").execute();
             }
         });
 
@@ -207,7 +233,7 @@ public class DetailActivity extends ListActivity {
                 ViewHolder viewHolder = new ViewHolder();
                 viewHolder.comments = (TextView)convertView.findViewById(R.id.comments);
                 viewHolder.ratings = (RatingBar)convertView.findViewById(R.id.setRating);
-                viewHolder.report = (ImageButton)convertView.findViewById(R.id.button_report);
+                viewHolder.reportReview = (ImageButton)convertView.findViewById(R.id.button_report);
 
                 convertView.setTag(viewHolder);
             }
@@ -216,13 +242,19 @@ public class DetailActivity extends ListActivity {
 
             mainViewHolder.comments.setText(rItem.getComments());
             mainViewHolder.ratings.setRating(rItem.getRating());
-            mainViewHolder.report.setOnClickListener(new View.OnClickListener() {
+
+            mainViewHolder.reportReview.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
-                    intent.putExtra("object", "Review");
-                    intent.putExtra("objId", rItem.getReviewID());
-                    startActivity(intent); // Go to ReportActivity
+                    if (!signedIn){
+                        Toast.makeText(getBaseContext(), "Cannot report a review\n" +
+                                        "Reason: User is not signed in",
+                                Toast.LENGTH_SHORT).show();
+                    }else if (reportCount > 4) {
+                        Toast.makeText(getBaseContext(), "Cannot report a review\n" +
+                                        "Reason: too many reports against content created by user",
+                                Toast.LENGTH_SHORT).show();
+                    } else new goToReportTask(user_email, rItem.getReviewID(),"Review").execute();
                 }
             });
             return convertView;
@@ -232,7 +264,41 @@ public class DetailActivity extends ListActivity {
     private class ViewHolder {
         TextView comments;
         RatingBar ratings;
-        ImageButton report;
+        ImageButton reportReview;
+    }
+
+    private class goToReportTask extends AsyncTask<Void, Void, Void> {
+        private String user;
+        private String objectId;
+        private String objectType;
+        private boolean reportable;
+
+        public goToReportTask(String user_email, String objectId, String objectType) {
+            this.user = user_email;
+            this.objectId = objectId;
+            this.objectType = objectType;
+        }
+
+        // To do in the background
+        protected Void doInBackground(Void... inputs) {
+            reportable = !Report.hasReported(user, objectId, objectType);
+            return null;
+        }
+
+        // To do after doInBackground is executed
+        // We can use UI elements here
+        protected void onPostExecute(Void result) {
+            if(reportable){
+                Log.d(TAG, objectType+" of ID: "+objectId+" has report status of:"+reportable );
+                Intent intent = new Intent(getApplicationContext(), ReportActivity.class);
+                intent.putExtra("object", objectType);
+                intent.putExtra("objId", objectId);
+                startActivity(intent); // Go to ReportActivity
+            } else {
+                Toast.makeText(getBaseContext(), "You have already reported this "+objectType,
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
 

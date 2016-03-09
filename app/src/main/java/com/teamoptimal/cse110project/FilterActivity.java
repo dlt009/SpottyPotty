@@ -44,13 +44,15 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         spinnerRating = (Spinner) findViewById(R.id.spinner2);
         spinnerRating.setOnItemSelectedListener(this);
 
+        String[] Gender = CreateRestroomActivity.Gender;
+        String[] Access = CreateRestroomActivity.Access;
 
         // Spinner Drop down elements
         List<String> genders = new ArrayList<>();
         genders.add("No Preference");
-        genders.add("Unisex");
-        genders.add("Male");
-        genders.add("Female");
+        for(int i=0; i<Gender.length; i++){
+            genders.add(Gender[i]);
+        }
 
         List<String> ratings = new ArrayList<>();
         ratings.add("0+");
@@ -61,9 +63,9 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
 
         List<String> accessibility = new ArrayList<>();
         accessibility.add("No Preference");
-        accessibility.add("Public");
-        accessibility.add("Private");
-        accessibility.add("Pay-to-use");
+        for(int i=0; i<Access.length; i++){
+            accessibility.add(Access[i]);
+        }
 
         // Creating adapter for spinner
         ArrayAdapter<String> dataAdapter1 = new ArrayAdapter<>(this,
