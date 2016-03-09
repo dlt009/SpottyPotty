@@ -500,10 +500,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.sign_out) {
+            ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
             Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
             startActivity(intent);
             return true;
         } else if (id == R.id.filter) {
+            ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
             Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
             startActivity(intent);
             return true;
@@ -874,9 +876,7 @@ public class MainActivity extends AppCompatActivity
             mainViewHolder.details.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                        /*Toast.makeText(getContext(),
-                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();*/
-
+                     ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
                     Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                     String name = mainViewHolder.title.getText().toString();
                     String distance = mainViewHolder.distance.getText().toString();

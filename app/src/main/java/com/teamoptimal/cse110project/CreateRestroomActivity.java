@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.media.Rating;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -25,14 +26,14 @@ import com.teamoptimal.cse110project.data.User;
 
 import java.util.Random;
 
-public class CreateRestroomActivity extends ListActivity {
+public class CreateRestroomActivity extends AppCompatActivity {
     private Restroom restroom;
     private User user;
     private AmazonClientManager clientManager;
     private static EditText description;
     private static EditText floor;
 
-    private static String TAG = "CreateRestroomActivity: ";
+    private static String TAG = "CreateRestroomActivity";
 
     //static arrays for the tags and their relative position to each other
     public static final String[] Gender = {
@@ -92,7 +93,7 @@ public class CreateRestroomActivity extends ListActivity {
         double[] location = extra.getDoubleArray("Location");
         restroom.setLocation(location[0], location[1]);
 
-        /*Gets the editTexts from layout and sets their focus listener*/
+        /* Gets the editTexts from layout and sets their focus listener */
         description = (EditText)findViewById(R.id.editText);
         floor = (EditText) findViewById(R.id.editText2);
         description.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -144,11 +145,11 @@ public class CreateRestroomActivity extends ListActivity {
             }
         });
 
-        //initialize list for restroom tags
-        ListView tagList = getListView();
+        // initialize list for restroom tags
+        ListView tagList = (ListView)findViewById(R.id.list);
         tagList.setChoiceMode(tagList.CHOICE_MODE_MULTIPLE);
         tagList.setTextFilterEnabled(true);
-        setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked,
+        tagList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked,
                 Extraneous));
         tagList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -160,7 +161,7 @@ public class CreateRestroomActivity extends ListActivity {
 
         /* Set rating bar */
         RatingBar ratingBar = (RatingBar) findViewById(R.id.ratingBar);
-        ratingBar.setRating(5);
+        ratingBar.setRating(0);
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
             @Override
             public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {

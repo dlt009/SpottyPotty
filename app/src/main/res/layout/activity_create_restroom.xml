@@ -13,70 +13,48 @@
     android:clickable = "true"
     android:focusableInTouchMode = "true">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Creating new restroom at current location"
-        android:id="@+id/textView"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        />
-
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editText"
-        android:hint="descriptive name for restroom"
+        android:hint="name or location for restroom"
         android:inputType="textEmailAddress"
         android:imeOptions="actionDone"
         android:imeActionLabel="Done"
-        android:layout_below="@+id/textView"
-        android:layout_centerHorizontal="true"
         android:maxLines="2"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"
-        android:gravity = "center"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below = "@+id/editText"
-        android:text = "Floor #: "
-        android:textSize="20dp"
-        android:layout_alignParentLeft="true"
-        android:layout_marginTop = "8dp"
-        android:id="@+id/floor"
-        />
+        android:gravity = "left"
+        android:layout_alignParentTop="true"
+        android:layout_alignEnd="@+id/starScroll"
+        android:layout_alignParentStart="true" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/editText"
-        android:layout_toRightOf= "@+id/floor"
         android:id="@+id/editText2"
-        android:hint="floor"
+        android:hint="#floor"
         android:inputType="phone"
         android:imeOptions="actionDone"
         android:imeActionLabel="Done"
-        android:maxLines="1" />
+        android:maxLines="1"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:layout_toEndOf="@+id/editText" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below = "@+id/editText2"
-        android:text = "Gender:"
-        android:textSize="20dp"
-        android:layout_marginTop="8dp"
+        android:text = "Gender"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_marginTop="12dp"
         android:layout_alignParentLeft="true"
-        android:id="@+id/Gender"
-        />
+        android:id="@+id/Gender" />
 
     <Spinner
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/gender"
-        android:layout_toEndOf="@+id/Gender"
+        android:layout_marginLeft="66dp"
         android:spinnerMode="dropdown"
         android:layout_below="@+id/editText2" />
 
@@ -84,18 +62,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below = "@+id/gender"
-        android:text = "Access:"
-        android:textSize="20dp"
-        android:layout_marginTop="8dp"
+        android:text = "Access"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_marginTop="12dp"
         android:layout_alignParentLeft="true"
-        android:id="@+id/Access"
-        />
+        android:id="@+id/Access" />
 
     <Spinner
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/access"
-        android:layout_toEndOf="@+id/Access"
+        android:layout_marginLeft="66dp"
         android:layout_below="@+id/gender"
         android:spinnerMode="dropdown"/>
 
@@ -103,40 +80,30 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below = "@+id/access"
-        android:text = "Tags:    "
-        android:textSize="20dp"
-        android:layout_marginTop="8dp"
+        android:text = "Tags"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_marginTop="12dp"
         android:layout_alignParentLeft="true"
-        android:id="@+id/Extra"
-        />
+        android:id="@+id/Extra" />
 
     <ListView
-        android:id="@android:id/list"
+        android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/access"
-        android:layout_above="@+id/starScroll"
-        android:layout_toEndOf="@+id/Extra"
-        android:clickable = "true"
-        />
-
-    <HorizontalScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/starScroll"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:focusableInTouchMode="true"
-        android:layout_toStartOf="@+id/button">
+        android:layout_above="@+id/ratingBar"
+        android:layout_marginLeft="60dp"
+        android:clickable = "true" />
 
     <RatingBar
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:focusableInTouchMode="true"
+        android:layout_toStartOf="@+id/button"
         android:id="@+id/ratingBar"
-        android:numStars="5"
-        />
-
-    </HorizontalScrollView>
+        android:numStars="5" />
 
     <Button
         android:layout_width="wrap_content"
@@ -145,7 +112,8 @@
         android:id="@+id/button"
         android:textColor="#ffe016"
         android:backgroundTint="#be0037ff"
-        android:layout_alignBottom="@+id/starScroll"
+        android:layout_alignBottom="@+id/ratingBar"
+        android:layout_marginBottom="6dp"
         android:layout_alignParentRight="true"
         android:textSize="16sp" />
 

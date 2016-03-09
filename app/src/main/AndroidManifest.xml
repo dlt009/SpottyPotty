@@ -37,7 +37,7 @@
 
         <activity
             android:name=".CreateRestroomActivity"
-            android:label="Creating a Restroom"
+            android:label="Create a Restroom"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
 
