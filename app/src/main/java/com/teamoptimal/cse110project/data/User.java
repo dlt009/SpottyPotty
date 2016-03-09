@@ -76,20 +76,20 @@ public class User {
     }
 
     @DynamoDBIgnore
-    public void reportRestroom(Restroom rest, String desc){
+    public void reportRestroom(Restroom rest, String desc, User target){
         Report report = new Report();
         rest.addReport();
-        report.setObject("Restroom", rest.getID());
+        report.setObjectType("Restroom");
+        report.setObject(rest.getID());
         report.setReporter(this.getEmail());
         report.setTarget(rest.getUser());
         report.setDescription(desc);
 
         AmazonDynamoDBClient ddb = ReportActivity.clientManager.ddb();
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
+
         mapper.save(rest);
 
-        User target = new User();
-        target = mapper.load(target.getClass(), rest.getUser());
         target.addReport();
         mapper.save(target);
 
@@ -97,10 +97,11 @@ public class User {
     }
 
     @DynamoDBIgnore
-    public void reportReview(Review review, String desc){
+    public void reportReview(Review review, String desc, User target){
         Report report = new Report();
         review.addReport();
-        report.setObject("Review", review.getID());
+        report.setObjectType("Review");
+        report.setObject(review.getID());
         report.setReporter(this.getEmail());
         report.setTarget(review.getUserEmail());
         report.setDescription(desc);
@@ -109,8 +110,6 @@ public class User {
         DynamoDBMapper mapper = new DynamoDBMapper(ddb);
         mapper.save(review);
 
-        User target = new User();
-        target = mapper.load(target.getClass(), review.getUserEmail());
         target.addReport();
         mapper.save(target);
 

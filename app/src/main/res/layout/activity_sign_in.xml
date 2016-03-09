@@ -1,55 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.teamoptimal.cse110project.SignInActivity"
     android:background="#9fcaf4">
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/google_login_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/twitter_login_button"
-        android:layout_marginTop="40dp"
-        android:layout_alignStart="@+id/twitter_login_button"
-        android:layout_alignEnd="@+id/twitter_login_button" />
+        android:layout_marginTop="15dp"
+        android:layout_width="224dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/sign_in_text"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="26dp" />
 
     <com.facebook.login.widget.LoginButton
         android:id="@+id/facebook_login_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="46dp"
+        android:layout_marginTop="8dp"
+        android:layout_width="218dp"
+        android:layout_height="50dp"
+        android:paddingLeft="22dp"
+        android:paddingTop="12dp"
+        android:layout_centerHorizontal="true"
+        android:paddingBottom="12dp"
         android:layout_below="@+id/google_login_button"
-        android:layout_alignStart="@+id/google_login_button"
-        android:layout_alignEnd="@+id/google_login_button" />
-        
+        android:layout_marginStart="33dp" />
 
     <com.twitter.sdk.android.core.identity.TwitterLoginButton
         android:id="@+id/twitter_login_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_marginTop="8dp"
+        android:layout_width="218dp"
+        android:layout_height="44dp"
+        android:layout_below="@+id/facebook_login_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="33dp"
+        android:layout_marginBottom="45dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Choose a sign-in option"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="15dp"
         android:id="@+id/sign_in_text"
-        android:textSize="30dp"
-        android:textAlignment="center"
         android:layout_below="@+id/imageView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="43dp" />
+        android:layout_centerHorizontal="true" />
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/imageView"
         android:src="@drawable/ic_action_findrr"
-        android:layout_marginTop="65dp"
+        android:layout_marginTop="43dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
@@ -58,8 +61,10 @@
         android:layout_height="wrap_content"
         android:text="Sign Out"
         android:id="@+id/sign_out_button"
+        android:layout_marginBottom="8dp"
+        android:layout_below="@id/sign_in_text"
         android:layout_alignTop="@+id/google_login_button"
-        android:layout_centerInParent="true" />
+        android:layout_centerHorizontal="true" />
 
 
 </RelativeLayout>

@@ -1,5 +1,6 @@
 package com.teamoptimal.cse110project;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -8,7 +9,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -28,8 +31,12 @@ public class ReportActivity extends AppCompatActivity {
 
     private Report report;
     private User user;
+    private User target;
     private EditText description;
     private TextView text;
+    private Button submitButton;
+
+    private String TAG = "ReportActivity";
 
     private SharedPreferences sharedPreferences;
 
@@ -47,50 +54,61 @@ public class ReportActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_report);
 
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
+        clientManager = new AmazonClientManager(this);
+        mapper = new DynamoDBMapper(clientManager.ddb());
 
         report = new Report();
-        user = new User();
 
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        new getUserTask(sharedPreferences.getString("user_email", ""), "User").execute();
 
+        submitButton = (Button) findViewById(R.id.submitButton);
+        submitButton.setVisibility(View.INVISIBLE);
+
+        text = (TextView) findViewById(R.id.Title);
+        description = (EditText) findViewById(R.id.reportDesc);
+        description.setVisibility(View.INVISIBLE);
+        description.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    closeKeyboard(v);
+                }
+            }
+        });
 
         Intent intentExtra = getIntent();
         reportObj = intentExtra.getStringExtra("object");
         objId = intentExtra.getStringExtra("objId");
 
-        text = (TextView) findViewById(R.id.Title);
-        description = (EditText) findViewById(R.id.reportDesc);
+        Log.d(TAG, "Activity Started with "+reportObj+" of id: "+objId+"\n Reported by "
+                +sharedPreferences.getString("user_email",""));
 
-        //text.setText(reportObj+": "+objId);
+        if(reportObj.equals("Restroom")){
+            Log.d(TAG, "reportObj indicates a restroom");
+            new getRestroomTask(objId).execute();
+        }
+        else if(reportObj.equals("Review")){
+            Log.d(TAG, "reportObj indicates a review");
+            new getReviewTask(objId).execute();
+        }
+        else{
+            Toast.makeText(getBaseContext(), "Cannot find the item to be reported",
+                    Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
-        clientManager = new AmazonClientManager(this);
-        mapper = new DynamoDBMapper(clientManager.ddb());
-
-        new getUserTask(sharedPreferences.getString("user_email",""));
-
-        //Toast.makeText(getBaseContext(),reportObj, Toast.LENGTH_SHORT).show();
-
-        Button submitButton = (Button) findViewById(R.id.submitButton);
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                String desc = description.getText().toString();
+                String desc = description.getText().toString().trim();
+
                 if(reportObj.equals("Restroom")){
-                    Toast.makeText(getBaseContext(), "Restroom has been reported",
-                            Toast.LENGTH_SHORT).show();
-                    new getRestroomTask(objId);
-                    new ReportRestroomTask(user, restroom, desc);
-                    finish();
+                    new ReportRestroomTask(user, restroom, desc, target).execute();
                 }
                 else if(reportObj.equals("Review")){
-                    Toast.makeText(getBaseContext(), "Review has been reported",
-                            Toast.LENGTH_SHORT).show();
-                    new getReviewTask(objId);
-                    new ReportReviewTask(user, review, desc);
-                    finish();
+                    new ReportReviewTask(user, review, desc, target).execute();
                 }
                 else{
                     Toast.makeText(getBaseContext(), "Cannot find the item to be reported",
@@ -103,20 +121,34 @@ public class ReportActivity extends AppCompatActivity {
 
     private class getUserTask extends AsyncTask<Void, Void, Void> {
         private String user_email;
+        private String thisUser;
 
-        public getUserTask(String user_email) {
+        public getUserTask(String user_email, String target) {
             this.user_email = user_email;
+            this.thisUser = target;
         }
 
         // To do in the background
         protected Void doInBackground(Void... inputs) {
-            user = mapper.load(user.getClass(), this.user_email); // Use the method from the User class to create it
+            if(this.thisUser.equals("User")){
+                user = mapper.load(new User().getClass(), this.user_email);
+            }else if(thisUser.equals("Target")){
+                target = mapper.load(new User().getClass(), this.user_email);
+            }
             return null;
         }
 
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            if(this.thisUser.equals("Target")){
+                Log.d(TAG, "Target User has been loaded with ID:"+target.getEmail());
+                submitButton.setVisibility(View.VISIBLE);
+            }
+            else{
+                Log.d(TAG, "Current User has been loaded with ID:"+user.getEmail());
+                description.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -129,13 +161,16 @@ public class ReportActivity extends AppCompatActivity {
 
         // To do in the background
         protected Void doInBackground(Void... inputs) {
-            restroom = mapper.load(restroom.getClass(), this.restroomId); // Use the method from the User class to create it
+            restroom = mapper.load(new Restroom().getClass(), this.restroomId);
+            Log.d(TAG, "Restroom: " + restroom.getDescription() + " has been loaded " +
+                    "\n made by "+restroom.getUser());
             return null;
         }
 
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            new getUserTask(restroom.getUser(), "Target").execute();
         }
     }
 
@@ -148,13 +183,16 @@ public class ReportActivity extends AppCompatActivity {
 
         // To do in the background
         protected Void doInBackground(Void... inputs) {
-            review = mapper.load(review.getClass(), this.reviewId); // Use the method from the User class to create it
+            review = mapper.load(new Review().getClass(), this.reviewId); // Use the method from the User class to create it
+
             return null;
         }
 
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            Log.d(TAG, "Review: "+review.getMessage()+" has been loaded with user "+review.getUserEmail());
+            new getUserTask(review.getUserEmail(), "Target").execute();
         }
     }
 
@@ -162,22 +200,27 @@ public class ReportActivity extends AppCompatActivity {
         private User user;
         private Restroom restroom;
         private String description;
+        private User target;
 
-        public ReportRestroomTask(User user, Restroom restroom, String description) {
+        public ReportRestroomTask(User user, Restroom restroom, String description, User target) {
             this.user = user;
             this.description = description;
             this.restroom = restroom;
+            this.target = target;
         }
 
         // To do in the background
         protected Void doInBackground(Void... inputs) {
-            user.reportRestroom(this.restroom,this.description); // Use the method from the User class to create it
+            user.reportRestroom(this.restroom,this.description, this.target); // Use the method from the User class to create it
             return null;
         }
 
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            Toast.makeText(getBaseContext(),"Restroom has been reported\n Thank you for your input!",
+                    Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 
@@ -185,23 +228,34 @@ public class ReportActivity extends AppCompatActivity {
         private User user;
         private Review review;
         private String description;
+        private User target;
 
-        public ReportReviewTask(User user, Review review, String description) {
+        public ReportReviewTask(User user, Review review, String description, User target) {
             this.user = user;
             this.description = description;
             this.review = review;
+            this.target = target;
         }
 
         // To do in the background
         protected Void doInBackground(Void... inputs) {
-            user.reportReview(this.review,this.description); // Use the method from the User class to create it
+            user.reportReview(this.review,this.description, this.target); // Use the method from the User class to create it
             return null;
         }
 
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            Toast.makeText(getBaseContext(), "Review has been reported\n Thank you for your input!",
+                    Toast.LENGTH_SHORT).show();
+            finish();
         }
+    }
+
+    public void closeKeyboard(View view){
+        InputMethodManager manager =
+                (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
 }

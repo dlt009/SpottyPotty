@@ -117,8 +117,10 @@ public class MainActivity extends AppCompatActivity
     private boolean initialized = false;
     private boolean isExecuting = false; // Is executing the getting of restrooms
 
-    private static final String PREFERENCES = "AppPrefs";
+    protected static final String PREFERENCES = "AppPrefs";
     private static SharedPreferences sharedPreferences;
+
+    protected static int reportCount;
 
     public static String filter = "";
     public static double rated = 0.0;
@@ -133,9 +135,9 @@ public class MainActivity extends AppCompatActivity
     private Menu optionsMenu;
     private MenuItem signOutOption;
 
-    boolean signedInGoogle;
-    boolean signedInFacebook;
-    boolean signedInTwitter;
+    static boolean signedInGoogle;
+    static boolean signedInFacebook;
+    static boolean signedInTwitter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,9 +161,10 @@ public class MainActivity extends AppCompatActivity
 
         /* Load user */
         String userEmail = sharedPreferences.getString("user_email", "");
+
         user = new User();
 
-        new GetUserTask(userEmail);
+        new GetUserTask(userEmail).execute();
 
         /* Location */
         fusedLocationService = new FusedLocationService(this, new FusedLocationReceiver() {
@@ -182,7 +185,7 @@ public class MainActivity extends AppCompatActivity
 
                 if(directionsMode) {
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLocation.getLatitude(),
-                            currentLocation.getLongitude()), 18));
+                            currentLocation.getLongitude()), map.getCameraPosition().zoom));
                 }
 
                 float[] result = new float[2];
@@ -242,6 +245,7 @@ public class MainActivity extends AppCompatActivity
                 intent.putExtra("name", name);
                 intent.putExtra("distance", "");
                 intent.putExtra("restroomID", restroom.getID());
+                intent.putExtra("restroomTags", restroom.getFormattedTags());
                 intent.putExtra("ratings", restroom.getRating());
                 startActivity(intent);
             }
@@ -302,9 +306,12 @@ public class MainActivity extends AppCompatActivity
                     restrooms = Restroom.filterRestrooms(originalRestrooms, filter, rated);
                     Log.d(TAG, "" + restrooms.size());
 
+                    String rate = "";
+                    if(rated != 0.0) {rate = " "+Double.toString(rated)+"+";}
+
                     String tags = Restroom.getFormattedTags(filter);
                     if (tags.equals("No tags")) tags = "ALL";
-                    String tagText = "Showing " + tags + " restrooms";
+                    String tagText = "Showing " + tags + rate + " restrooms";
                     View filtersView = findViewById(R.id.filters);
                     ((TextView) filtersView.findViewById(R.id.filter_text)).setText(tagText);
 
@@ -351,8 +358,6 @@ public class MainActivity extends AppCompatActivity
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
                 if (!directionsMode && !centeredSearch) {
                     map.clear();
-                    map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
                     centerLoc.setLatitude(latLng.latitude);
                     centerLoc.setLongitude(latLng.longitude);
@@ -391,6 +396,9 @@ public class MainActivity extends AppCompatActivity
         toggleNavSignInText();
 
         registerReceiver(receiver, new IntentFilter("filter_done"));
+
+        clientManager = new AmazonClientManager(this);
+        clientManager.validateCredentials();
     }
 
     private void toggleNavSignInText() {
@@ -443,7 +451,12 @@ public class MainActivity extends AppCompatActivity
                         PackageManager.PERMISSION_GRANTED) {
             // Ask for permission
             return;
-        } else if (user != null && user.getReportCount() > 3) {
+        } else if(user == null) {
+            Toast.makeText(getBaseContext(),
+                    "You do not have access to this feature\n" +
+                            "Reason: You must be signed in to create a restroom",
+                    Toast.LENGTH_LONG).show();
+        } else if (reportCount > 4) {
             Toast.makeText(getBaseContext(),
                     "You do not have access to this feature\n" +
                             "Reason: too many reports against content created by this user",
@@ -492,10 +505,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.sign_out) {
+            ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
             Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
             startActivity(intent);
             return true;
         } else if (id == R.id.filter) {
+            ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
             Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
             startActivity(intent);
             return true;
@@ -675,6 +690,7 @@ public class MainActivity extends AppCompatActivity
         if(isOn) {
             navigationLayout.setVisibility(View.VISIBLE);
             map.getUiSettings().setAllGesturesEnabled(false);
+            map.getUiSettings().setZoomGesturesEnabled(true);
             directionsMode = true;
         } else {
             navigationLayout.setVisibility(View.GONE);
@@ -747,6 +763,8 @@ public class MainActivity extends AppCompatActivity
         }
 
         protected void onPostExecute(Void result) {
+            reportCount = user.getReportCount();
+            Log.d(TAG, "User "+user.getEmail()+" has been loaded with "+reportCount+" reports");
         }
     }
 
@@ -866,15 +884,14 @@ public class MainActivity extends AppCompatActivity
             mainViewHolder.details.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                        /*Toast.makeText(getContext(),
-                                "Send user to Reviews Activity", Toast.LENGTH_SHORT).show();*/
-
+                     ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
                     Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                     String name = mainViewHolder.title.getText().toString();
                     String distance = mainViewHolder.distance.getText().toString();
-                    intent.putExtra("name", name);
-                    intent.putExtra("distance", distance);
+                    intent.putExtra("name", name);;
                     intent.putExtra("restroomID", dItem.getRestroomID());
+                    intent.putExtra("restroomTags", dItem.getTags());
+                    intent.putExtra("ratings", dItem.getRating());
                     startActivity(intent);
                 }
             });

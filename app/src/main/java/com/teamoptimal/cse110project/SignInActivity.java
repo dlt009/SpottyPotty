@@ -1,5 +1,6 @@
 package com.teamoptimal.cse110project;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -102,6 +103,8 @@ public class SignInActivity extends AppCompatActivity implements
 
     private boolean isGoogleSilentSignIn = false;
 
+    private ProgressDialog loadingSpinner;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,6 +149,8 @@ public class SignInActivity extends AppCompatActivity implements
         facebookSignInButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                loadingSpinner.show();
+
                 signedInFacebook = true;
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
@@ -197,6 +202,8 @@ public class SignInActivity extends AppCompatActivity implements
         twitterLoginButton.setCallback(new Callback<TwitterSession>() {
             @Override
             public void success(Result<TwitterSession> result) {
+                loadingSpinner.show();
+
                 signedInTwitter = true;
                 twitterUser = result.data;
 
@@ -239,6 +246,10 @@ public class SignInActivity extends AppCompatActivity implements
         signOutButton.setOnClickListener(this);
 
         updateUI(signedInFacebook || signedInTwitter || signedInGoogle);
+
+        loadingSpinner = new ProgressDialog(this);
+        loadingSpinner.setTitle("Signing In");
+        loadingSpinner.setMessage("Please wait");
     }
 
     @Override
@@ -283,6 +294,9 @@ public class SignInActivity extends AppCompatActivity implements
         Log.d(TAG, "handleSignInResult: " + result.isSuccess());
 
         if (result.isSuccess()) {
+            if(!isGoogleSilentSignIn)
+                loadingSpinner.show();
+
             googleUser = result.getSignInAccount();
             signedInGoogle = true;
 
@@ -341,6 +355,7 @@ public class SignInActivity extends AppCompatActivity implements
             editor.putBoolean("twit", signedInTwitter);
             editor.commit();
         }
+        goToMain();
     }
 
     @Override
@@ -374,7 +389,6 @@ public class SignInActivity extends AppCompatActivity implements
                 break;
             case R.id.sign_out_button:
                 signOut();
-                goToMain();
                 break;
         }
     }
@@ -407,11 +421,14 @@ public class SignInActivity extends AppCompatActivity implements
         if(user != null) {
             editor.putString("user_email", user.getEmail());
             editor.putString("user_name", user.getUsername());
+            editor.putInt("times_reported", user.getReportCount());
         }
         editor.commit();
         if(isGoogleSilentSignIn)
             isGoogleSilentSignIn = false;
-        else
+        else {
+            loadingSpinner.dismiss();
             finish();
+        }
     }
 }

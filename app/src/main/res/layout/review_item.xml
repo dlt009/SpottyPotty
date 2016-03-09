@@ -6,8 +6,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginStart="5dp"
         android:id="@+id/comments"
+        android:layout_marginEnd="90dp"
         style="?android:attr/textAppearanceMedium"
         android:paddingLeft="5dp"
         android:layout_below="@+id/setRating"
@@ -27,39 +30,43 @@
         />
 
     <ImageButton
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
-
         android:id="@+id/button_report"
         android:layout_alignParentEnd="true"
         android:background="@android:drawable/ic_dialog_alert"
         android:backgroundTint="@android:color/holo_red_dark" />
 
-    <ImageView
+    <ImageButton
         android:layout_width="25dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/upvote"
-        android:background="@drawable/com_facebook_tooltip_blue_topnub"
-        android:layout_below="@+id/setRating"
-        android:layout_alignStart="@+id/button_report" />
+        android:layout_height="25dp"
+        android:id="@+id/thumbs_down"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/thumbs_down"
+        android:layout_marginRight="24dp"
+        android:layout_alignBottom="@+id/comments" />
 
-    <ImageView
+    <ImageButton
         android:layout_width="25dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/downvote"
-        android:background="@drawable/com_facebook_tooltip_blue_bottomnub"
-        android:layout_below="@+id/comments"
-        android:layout_alignEnd="@+id/upvote" />
+        android:layout_height="25dp"
+        android:id="@+id/thumbs_up"
+        android:layout_marginRight="50dp"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/thumbs_up"
+        android:layout_alignBottom="@+id/comments"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="0"
-        android:id="@+id/num_vote"
-        android:layout_above="@+id/downvote"
-        android:layout_alignStart="@+id/upvote" />
+        android:id="@+id/thumbs_sum"
+        android:layout_alignBottom="@+id/comments"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp" />
 
 </RelativeLayout>

@@ -28,8 +28,8 @@ public class FusedLocationService implements
 
     private static final String TAG = "FusedLocationService";
 
-    private static final long INTERVAL = 1000 * 30;
-    private static final long FASTEST_INTERVAL = 1000 * 5;
+    private static final long INTERVAL = 60;
+    private static final long FASTEST_INTERVAL = 30;
     private static final long ONE_MIN = 1000 * 60;
     private static final long REFRESH_TIME = ONE_MIN * 5;
     private static final float MINIMUM_ACCURACY = 50.0f;

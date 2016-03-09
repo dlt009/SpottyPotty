@@ -15,12 +15,13 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
             android:name=".SignInActivity"
-            android:label="@string/app_name" />
+            android:label="@string/app_name"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
@@ -38,7 +39,8 @@
 
         <activity
             android:name=".CreateRestroomActivity"
-            android:label="Creating a Restroom"
+            android:label="Create a Restroom"
+            android:configChanges="orientation"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
 
@@ -49,25 +51,36 @@
         <activity
             android:name=".DetailActivity"
             android:label="@string/app_name"
-            android:windowSoftInputMode="adjustPan"></activity>
+            android:windowSoftInputMode="adjustPan"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ReportActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait" />
+
         <activity
             android:name=".FilterActivity"
             android:label="Filters"
-            android:theme="@style/Theme.AppCompat.Dialog" />
+            android:theme="@style/Theme.AppCompat.Dialog"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
