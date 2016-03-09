@@ -3,6 +3,7 @@ package com.teamoptimal.cse110project;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,8 +19,10 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.teamoptimal.cse110project.data.ReviewItem;
 import com.teamoptimal.cse110project.data.Review;
+import com.teamoptimal.cse110project.data.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,11 @@ import java.util.List;
 
 public class DetailActivity extends ListActivity {
     private static String TAG = "DetailActivity";
+    public static AmazonClientManager clientManager = null;
+    private static final String PREFERENCES = "AppPrefs";
+    private SharedPreferences sharedPreferences;
+    private User user;
+    private static DynamoDBMapper mapper;
     private ListView reviewList;
     private Review review;
     private String currentID;
@@ -68,7 +76,11 @@ public class DetailActivity extends ListActivity {
         /* Initialize new Review with data from MainActivity */
         review = new Review();
         review.setRestroomID(currentID);
-        review.setUserEmail(MainActivity.user.getEmail());
+
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+        
+        Log.d(TAG, "hey "+ sharedPreferences.getString("user_email",""));
+        review.setUserEmail(sharedPreferences.getString("user_email",""));
 
         /* Sets the ListView of comments/ratings */
         itemComments = new ArrayList<>();
@@ -174,7 +186,26 @@ public class DetailActivity extends ListActivity {
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
-            averageRating.setRating((float)ratings);
+            averageRating.setRating((float) ratings);
+        }
+    }
+
+    private class getUserTask extends AsyncTask<Void, Void, Void> {
+        private String user_email;
+
+        public getUserTask(String user_email) {
+            this.user_email = user_email;
+        }
+
+        // To do in the background
+        protected Void doInBackground(Void... inputs) {
+            user = mapper.load(user.getClass(), this.user_email); // Use the method from the User class to create it
+            return null;
+        }
+
+        // To do after doInBackground is executed
+        // We can use UI elements here
+        protected void onPostExecute(Void result) {
         }
     }
 
