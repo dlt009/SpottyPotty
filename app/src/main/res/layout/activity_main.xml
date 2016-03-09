@@ -68,9 +68,7 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:id="@+id/restrooms_list"
-            android:layout_below="@id/header"
-            android:layout_gravity="start"
-            android:layout_alignParentStart="true" />
+            android:layout_gravity="start" />
 
     </LinearLayout>
 

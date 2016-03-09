@@ -141,8 +141,7 @@ public class Review {
 
         ArrayList<Review> combined = new ArrayList<>();
 
-        for(Review review : scanReviews)
-        {
+        for(Review review : scanReviews) {
             combined.add(review);
         }
         return combined;
