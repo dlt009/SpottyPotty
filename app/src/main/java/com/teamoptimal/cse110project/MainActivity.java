@@ -305,7 +305,8 @@ public class MainActivity extends AppCompatActivity
                     String tags = Restroom.getFormattedTags(filter);
                     if (tags.equals("No tags")) tags = "ALL";
                     String tagText = "Showing " + tags + " restrooms";
-                    ((TextView) findViewById(R.id.filter_text)).setText(tagText);
+                    View filtersView = findViewById(R.id.filters);
+                    ((TextView) filtersView.findViewById(R.id.filter_text)).setText(tagText);
 
                     generateListContent();
                     map.clear();
@@ -396,12 +397,12 @@ public class MainActivity extends AppCompatActivity
         // Change sign-in button text to reflect if currently signing in or out
         if (signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            setFABUI(true);
+            if (initialized) setFABUI(true);
             if (signOutOption != null)
                 signOutOption.setVisible(true);
         } else {
             signInButton.setVisibility(View.VISIBLE);
-            setFABUI(false);
+            if (initialized) setFABUI(false);
             if (signOutOption != null)
                 signOutOption.setVisible(false);
         }
@@ -414,20 +415,22 @@ public class MainActivity extends AppCompatActivity
                     new int[]{getResources().getColor(R.color.colorPrimary)}));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 fab.setImageTintList(new ColorStateList(new int[][]{new int[]{0}},
-                        new int[]{getResources().getColor(R.color.white)}));
+                        new int[] { getResources().getColor(R.color.white) } ));
             }
             fab.setOnClickListener(onAddRestroomClick());
+
             recenter.setVisibility(View.VISIBLE);
         }
         else {
             fab.setImageResource(R.mipmap.ic_pin);
-            fab.setBackgroundTintList(new ColorStateList(new int[][]{new int[]{0}},
+            fab.setBackgroundTintList(new ColorStateList(new int[][]{ new int[]{0} },
                     new int[]{getResources().getColor(R.color.white)}));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                fab.setImageTintList(new ColorStateList(new int[][]{new int[]{0}},
-                        new int[]{getResources().getColor(R.color.colorPrimary)}));
+                fab.setImageTintList(new ColorStateList(new int[][] { new int[]{0} },
+                        new int[] { getResources().getColor(R.color.colorPrimary) } ));
             }
             fab.setOnClickListener(onRecenterClick());
+
             recenter.setVisibility(View.GONE);
         }
     }
@@ -486,12 +489,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.sign_out) {
             Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
             startActivity(intent);
@@ -551,14 +550,8 @@ public class MainActivity extends AppCompatActivity
                     return;
                 else {
                     initialized = true;
-                    Log.d(TAG, "x"+ signedInTwitter + signedInGoogle + signedInFacebook);
                     fab.setVisibility(View.VISIBLE);
-                    if (!(signedInTwitter || signedInGoogle || signedInFacebook)) {
-                        recenter.setVisibility(View.GONE);
-                    }
-                    else {
-                        recenter.setVisibility(View.VISIBLE);
-                    }
+                    toggleNavSignInText();
                 }
 
                 if(directionsMode)
