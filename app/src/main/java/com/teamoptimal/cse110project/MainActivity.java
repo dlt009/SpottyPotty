@@ -883,6 +883,7 @@ public class MainActivity extends AppCompatActivity
                     intent.putExtra("name", name);
                     intent.putExtra("distance", distance);
                     intent.putExtra("restroomID", dItem.getRestroomID());
+                    intent.putExtra("restroom_tags", dItem.getTags());
                     startActivity(intent);
                 }
             });

@@ -218,8 +218,7 @@ public class ReportActivity extends AppCompatActivity {
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
-            Toast.makeText(getBaseContext(), "Restroom has been reported\n" +
-                            "Thank you for your diligence!",
+            Toast.makeText(getBaseContext(),"Restroom has been reported\n Thank you for your input!",
                     Toast.LENGTH_SHORT).show();
             finish();
         }
@@ -247,8 +246,7 @@ public class ReportActivity extends AppCompatActivity {
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
-            Toast.makeText(getBaseContext(), "Review has been reported\n" +
-                            "Thank you for your diligence!",
+            Toast.makeText(getBaseContext(), "Review has been reported\n Thank you for your input!",
                     Toast.LENGTH_SHORT).show();
             finish();
         }

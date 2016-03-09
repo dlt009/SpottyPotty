@@ -275,13 +275,15 @@ public class Restroom {
         ArrayList<Restroom> returnVal = new ArrayList<>();
         int colorIndex = 0;
         for(Restroom restroom : scanResult) {
-            float color = Restroom.colors[colorIndex];
-            restroom.setColor(color);
-            if(colorIndex == 9)
-                colorIndex = 0;
-            else
-                colorIndex++;
-            returnVal.add(restroom);
+            if(restroom.getReportCount()<5) {
+                float color = Restroom.colors[colorIndex];
+                restroom.setColor(color);
+                if (colorIndex == 9)
+                    colorIndex = 0;
+                else
+                    colorIndex++;
+                returnVal.add(restroom);
+            }
         }
         return returnVal;
     }

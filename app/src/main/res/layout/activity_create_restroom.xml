@@ -7,7 +7,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingTop="8dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.teamoptimal.cse110project.CreateRestroomActivity"
     android:clickable = "true"
@@ -21,7 +21,7 @@
         android:id="@+id/textView"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:textColor="#000000" />
+        />
 
     <EditText
         android:layout_width="wrap_content"
@@ -33,17 +33,22 @@
         android:imeActionLabel="Done"
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
-        android:maxLines="2" />
+        android:maxLines="2"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"
+        android:gravity = "center"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below = "@+id/editText"
-        android:text = "Floor #:  "
+        android:text = "Floor #: "
         android:textSize="20dp"
         android:layout_alignParentLeft="true"
+        android:layout_marginTop = "8dp"
         android:id="@+id/floor"
         />
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,6 +67,7 @@
         android:layout_below = "@+id/editText2"
         android:text = "Gender:"
         android:textSize="20dp"
+        android:layout_marginTop="8dp"
         android:layout_alignParentLeft="true"
         android:id="@+id/Gender"
         />
@@ -80,6 +86,7 @@
         android:layout_below = "@+id/gender"
         android:text = "Access:"
         android:textSize="20dp"
+        android:layout_marginTop="8dp"
         android:layout_alignParentLeft="true"
         android:id="@+id/Access"
         />
@@ -98,6 +105,7 @@
         android:layout_below = "@+id/access"
         android:text = "Tags:    "
         android:textSize="20dp"
+        android:layout_marginTop="8dp"
         android:layout_alignParentLeft="true"
         android:id="@+id/Extra"
         />
@@ -109,13 +117,13 @@
         android:layout_below="@+id/access"
         android:layout_above="@+id/starScroll"
         android:layout_toEndOf="@+id/Extra"
-        android:clickable = "true"/>
+        android:clickable = "true"
+        />
 
     <HorizontalScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/starScroll"
-        android:layout_alignStart="@+id/android:list"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:focusableInTouchMode="true"

@@ -1,15 +1,19 @@
 package com.teamoptimal.cse110project;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,11 +21,13 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RatingBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.teamoptimal.cse110project.data.Report;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.teamoptimal.cse110project.data.Restroom;
 import com.teamoptimal.cse110project.data.ReviewItem;
 import com.teamoptimal.cse110project.data.Review;
 import com.teamoptimal.cse110project.data.User;
@@ -35,6 +41,7 @@ public class DetailActivity extends ListActivity {
     private static final String PREFERENCES = "AppPrefs";
     private SharedPreferences sharedPreferences;
     private ListView reviewList;
+    private EditText comments;
     private static Review review;
     private String currentID;
     private Intent intentExtra;
@@ -53,10 +60,15 @@ public class DetailActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
+        RelativeLayout layout = (RelativeLayout)findViewById(R.id.detail_layout);
+        layout.setClickable(true);
+        layout.setFocusableInTouchMode(true);
+
         /* Grabs the passed intent from MainActivity */
         intentExtra = getIntent();
         String name = intentExtra.getStringExtra("name");
         String distance = intentExtra.getStringExtra("distance");
+        String tag = intentExtra.getStringExtra("restroom_tags");
 
         signedIn = MainActivity.signedInFacebook || MainActivity.signedInGoogle ||
                 MainActivity.signedInTwitter;
@@ -64,10 +76,12 @@ public class DetailActivity extends ListActivity {
         /* Sets the TextView of the name and distance of the current bathroom displayed */
         TextView nameView = (TextView) findViewById(R.id.textView2);
         TextView distanceView = (TextView) findViewById(R.id.textView3);
+        TextView tags = (TextView)findViewById(R.id.tag_list);
         Button report = (Button) findViewById(R.id.report_rest);
 
         nameView.setText(name);
         distanceView.setText(distance);
+        tags.setText(tag);
 
         averageRating = (RatingBar) findViewById(R.id.ratingBar2);
         numView = (TextView) findViewById(R.id.num_reviews);
@@ -113,7 +127,16 @@ public class DetailActivity extends ListActivity {
             @Override
             public void onClick(View view) {
 
-                EditText comments = (EditText) findViewById(R.id.newComments);
+                comments = (EditText) findViewById(R.id.newComments);
+                comments.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if (!hasFocus) {
+                            closeKeyboard(v);
+                        }
+                    }
+                });
+
                 review.setMessage(comments.getText().toString().trim());
                 if(!signedIn){
                     Toast.makeText(getBaseContext(), "Cannot create a review\n"+
@@ -159,7 +182,9 @@ public class DetailActivity extends ListActivity {
         itemComments.clear();
 
         for(Review review : reviews) {
-            itemComments.add(new ReviewItem(review.getMessage(), review.getRating(), review.getID()));
+            if(review.getReportCount()<5) {
+                itemComments.add(new ReviewItem(review.getMessage(), review.getRating(), review.getID()));
+            }
         }
         adapter.notifyDataSetChanged();
     }
@@ -299,6 +324,29 @@ public class DetailActivity extends ListActivity {
                         Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    public void closeKeyboard(View view){
+        InputMethodManager manager =
+                (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View view = getCurrentFocus();
+            if (view != null && view instanceof EditText) {
+                Rect r = new Rect();
+                view.getGlobalVisibleRect(r);
+                int rawX = (int)ev.getRawX();
+                int rawY = (int)ev.getRawY();
+                if (!r.contains(rawX, rawY)) {
+                    view.clearFocus();
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 }
 
