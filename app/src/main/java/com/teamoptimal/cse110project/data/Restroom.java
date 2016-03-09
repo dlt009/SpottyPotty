@@ -181,8 +181,8 @@ public class Restroom {
     @DynamoDBIgnore
     public void setTag(int index, boolean choice){
         char[] chars = tags.toCharArray();
-        if(choice)chars[index] = 1;
-        else chars[index]=0;
+        if (choice)chars[index] = 1;
+        else chars[index] = 0;
         tags = String.valueOf(chars);
     }
 
