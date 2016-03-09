@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity
     protected static final String PREFERENCES = "AppPrefs";
     private static SharedPreferences sharedPreferences;
 
-    private int reportCount;
+    protected static int reportCount;
 
     public static String filter = "";
     public static double rated = 0.0;
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity
 
         /* Load user */
         String userEmail = sharedPreferences.getString("user_email", "");
-        reportCount = sharedPreferences.getInt("times_reported",0);
+
         user = new User();
 
         new GetUserTask(userEmail).execute();
@@ -763,6 +763,8 @@ public class MainActivity extends AppCompatActivity
         }
 
         protected void onPostExecute(Void result) {
+            reportCount = user.getReportCount();
+            Log.d(TAG, "User "+user.getEmail()+" has been loaded with "+reportCount+" reports");
         }
     }
 

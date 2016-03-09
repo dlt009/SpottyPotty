@@ -107,7 +107,7 @@ public class DetailActivity extends ListActivity {
         user_email = sharedPreferences.getString("user_email", "");
         review.setUserEmail(user_email);
 
-        reportCount = sharedPreferences.getInt("times_reported", 0);
+        reportCount = MainActivity.reportCount;
 
         /* Sets the ListView of comments/ratings */
         itemComments = new ArrayList<>();
@@ -280,32 +280,45 @@ public class DetailActivity extends ListActivity {
             mainViewHolder.thumbsUp.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG, "thumbsupclick");
-                    ReviewItem reviewItem = reviews.get(position);
-                    if(reviewItem.getAction() != 0)
-                        return;
+                    if(reportCount<5) {
+                        Log.d(TAG, "thumbsupclick");
+                        ReviewItem reviewItem = reviews.get(position);
+                        if (reviewItem.getAction() != 0)
+                            return;
 
-                    reviewItem.setThumbsUp(reviewItem.getThumbsUp() + 1);
-                    reviewItem.setAction(1);
-                    mainViewHolder.thumbs.setText("" + (reviewItem.getThumbsUp() -
-                            reviewItem.getThumbsDown()));
-                    new getReviewTask(reviewItem.getReviewID(), 1).execute();
+                        reviewItem.setThumbsUp(reviewItem.getThumbsUp() + 1);
+                        reviewItem.setAction(1);
+                        mainViewHolder.thumbs.setText("" + (reviewItem.getThumbsUp() -
+                                reviewItem.getThumbsDown()));
+                        new getReviewTask(reviewItem.getReviewID(), 1).execute();
+                    } else{
+                        Toast.makeText(getBaseContext(), "Cannot create a review\n" +
+                                        "Reason: too many reports against content created by this user",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
                 }
             });
 
             mainViewHolder.thumbsDown.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG, "thumbsdownclick");
-                    ReviewItem reviewItem = reviews.get(position);
-                    if(reviews.get(position).getAction() != 0)
-                        return;
+                    if(reportCount<5) {
+                        Log.d(TAG, "thumbsdownclick");
+                        ReviewItem reviewItem = reviews.get(position);
+                        if (reviews.get(position).getAction() != 0)
+                            return;
 
-                    reviewItem.setThumbsDown(reviewItem.getThumbsDown() + 1);
-                    reviewItem.setAction(-1);
-                    mainViewHolder.thumbs.setText("" + (reviewItem.getThumbsUp() -
-                            reviewItem.getThumbsDown()));
-                    new getReviewTask(reviewItem.getReviewID(), -1).execute();
+                        reviewItem.setThumbsDown(reviewItem.getThumbsDown() + 1);
+                        reviewItem.setAction(-1);
+                        mainViewHolder.thumbs.setText("" + (reviewItem.getThumbsUp() -
+                                reviewItem.getThumbsDown()));
+                        new getReviewTask(reviewItem.getReviewID(), -1).execute();
+                    }else{
+                        Toast.makeText(getBaseContext(), "Cannot rate a review\n" +
+                                        "Reason: too many reports against content created by this user",
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
 
