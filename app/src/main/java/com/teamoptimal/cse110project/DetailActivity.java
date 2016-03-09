@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatTextView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,14 +13,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.teamoptimal.cse110project.data.Report;
-import com.teamoptimal.cse110project.data.Restroom;
 import com.teamoptimal.cse110project.data.ReviewItem;
 import com.teamoptimal.cse110project.data.Review;
 
@@ -40,6 +35,8 @@ public class DetailActivity extends ListActivity {
     private ArrayList<Review> reviews;
     private MyAdapter adapter;
     private TextView numView;
+    private double ratings;
+    private RatingBar averageRating;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,22 +47,18 @@ public class DetailActivity extends ListActivity {
         intentExtra = getIntent();
         String name = intentExtra.getStringExtra("name");
         String distance = intentExtra.getStringExtra("distance");
-        Float ratings = intentExtra.getFloatExtra("ratings", 0.0f);
 
         /* Sets the TextView of the name and distance of the current bathroom displayed */
         TextView nameView = (TextView) findViewById(R.id.textView2);
         TextView distanceView = (TextView) findViewById(R.id.textView3);
-        RatingBar  ratingBar2 = (RatingBar) findViewById(R.id.ratingBar2);
         Button report = (Button) findViewById(R.id.report_rest);
-
-        numView = (TextView) findViewById(R.id.num_reviews);
 
         nameView.setText(name);
         distanceView.setText(distance);
-        Toast.makeText(getBaseContext(), ""+ratings, Toast.LENGTH_SHORT).show();
-        ratingBar2.setRating(ratings);
 
-        //reviewList = (ListView)findViewById(R.id.list_reviews);
+        averageRating = (RatingBar) findViewById(R.id.ratingBar2);
+        numView = (TextView) findViewById(R.id.num_reviews);
+
         reviewList = getListView();
         itemComments = new ArrayList<>();
 
@@ -87,6 +80,12 @@ public class DetailActivity extends ListActivity {
         review.setRestroomID(currentID);
         review.setUserEmail(MainActivity.user.getEmail());
 
+        /* Sets the ListView of comments/ratings */
+        itemComments = new ArrayList<>();
+        adapter = new MyAdapter(this, R.layout.review_item, itemComments);
+
+        new GetReviewsTask(currentID).execute();
+
         // Set rating bar
         RatingBar ratingBar = (RatingBar) findViewById(R.id.getRating);
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
@@ -96,13 +95,6 @@ public class DetailActivity extends ListActivity {
             }
         });
 
-
-        /* Sets the ListView of comments/ratings */
-        itemComments = new ArrayList<>();
-        adapter = new MyAdapter(this, R.layout.review_item, itemComments);
-
-        new GetReviewsTask(currentID).execute();
-
         /* Sets the button */
         Button button = (Button) findViewById(R.id.buttonComment);
         button.setOnClickListener(new View.OnClickListener() {
@@ -111,16 +103,13 @@ public class DetailActivity extends ListActivity {
             public void onClick(View view) {
 
                 EditText comments = (EditText) findViewById(R.id.newComments);
-                review.setMessage(comments.getText().toString());
+                review.setMessage(comments.getText().toString().trim());
 
                 if (review.isInitialized()) {
-                    //review.updateRating(review.getRestroomID(), review.getRating());
-
                     new CreateReviewTask(review).execute();
-
                     Toast.makeText(getBaseContext(), "Review has been created", Toast.LENGTH_SHORT).show();
-
                     finish();
+
                 } else {
                     Toast.makeText(getBaseContext(), "Unsuccessful", Toast.LENGTH_SHORT).show();
                 }
@@ -128,6 +117,7 @@ public class DetailActivity extends ListActivity {
         });
 
         reviewList.setAdapter(adapter);
+
     }
 
     public void generateReviews() {
@@ -150,6 +140,7 @@ public class DetailActivity extends ListActivity {
         protected Void doInBackground(Void...params) {
             Log.d(TAG, "doInBackground");
             reviews = Review.getReviews(restID);
+            ratings = Review.getRating(restID);
             return null;
         }
 
@@ -159,6 +150,7 @@ public class DetailActivity extends ListActivity {
             Log.d(TAG, "Found " + reviews.size() + " reviews");
 
             numView.setText(reviews.size() + " Reviews");
+            averageRating.setRating((float)ratings);
 
             generateReviews();
         }
@@ -175,14 +167,14 @@ public class DetailActivity extends ListActivity {
         protected Void doInBackground(Void... inputs) {
             review.createReview(); // Use the method from the User class to create it
             review.updateRating(review.getRestroomID(), review.getRating());
+            ratings = review.getRating();
             return null;
         }
 
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
-            //review.updateRating(review.getRestroomID(), review.getRating());
-            //execute
+            averageRating.setRating((float)ratings);
         }
     }
 
@@ -209,8 +201,6 @@ public class DetailActivity extends ListActivity {
                 viewHolder.report = (ImageButton)convertView.findViewById(R.id.button_report);
 
                 convertView.setTag(viewHolder);
-
-
             }
             mainViewHolder = (ViewHolder) convertView.getTag();
             final ReviewItem rItem = this.reviews.get(position);
@@ -236,4 +226,5 @@ public class DetailActivity extends ListActivity {
         ImageButton report;
     }
 }
+
 

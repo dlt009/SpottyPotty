@@ -706,7 +706,7 @@ public class MainActivity extends AppCompatActivity
                     intent.putExtra("name", name);
                     intent.putExtra("distance", distance);
                     intent.putExtra("restroomID", dItem.getRestroomID());
-                    intent.putExtra("ratings", (float)dItem.getRating());
+                    //intent.putExtra("ratings", (float)dItem.getRating());
                     startActivity(intent);
                 }
             });

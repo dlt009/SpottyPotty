@@ -219,10 +219,14 @@ public class Restroom {
     }
 
     @DynamoDBIgnore
-    public void updateRating(double review) {
+    public double updateRating(double review) {
         double sum = review + (rating * ratingsCount);
         double val = sum / (++ratingsCount);
+
+        Log.d(TAG, "average = "+val);
         setRating(val);
+
+        return val;
     }
 
     @DynamoDBIgnore

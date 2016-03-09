@@ -39,5 +39,6 @@
 
     <string name="spinner_gender">Select a gender: </string>
     <string name="spinner_rating">Select a rating: </string>
+    <string name="title_activity_write_review">WriteReviewActivity</string>
 
 </resources>

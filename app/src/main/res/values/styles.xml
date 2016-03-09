@@ -17,14 +17,12 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <style name="AppTheme.FilterWindow" >
-        <item name = "android:windowIsTranslucent">true</item>
-        <item name = "android:windowCloseOnTouchOutside">true</item>
+    <style name="AppTheme.FilterWindow">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
 
 
     </style>
-
-
 
 
 </resources>
