@@ -396,12 +396,12 @@ public class MainActivity extends AppCompatActivity
         // Change sign-in button text to reflect if currently signing in or out
         if (signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            if (initialized) setFABUI(true);
+            setFABUI(true);
             if (signOutOption != null)
                 signOutOption.setVisible(true);
         } else {
             signInButton.setVisibility(View.VISIBLE);
-            if (initialized) setFABUI(false);
+            setFABUI(false);
             if (signOutOption != null)
                 signOutOption.setVisible(false);
         }
@@ -417,9 +417,9 @@ public class MainActivity extends AppCompatActivity
                         new int[]{getResources().getColor(R.color.white)}));
             }
             fab.setOnClickListener(onAddRestroomClick());
-
             recenter.setVisibility(View.VISIBLE);
-        } else {
+        }
+        else {
             fab.setImageResource(R.mipmap.ic_pin);
             fab.setBackgroundTintList(new ColorStateList(new int[][]{new int[]{0}},
                     new int[]{getResources().getColor(R.color.white)}));
@@ -428,7 +428,6 @@ public class MainActivity extends AppCompatActivity
                         new int[]{getResources().getColor(R.color.colorPrimary)}));
             }
             fab.setOnClickListener(onRecenterClick());
-
             recenter.setVisibility(View.GONE);
         }
     }
@@ -552,8 +551,14 @@ public class MainActivity extends AppCompatActivity
                     return;
                 else {
                     initialized = true;
+                    Log.d(TAG, "x"+ signedInTwitter + signedInGoogle + signedInFacebook);
                     fab.setVisibility(View.VISIBLE);
-                    recenter.setVisibility(View.VISIBLE);
+                    if (!(signedInTwitter || signedInGoogle || signedInFacebook)) {
+                        recenter.setVisibility(View.GONE);
+                    }
+                    else {
+                        recenter.setVisibility(View.VISIBLE);
+                    }
                 }
 
                 if(directionsMode)
