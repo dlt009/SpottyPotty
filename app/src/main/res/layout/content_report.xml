@@ -11,13 +11,16 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".ReportActivity"
-    tools:showIn="@layout/activity_report">
+    tools:showIn="@layout/activity_report"
+    android:clickable ="true"
+    android:focusableInTouchMode="true">
 
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Please give a concise explanation as to the nature of your report:"
+        android:text="Please give a concise explanation as to the nature of your report, and the
+Spotty Potty team will respond as soon as possible:"
         android:id="@+id/Title"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"

@@ -140,7 +140,6 @@ public class MainActivity extends AppCompatActivity
         /* Load user */
         String userEmail = sharedPreferences.getString("user_email", "");
         user = new User();
-
         new GetUserTask(userEmail);
 
         /* Set up fab icons */
@@ -192,6 +191,8 @@ public class MainActivity extends AppCompatActivity
                         map.getCameraPosition().zoom));
             }
         });
+
+        //create a receiver for the filter activity to report back to main
         receiver = new BroadcastReceiver(){
             @Override
             public void onReceive(Context arg0, Intent intent){
@@ -340,11 +341,17 @@ public class MainActivity extends AppCompatActivity
             // Ask for permission
             return;
         }
-        else if(user!= null && user.getReportCount() > 3) {
+        else if(user!= null && user.getReportCount() > 4){
             Toast.makeText(getBaseContext(),
                     "You do not have access to this feature\n" +
                             "Reason: too many reports against content created by this user",
                     Toast.LENGTH_LONG).show();
+        }
+        else if(currentLocation == null){
+            Toast.makeText(getBaseContext(),
+                    "Current Location has not been found\n" +
+                            "Ensure that location is turned on",
+                    Toast.LENGTH_SHORT).show();
         }
         else {
             // Show create restroom activity with current location

@@ -91,6 +91,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
             }
         });
 
+        //attaches data adapter to spinner
         spinnerRating.setAdapter(dataAdapter2);
         spinnerRating.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -118,6 +119,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         });
 
 
+        //initializes the list for the non-mutually exclusive tags
         lvExtras = getListView();
         lvExtras.setChoiceMode(lvExtras.CHOICE_MODE_MULTIPLE);
         lvExtras.setTextFilterEnabled(true);
@@ -131,6 +133,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
             }
         });
 
+        //create button for applying the filter to our map through a BroadcastReceiver
         Button apply = (Button)findViewById(R.id.button_apply);
         apply.setOnClickListener(new View.OnClickListener() {
             @Override

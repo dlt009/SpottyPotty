@@ -1,10 +1,13 @@
 package com.teamoptimal.cse110project;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.media.Rating;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -25,7 +28,12 @@ public class CreateRestroomActivity extends ListActivity {
     private Restroom restroom;
     private User user;
     private AmazonClientManager clientManager;
+    private static EditText description;
+    private static EditText floor;
 
+    private static String TAG = "CreateRestroomActivity: ";
+
+    //static arrays for the tags and their relative position to each other
     public static final String[] Gender = {
             "Unisex",
             "Male-only",
@@ -86,6 +94,26 @@ public class CreateRestroomActivity extends ListActivity {
         double[] location = extra.getDoubleArray("Location");
         restroom.setLocation(location[0], location[1]);
 
+        /*Gets the editTexts from layout and sets their focus listener*/
+        description = (EditText)findViewById(R.id.editText);
+        floor = (EditText) findViewById(R.id.editText2);
+        description.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    closeKeyboard(v);
+                }
+            }
+        });
+        floor.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    closeKeyboard(v);
+                }
+            }
+        });
+
         /* Set the tags */
         Spinner gender = (Spinner)findViewById(R.id.gender);
         ArrayAdapter<String> GenderAdapter = new ArrayAdapter<String>(this,
@@ -102,6 +130,7 @@ public class CreateRestroomActivity extends ListActivity {
             }
         });
 
+        //initialize spinner for accessibility of restroom
         Spinner access = (Spinner)findViewById(R.id.access);
         ArrayAdapter<String> AccessAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_dropdown_item, Access);
@@ -117,26 +146,23 @@ public class CreateRestroomActivity extends ListActivity {
             }
         });
 
+        //initialize list for restroom tags
         ListView tagList = getListView();
         tagList.setChoiceMode(tagList.CHOICE_MODE_MULTIPLE);
         tagList.setTextFilterEnabled(true);
         setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked,
                 Extraneous));
-        tagList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        tagList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 CheckedTextView item = (CheckedTextView) view;
                 restroom.setExtraneous(position, item.isChecked());
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
 
         /* Set rating bar */
         RatingBar ratingBar = (RatingBar) findViewById(R.id.ratingBar);
+        ratingBar.setRating(5);
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
             @Override
             public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
@@ -150,21 +176,31 @@ public class CreateRestroomActivity extends ListActivity {
             @Override
             public void onClick(View view) {
 
-                EditText description = (EditText)findViewById(R.id.editText);
-                EditText floor = (EditText) findViewById(R.id.editText2);
-
-                restroom.setDescription(description.getText().toString());
+                restroom.setDescription(description.getText().toString().trim());
                 restroom.setFloor(floor.getText().toString());
 
-                if(restroom.getDescription() != "") {
+                if(restroom.getDescription().length() > 20 ||
+                        restroom.getDescription().length() < 6){
+                    Toast.makeText(getBaseContext(),
+                            "Description must be between 6 and 20 characters",
+                            Toast.LENGTH_SHORT).show();
+                }else if(restroom.getDescription().length() > 0) {
+
+                    Log.d(TAG, "Restroom in process of being created");
+                    Log.d(TAG, "description: " + restroom.getDescription());
+                    Log.d(TAG, "user: " + restroom.getUser());
+                    Log.d(TAG, "rating: " + restroom.getRating());
+                    Log.d(TAG, "tags: " + restroom.getTags());
                     new CreateRestroomTask(restroom).execute();
+
                     Toast.makeText(getBaseContext(),
                             restroom.getDescription() + " has been created",
                             Toast.LENGTH_LONG).show();
 
                     finish();
-                } else {
-                    Toast.makeText(getBaseContext(), "Restroom must have a valid name",
+
+                }else{
+                    Toast.makeText(getBaseContext(), "Restroom must have a valid description",
                             Toast.LENGTH_SHORT).show();
                 }
             }
@@ -188,6 +224,12 @@ public class CreateRestroomActivity extends ListActivity {
         // We can use UI elements here
         protected void onPostExecute(Void result) {
         }
+    }
+
+    public void closeKeyboard(View view){
+        InputMethodManager manager =
+                (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
 }
