@@ -74,6 +74,11 @@ public class DetailActivity extends ListActivity {
         signedIn = MainActivity.signedInFacebook || MainActivity.signedInGoogle ||
                 MainActivity.signedInTwitter;
 
+        if(signedIn)
+            findViewById(R.id.bottom).setVisibility(View.VISIBLE);
+        else
+            findViewById(R.id.bottom).setVisibility(View.GONE);
+
         /* Sets the TextView of the name and distance of the current bathroom displayed */
         TextView nameView = (TextView) findViewById(R.id.textView2);
         TextView tags = (TextView)findViewById(R.id.tag_list);

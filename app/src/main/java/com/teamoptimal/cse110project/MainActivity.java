@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity
         reportCount = sharedPreferences.getInt("times_reported",0);
         user = new User();
 
-        new GetUserTask(userEmail);
+        new GetUserTask(userEmail).execute();
 
         /* Location */
         fusedLocationService = new FusedLocationService(this, new FusedLocationReceiver() {
@@ -358,8 +358,6 @@ public class MainActivity extends AppCompatActivity
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
                 if (!directionsMode && !centeredSearch) {
                     map.clear();
-                    map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
                     Location centerLoc = new Location(LocationManager.GPS_PROVIDER);
                     centerLoc.setLatitude(latLng.latitude);
                     centerLoc.setLongitude(latLng.longitude);
@@ -453,12 +451,12 @@ public class MainActivity extends AppCompatActivity
                         PackageManager.PERMISSION_GRANTED) {
             // Ask for permission
             return;
-        }else if(user == null){
+        } else if(user == null) {
             Toast.makeText(getBaseContext(),
                     "You do not have access to this feature\n" +
                             "Reason: You must be signed in to create a restroom",
                     Toast.LENGTH_LONG).show();
-        }else if (reportCount > 4) {
+        } else if (reportCount > 4) {
             Toast.makeText(getBaseContext(),
                     "You do not have access to this feature\n" +
                             "Reason: too many reports against content created by this user",
