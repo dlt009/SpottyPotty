@@ -71,6 +71,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.teamoptimal.cse110project.data.RestroomItem;
 import com.teamoptimal.cse110project.data.Restroom;
@@ -107,6 +108,7 @@ public class MainActivity extends AppCompatActivity
     private Location lastKnownLocation;
     private FloatingActionButton recenter;
     private boolean centeredSearch = true;
+    private Polyline prevDir; // previous direction polyline
 
     FusedLocationService fusedLocationService;
 
@@ -602,13 +604,15 @@ public class MainActivity extends AppCompatActivity
                                 String status = direction.getStatus();
                                 if (status.equals(RequestResult.OK)) {
                                     Log.d(TAG, "Direction success");
+                                    if (prevDir != null)
+                                        prevDir.remove();
                                     Route route = direction.getRouteList().get(0);
                                     Leg leg = route.getLegList().get(0);
                                     ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
                                     PolylineOptions polylineOptions =
                                             DirectionConverter.createPolyline(getApplicationContext(),
                                                     directionPositionList, 5, Color.RED);
-                                    map.addPolyline(polylineOptions);
+                                    prevDir = map.addPolyline(polylineOptions);
                                 } else if (status.equals(RequestResult.NOT_FOUND)) {
                                     Log.d(TAG, "Direction not found");
                                 }
