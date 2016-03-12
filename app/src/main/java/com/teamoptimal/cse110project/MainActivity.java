@@ -342,7 +342,7 @@ public class MainActivity extends AppCompatActivity
                 } else if(action.equals("review_created")) {
                     Log.d(TAG, "aaaaaaa " + lastRatedID);
                     for(Restroom r : restrooms) {
-                        if(r.getID() == lastRatedID) {
+                        if(r.getID().equals(lastRatedID)) {
                             Log.d(TAG, "found");
                             r.setRating(lastRated);
                             break;
