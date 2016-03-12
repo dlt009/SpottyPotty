@@ -239,7 +239,7 @@ public class DetailActivity extends ListActivity {
         protected void onPostExecute(Void result) {
             averageRating.setRating((float) ratings);
             MainActivity.lastRated = ratings;
-            MainActivity.lastRatedID = review.getID();
+            MainActivity.lastRatedID = currentID;
             Intent intent = new Intent("review_created");
             sendBroadcast(intent);
             finish();
