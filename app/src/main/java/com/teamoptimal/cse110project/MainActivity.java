@@ -309,8 +309,8 @@ public class MainActivity extends AppCompatActivity
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context arg0, Intent intent) {
-                Log.d(TAG, "Received broadcast");
                 String action = intent.getAction();
+                Log.d(TAG, "Received broadcast " + action);
                 if (action.equals("filter_done")) {
                     Log.d(TAG, "Filter done");
                     Log.d(TAG, "" + filter);
@@ -340,8 +340,10 @@ public class MainActivity extends AppCompatActivity
                     map.clear();
                     drawMap();
                 } else if(action.equals("review_created")) {
+                    Log.d(TAG, "aaaaaaa " + lastRatedID);
                     for(Restroom r : restrooms) {
                         if(r.getID() == lastRatedID) {
+                            Log.d(TAG, "found");
                             r.setRating(lastRated);
                             break;
                         }
@@ -788,6 +790,9 @@ public class MainActivity extends AppCompatActivity
             items.add(new RestroomItem(restroom.getID(), restroom.getDescription(), distance,
                     tags, restroom.getRating(), restroom.getColor()));
         }
+        // Sort location
+        Collections.sort(restrooms, new RestroomComparator(currentLocation.getLatitude(),
+                currentLocation.getLongitude()));
         adapter.notifyDataSetChanged();
     }
 
