@@ -139,6 +139,9 @@ public class MainActivity extends AppCompatActivity
     static boolean signedInFacebook;
     static boolean signedInTwitter;
 
+    public boolean isDoneLoadingList;
+    public static boolean isDoneCreatingRestroom;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -405,7 +408,10 @@ public class MainActivity extends AppCompatActivity
         // Change sign-in button text to reflect if currently signing in or out
         if (signedInTwitter || signedInGoogle || signedInFacebook) {
             signInButton.setVisibility(View.GONE);
-            if (initialized) setFABUI(true);
+            if (initialized){
+                setFABUI(true);
+                isDoneLoadingList = true;
+            }
             if (signOutOption != null)
                 signOutOption.setVisible(true);
         } else {
@@ -888,7 +894,7 @@ public class MainActivity extends AppCompatActivity
                     Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                     String name = mainViewHolder.title.getText().toString();
                     String distance = mainViewHolder.distance.getText().toString();
-                    intent.putExtra("name", name);;
+                    intent.putExtra("name", name);
                     intent.putExtra("restroomID", dItem.getRestroomID());
                     intent.putExtra("restroomTags", dItem.getTags());
                     intent.putExtra("ratings", dItem.getRating());
@@ -929,6 +935,10 @@ public class MainActivity extends AppCompatActivity
 
             return resultA[0] < resultB[0] ? -1 : resultA[0] == resultB[0] ? 0 : 1;
         }
+    }
+
+    public ArrayList<Restroom> getCurrRestroom() {
+        return new ArrayList<Restroom>(restrooms);
     }
 }
 
