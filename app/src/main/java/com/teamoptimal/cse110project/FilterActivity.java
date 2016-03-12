@@ -44,6 +44,7 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         spinnerRating = (Spinner) findViewById(R.id.spinner2);
         spinnerRating.setOnItemSelectedListener(this);
 
+        //takes list of specialized tags from
         String[] Gender = CreateRestroomActivity.Gender;
         String[] Access = CreateRestroomActivity.Access;
 
@@ -55,11 +56,9 @@ public class FilterActivity extends ListActivity implements AdapterView.OnItemSe
         }
 
         List<String> ratings = new ArrayList<>();
-        ratings.add("0+");
-        ratings.add("1+");
-        ratings.add("2+");
-        ratings.add("3+");
-        ratings.add("4+");
+        for(int i=0; i<5; i++){
+            ratings.add(i+"+");
+        }
 
         List<String> accessibility = new ArrayList<>();
         accessibility.add("No Preference");
