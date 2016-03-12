@@ -62,18 +62,29 @@ public class DetailActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
-        RelativeLayout layout = (RelativeLayout)findViewById(R.id.detail_layout);
-        layout.setClickable(true);
-        layout.setFocusableInTouchMode(true);
+        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
+
+        Log.d(TAG, "hey "+ sharedPreferences.getString("user_email",""));
 
         /* Grabs the passed intent from MainActivity */
         intentExtra = getIntent();
         String name = intentExtra.getStringExtra("name");
         String tag = intentExtra.getStringExtra("restroomTags");
 
+        /*determine the existence of a signed in user */
         signedIn = MainActivity.signedInFacebook || MainActivity.signedInGoogle ||
                 MainActivity.signedInTwitter;
 
+        /* Grabs the Restroom ID that is clicked from MainActivity */
+        currentID = intentExtra.getStringExtra("restroomID");
+        reportCount = sharedPreferences.getInt("times_reported", 0);
+        user_email = sharedPreferences.getString("user_email", "");
+
+        /* Initialize new Review with data from MainActivity */
+        review = new Review();
+        review.setRestroomID(currentID);
+        review.setUserEmail(user_email);
+        
         if(signedIn)
             findViewById(R.id.bottom).setVisibility(View.VISIBLE);
         else
@@ -87,32 +98,21 @@ public class DetailActivity extends ListActivity {
         nameView.setText(name);
         tags.setText(tag);
 
+        /* Initialize the rating bar and number of reviews for the restroom tile */
         averageRating = (RatingBar) findViewById(R.id.ratingBar2);
         numView = (TextView) findViewById(R.id.num_reviews);
 
-        reviewList = getListView();
-        itemComments = new ArrayList<>();
-
-        /* Grabs the Restroom ID that is clicked from MainActivity */
-        currentID = intentExtra.getStringExtra("restroomID");
-
-        /* Initialize new Review with data from MainActivity */
-        review = new Review();
-        review.setRestroomID(currentID);
-
-        sharedPreferences = getSharedPreferences(PREFERENCES, 0);
-
-        Log.d(TAG, "hey "+ sharedPreferences.getString("user_email",""));
-
-        user_email = sharedPreferences.getString("user_email", "");
-        review.setUserEmail(user_email);
-
-        reportCount = MainActivity.reportCount;
+        /* Set the layout of details to focusable */
+        RelativeLayout layout = (RelativeLayout) findViewById(R.id.detail_layout);
+        layout.setClickable(true);
+        layout.setFocusableInTouchMode(true);
 
         /* Sets the ListView of comments/ratings */
+        reviewList = getListView();
         itemComments = new ArrayList<>();
         adapter = new MyAdapter(this, R.layout.review_item, itemComments);
 
+        /* Retrieve Reviews from database*/
         new GetReviewsTask(currentID).execute();
 
         // Set rating bar
@@ -152,7 +152,6 @@ public class DetailActivity extends ListActivity {
                             Toast.LENGTH_SHORT).show();
                 }
                 else if (review.isInitialized()) {
-                    //review.updateRating(review.getRestroomID(), review.getRating());
                     new CreateReviewTask(review).execute();
                     Toast.makeText(getBaseContext(), "Review has been created", Toast.LENGTH_SHORT).show();
                     finish();
