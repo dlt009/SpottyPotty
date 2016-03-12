@@ -55,8 +55,6 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
     compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
         transitive = true;
     }
@@ -78,7 +76,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.1.1'
     compile 'com.akexorcist:googledirectionlibrary:1.0.4'
 
-    androidTestCompile 'com.android.support:support-annotations:23.2.0'
+    androidTestCompile 'com.android.support:support-annotations:23.2.1'
     androidTestCompile 'com.android.support.test:runner:0.4.1'
     androidTestCompile 'com.android.support.test:rules:0.4.1'
     androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.1'
@@ -89,7 +87,9 @@ dependencies {
         exclude module: 'recyclerview-v7'
     }
     androidTestCompile 'com.android.support.test.espresso:espresso-idling-resource:2.2.1'
-    compile 'junit:junit:4.12'
+    compile 'com.android.support.test:rules:0.4.1'
+    compile 'com.android.support.test.espresso:espresso-core:2.2.1'
+    compile 'com.android.support.test.espresso:espresso-contrib:2.2.1'
 }
 
 

@@ -222,6 +222,7 @@ public class CreateRestroomActivity extends AppCompatActivity {
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            MainActivity.isDoneCreatingRestroom = true;
         }
     }
 

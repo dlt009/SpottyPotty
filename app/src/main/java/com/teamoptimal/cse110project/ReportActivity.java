@@ -54,29 +54,24 @@ public class ReportActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_report);
 
+        /* Initialize the manager and mapper for the Amazon Database*/
         clientManager = new AmazonClientManager(this);
         mapper = new DynamoDBMapper(clientManager.ddb());
 
+        /*Initialize the report*/
         report = new Report();
 
+        /* Find and hide both edit text and submit button*/
+        submitButton = (Button) findViewById(R.id.submitButton);
+        submitButton.setVisibility(View.INVISIBLE);
+        description = (EditText) findViewById(R.id.reportDesc);
+        description.setVisibility(View.INVISIBLE);
+
+        /*Load current user from email in sharedpreferences*/
         sharedPreferences = getSharedPreferences(PREFERENCES, 0);
         new getUserTask(sharedPreferences.getString("user_email", ""), "User").execute();
 
-        submitButton = (Button) findViewById(R.id.submitButton);
-        submitButton.setVisibility(View.INVISIBLE);
-
-        text = (TextView) findViewById(R.id.Title);
-        description = (EditText) findViewById(R.id.reportDesc);
-        description.setVisibility(View.INVISIBLE);
-        description.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    closeKeyboard(v);
-                }
-            }
-        });
-
+        /* Grab the type and id of object being reported*/
         Intent intentExtra = getIntent();
         reportObj = intentExtra.getStringExtra("object");
         objId = intentExtra.getStringExtra("objId");
@@ -84,6 +79,7 @@ public class ReportActivity extends AppCompatActivity {
         Log.d(TAG, "Activity Started with "+reportObj+" of id: "+objId+"\n Reported by "
                 +sharedPreferences.getString("user_email",""));
 
+        /* Load the object to be reported depending on its type*/
         if(reportObj.equals("Restroom")){
             Log.d(TAG, "reportObj indicates a restroom");
             new getRestroomTask(objId).execute();
@@ -98,6 +94,7 @@ public class ReportActivity extends AppCompatActivity {
             finish();
         }
 
+        /* Create the report and save it database on submit button click*/
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -115,6 +112,16 @@ public class ReportActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
                 }
 
+            }
+        });
+
+        /* Allow the user to close keyboard by clicking layout*/
+        description.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    closeKeyboard(v);
+                }
             }
         });
     }
@@ -141,13 +148,20 @@ public class ReportActivity extends AppCompatActivity {
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
-            if(this.thisUser.equals("Target")){
+            /* If the target of the report has been loaded allow the submit button to be seen*/
+            if(this.thisUser.equals("Target") && target != null){
                 Log.d(TAG, "Target User has been loaded with ID:"+target.getEmail());
                 submitButton.setVisibility(View.VISIBLE);
             }
-            else{
+            /* If the current user has been loaded allow the description to be editable*/
+            else if(this.thisUser.equals("User") && user != null){
                 Log.d(TAG, "Current User has been loaded with ID:"+user.getEmail());
                 description.setVisibility(View.VISIBLE);
+            }
+            /*If neither was loaded exit report activity*/
+            else{
+                Log.d(TAG, "The "+this.thisUser+" was not loaded in properly. Exiting.");
+                finish();
             }
         }
     }
@@ -162,14 +176,15 @@ public class ReportActivity extends AppCompatActivity {
         // To do in the background
         protected Void doInBackground(Void... inputs) {
             restroom = mapper.load(new Restroom().getClass(), this.restroomId);
-            Log.d(TAG, "Restroom: " + restroom.getDescription() + " has been loaded " +
-                    "\n made by "+restroom.getUser());
             return null;
         }
 
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
+            Log.d(TAG, "Restroom: " + restroom.getDescription() + " has been loaded " +
+                "\n made by "+restroom.getUser());
+            /*Once the target restroom has been loaded, load the target user from that information*/
             new getUserTask(restroom.getUser(), "Target").execute();
         }
     }
@@ -183,15 +198,16 @@ public class ReportActivity extends AppCompatActivity {
 
         // To do in the background
         protected Void doInBackground(Void... inputs) {
-            review = mapper.load(new Review().getClass(), this.reviewId); // Use the method from the User class to create it
-
+            review = mapper.load(new Review().getClass(), this.reviewId);
             return null;
         }
 
         // To do after doInBackground is executed
         // We can use UI elements here
         protected void onPostExecute(Void result) {
-            Log.d(TAG, "Review: "+review.getMessage()+" has been loaded with user "+review.getUserEmail());
+            Log.d(TAG, "Review: "+review.getMessage()+" has been loaded with user "+
+                    review.getUserEmail());
+            /*Once the target review has been loaded, load the target user from that information*/
             new getUserTask(review.getUserEmail(), "Target").execute();
         }
     }
@@ -211,7 +227,7 @@ public class ReportActivity extends AppCompatActivity {
 
         // To do in the background
         protected Void doInBackground(Void... inputs) {
-            user.reportRestroom(this.restroom,this.description, this.target); // Use the method from the User class to create it
+            user.reportRestroom(this.restroom,this.description, this.target);
             return null;
         }
 
@@ -239,7 +255,7 @@ public class ReportActivity extends AppCompatActivity {
 
         // To do in the background
         protected Void doInBackground(Void... inputs) {
-            user.reportReview(this.review,this.description, this.target); // Use the method from the User class to create it
+            user.reportReview(this.review,this.description, this.target);
             return null;
         }
 
