@@ -154,7 +154,6 @@ public class DetailActivity extends ListActivity {
                 else if (review.isInitialized()) {
                     new CreateReviewTask(review).execute();
                     Toast.makeText(getBaseContext(), "Review has been created", Toast.LENGTH_SHORT).show();
-                    finish();
 
                 } else {
                     Toast.makeText(getBaseContext(), "Unsuccessful", Toast.LENGTH_SHORT).show();
@@ -239,6 +238,11 @@ public class DetailActivity extends ListActivity {
         // We can use UI elements here
         protected void onPostExecute(Void result) {
             averageRating.setRating((float) ratings);
+            MainActivity.lastRated = ratings;
+            MainActivity.lastRatedID = currentID;
+            Intent intent = new Intent("review_created");
+            sendBroadcast(intent);
+            finish();
         }
     }
 
@@ -279,7 +283,7 @@ public class DetailActivity extends ListActivity {
             mainViewHolder.thumbsUp.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(reportCount<5) {
+                    if(reportCount < 5) {
                         Log.d(TAG, "thumbsupclick");
                         ReviewItem reviewItem = reviews.get(position);
                         if (reviewItem.getAction() != 0)
@@ -290,7 +294,7 @@ public class DetailActivity extends ListActivity {
                         mainViewHolder.thumbs.setText("" + (reviewItem.getThumbsUp() -
                                 reviewItem.getThumbsDown()));
                         new getReviewTask(reviewItem.getReviewID(), 1).execute();
-                    } else{
+                    } else {
                         Toast.makeText(getBaseContext(), "Cannot create a review\n" +
                                         "Reason: too many reports against content created by this user",
                                 Toast.LENGTH_SHORT).show();

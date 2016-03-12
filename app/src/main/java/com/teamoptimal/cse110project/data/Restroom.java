@@ -59,7 +59,7 @@ public class Restroom {
         tags = "0000000000000000000000000000000";
         floor = "1";
         rating = 0.00;
-        ratingsCount = 0;
+        ratingsCount = 1;
     }
 
     @DynamoDBHashKey (attributeName = "ID")

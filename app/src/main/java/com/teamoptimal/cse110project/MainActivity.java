@@ -83,12 +83,15 @@ public class MainActivity extends AppCompatActivity
     public static User user;
 
     /* Drawer */
+    public static Restroom lastCreatedRestroom;
     private ArrayList<Restroom> restrooms;
     private ArrayList<Restroom> originalRestrooms;
     private ArrayList<RestroomItem> items;
     private ListView listView;
     private MyListAdapter adapter;
 
+    public static String lastRatedID;
+    public static double lastRated;
     /* Map */
     private GoogleMap map;
     private Location currentLocation;
@@ -138,6 +141,8 @@ public class MainActivity extends AppCompatActivity
     static boolean signedInGoogle;
     static boolean signedInFacebook;
     static boolean signedInTwitter;
+
+    private static int broadcastType = -1; // 0 = filter, 1 = restroom, 2 = review
 
     public boolean isDoneLoadingList;
     public static boolean isDoneCreatingRestroom;
@@ -243,6 +248,11 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
 
+                broadcastType = 2;
+                IntentFilter filter = new IntentFilter();
+                filter.addAction("review_created");
+                registerReceiver(receiver, filter);
+
                 Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                 String name = restroom.getDescription();
                 intent.putExtra("name", name);
@@ -293,9 +303,9 @@ public class MainActivity extends AppCompatActivity
                 drawer.closeDrawer(GravityCompat.START);
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,
                         map.getCameraPosition().zoom));
-
             }
         });
+
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context arg0, Intent intent) {
@@ -321,15 +331,46 @@ public class MainActivity extends AppCompatActivity
                     generateListContent();
                     map.clear();
                     drawMap();
+
+
+                } else if(action.equals("restroom_created")) {
+                    restrooms.add(lastCreatedRestroom);
+
+                    generateListContent();
+                    map.clear();
+                    drawMap();
+                } else if(action.equals("review_created")) {
+                    for(Restroom r : restrooms) {
+                        if(r.getID() == lastRatedID) {
+                            r.setRating(lastRated);
+                            break;
+                        }
+                    }
+                    generateListContent();
+
                 }
             }
         };
+
+        IntentFilter filter = new IntentFilter();
+        if(broadcastType == 0)
+            filter.addAction("filter_done");
+        else if(broadcastType == 1)
+            filter.addAction("restroom_created");
+        else if(broadcastType == 2)
+            filter.addAction("review_created");
+        registerReceiver(receiver, filter);
 
         /* Filter button */
         View filtersView = findViewById(R.id.filters);
         filtersView.findViewById(R.id.filter_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                broadcastType = 0;
+                IntentFilter filter = new IntentFilter();
+                filter.addAction("filter_done");
+                registerReceiver(receiver, filter);
+
                 Intent intent = new Intent(getApplicationContext(), FilterActivity.class);
                 startActivity(intent);
             }
@@ -398,10 +439,17 @@ public class MainActivity extends AppCompatActivity
         }
         toggleNavSignInText();
 
-        registerReceiver(receiver, new IntentFilter("filter_done"));
-
         clientManager = new AmazonClientManager(this);
         clientManager.validateCredentials();
+
+        IntentFilter filter = new IntentFilter();
+        if(broadcastType == 0) filter.addAction("filter_done");
+        if(broadcastType == 1) filter.addAction("restroom_created");
+        if(broadcastType == 2) filter.addAction("review_created");
+        registerReceiver(receiver, filter);
+
+        String userEmail = sharedPreferences.getString("user_email", "");
+        new GetUserTask(userEmail).execute();
     }
 
     private void toggleNavSignInText() {
@@ -469,6 +517,12 @@ public class MainActivity extends AppCompatActivity
                     Toast.LENGTH_LONG).show();
         } else {
             // Show create restroom activity with current location
+            // Show create restroom activity with current location
+            broadcastType = 1;
+            IntentFilter filter = new IntentFilter();
+            filter.addAction("restroom_created");
+            registerReceiver(receiver, filter);
+
             Intent intent = new Intent(this, CreateRestroomActivity.class);
             double[] loc = { currentLocation.getLatitude(), currentLocation.getLongitude() };
             intent.putExtra("Location", loc);
@@ -838,7 +892,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onStop() {
         super.onStop();
-        unregisterReceiver(receiver);
+        //unregisterReceiver(receiver);
         Log.d(TAG, " STOPPING THE APP");
     }
 
@@ -891,6 +945,12 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onClick(View v) {
                      ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
+
+                    broadcastType = 2;
+                    IntentFilter filter = new IntentFilter();
+                    filter.addAction("review_created");
+                    registerReceiver(receiver, filter);
+
                     Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
                     String name = mainViewHolder.title.getText().toString();
                     String distance = mainViewHolder.distance.getText().toString();

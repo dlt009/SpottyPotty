@@ -419,6 +419,7 @@ public class SignInActivity extends AppCompatActivity implements
         editor.putBoolean("face", signedInFacebook);
         editor.putBoolean("twit", signedInTwitter);
         if(user != null) {
+            Log.d(TAG, "not null");
             editor.putString("user_email", user.getEmail());
             editor.putString("user_name", user.getUsername());
             editor.putInt("times_reported", user.getReportCount());
