@@ -2,6 +2,7 @@ package com.teamoptimal.cse110project;
 
 import android.app.Activity;
 import android.app.ListActivity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.Rating;
 import android.os.AsyncTask;
@@ -196,6 +197,9 @@ public class CreateRestroomActivity extends AppCompatActivity {
                             restroom.getDescription() + " has been created",
                             Toast.LENGTH_LONG).show();
 
+                    MainActivity.lastCreatedRestroom = restroom;
+                    Intent intent = new Intent("restroom_created");
+                    sendBroadcast(intent);
                     finish();
 
                 }else{
