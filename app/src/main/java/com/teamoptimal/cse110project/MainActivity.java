@@ -175,41 +175,41 @@ public class MainActivity extends AppCompatActivity
         new GetUserTask(userEmail).execute();
 
         /* Location */
-        fusedLocationService = new FusedLocationService(this, new FusedLocationReceiver() {
-            @Override
-            public void onLocationChanged() {
-                Log.i(TAG, "Location changed");
-                currentLocation = fusedLocationService.getLocation();
-                if (!initialized) {
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLocation.getLatitude(),
-                            currentLocation.getLongitude()), 18));
-                    lastKnownLocation = currentLocation;
-                    lastNavigatedLocation = currentLocation;
-                    currentZoom = 18;
-                    Log.d(TAG, fusedLocationService.getLocation().getLatitude() + ", " +
-                            fusedLocationService.getLocation().getLongitude());
-                    showNearbyMarkers(currentLocation, 0.00727946446);
-                }
+                fusedLocationService = new FusedLocationService(this, new FusedLocationReceiver() {
+                    @Override
+                    public void onLocationChanged() {
+                        Log.i(TAG, "Location changed");
+                        currentLocation = fusedLocationService.getLocation();
+                        if (!initialized) {
+                            map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLocation.getLatitude(),
+                                    currentLocation.getLongitude()), 18));
+                            lastKnownLocation = currentLocation;
+                            lastNavigatedLocation = currentLocation;
+                            currentZoom = 18;
+                            Log.d(TAG, fusedLocationService.getLocation().getLatitude() + ", " +
+                                    fusedLocationService.getLocation().getLongitude());
+                            showNearbyMarkers(currentLocation, 0.00727946446);
+                        }
 
-                if(directionsMode) {
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLocation.getLatitude(),
-                            currentLocation.getLongitude()), map.getCameraPosition().zoom));
-                }
+                        if(directionsMode) {
+                            map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLocation.getLatitude(),
+                                    currentLocation.getLongitude()), map.getCameraPosition().zoom));
+                        }
 
-                float[] result = new float[2];
-                Location.distanceBetween(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(),
-                        currentLocation.getLatitude(), currentLocation.getLongitude(), result);
+                        float[] result = new float[2];
+                        Location.distanceBetween(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(),
+                                currentLocation.getLatitude(), currentLocation.getLongitude(), result);
 
-                // 0.00727946446 latitude = 0.5 miles
-                // 0.25 miles = 402.336 meters
-                if (result[0] > 402.336) {
-                    map.clear();
-                    showNearbyMarkers(currentLocation, 0.00727946446);
-                    lastKnownLocation = currentLocation;
-                } else {
-                    if (restrooms != null && !restrooms.isEmpty())
-                        generateListContent();
-                }
+                        // 0.00727946446 latitude = 0.5 miles
+                        // 0.25 miles = 402.336 meters
+                        if (result[0] > 402.336) {
+                            map.clear();
+                            showNearbyMarkers(currentLocation, 0.00727946446);
+                            lastKnownLocation = currentLocation;
+                        } else {
+                            if (restrooms != null && !restrooms.isEmpty())
+                                generateListContent();
+                        }
 
 
             }
